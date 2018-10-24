@@ -1,0 +1,52 @@
+@media (max-width: 1023px) {
+  .hidden-on-pad {display: none !important;}
+}
+@media (max-width: 600px) {
+  .hidden-on-mobile {display: none !important;}
+}
+@media (min-width: 1024px) {
+  *::-webkit-scrollbar {width: 7px; height: 7px;}
+  *::-webkit-scrollbar-thumb {border-radius: 7px; background: #ccc;}
+  *::-webkit-scrollbar-track {border-radius: 7px; background: #f3f6f9;}
+  *::-webkit-input-placeholder {color: inherit !important; opacity: .5;}
+}
+* {padding: 0; margin: 0; font: inherit; color: inherit; box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+html, body {height: 100%;}
+body {font-size: 14px; background: #fff;}
+ul, li {list-style: none;}
+a.def,
+a.def:link,
+a.def:hover,
+a.def:active,
+a.def:visited {color: inherit; text-decoration: none;}
+
+.text-lg {font-size: 18px;}
+.text-bigger {font-size: 16px;}
+.text-smaller {font-size: 13px;}
+.text-sm {font-size: 12px;}
+
+.fl {float: left;}
+.fr {float: right;}
+.c {text-align: center; position: relative;}
+.ib {display: inline-block; position: relative;}
+.relative {position: relative;}
+.space {padding: 12px; position: relative;}
+.ellipsis {overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative;}
+.btn {position: relative;}
+.line-2 {line-height: 1.4em; max-height: 2.8em; overflow: hidden; text-overflow: ellipsis; position: relative;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+}
+
+.lmr {
+  & > .fl {margin-right: 10px;}
+  & > .fr {margin-left: 10px;}
+  & > .ellipsis {}
+}
+
+.flex-layout {display: flex; flex-direction: column;}
+.flex-layout > * {position: relative;}
+.flex-layout > .auto-flex {flex: 1; overflow: auto;}
