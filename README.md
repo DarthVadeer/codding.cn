@@ -1,5 +1,5 @@
 // 配置scss
-// npm install sass-loader node-sass --save-dev
+npm install sass-loader node-sass --save-dev
 
 
 if (projectId) {
@@ -7,4 +7,3 @@ if (projectId) {
 } else {
   // 从消息列表过去
 }
-

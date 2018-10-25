@@ -11,5 +11,13 @@ export default {
 
       delete root.isRouterPush
     }
+  },
+  'router.album'(newVal, oldVal) {
+    const root = this.$root
+
+    if (!newVal) return
+    if (oldVal !== undefined) root.page.page = 1
+
+    newVal && this.$root.fetchVideos()
   }
 }

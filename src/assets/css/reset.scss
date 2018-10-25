@@ -10,7 +10,7 @@
   *::-webkit-scrollbar-track {border-radius: 7px; background: #f3f6f9;}
   *::-webkit-input-placeholder {color: inherit !important; opacity: .5;}
 }
-* {padding: 0; margin: 0; font: inherit; color: inherit; box-sizing: border-box;
+* {padding: 0; margin: 0; font: inherit; color: inherit; box-sizing: border-box; vertical-align: middle;
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
@@ -32,12 +32,14 @@ a.def:visited {color: inherit; text-decoration: none;}
 .fl {float: left;}
 .fr {float: right;}
 .c {text-align: center; position: relative;}
+.af:after {content: ""; display: block; clear: both;}
 .ib {display: inline-block; position: relative;}
 .relative {position: relative;}
 .space {padding: 12px; position: relative;}
 .ellipsis {overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative;}
 .btn {position: relative;}
-.line-2 {line-height: 1.4em; max-height: 2.8em; overflow: hidden; text-overflow: ellipsis; position: relative;
+.auto-scroll {position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: auto;}
+.line-2 {line-height: 1.4em; height: 2.8em; overflow: hidden; text-overflow: ellipsis; position: relative;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
 }
 

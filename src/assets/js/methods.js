@@ -10,6 +10,7 @@ export default {
       console.warn('hash parse err')
     }
 
+    r.com = r.com || 'cctv'
     r.channel = r.channel || channel.list[0].name
     r.album = r.album || ((channel.map[r.channel] || [])[0] || {}).name
     root.router = r
@@ -22,6 +23,9 @@ export default {
     for (let key in o) {
       root.$set(root.router, key, o[key])
     }
+  },
+  log(o) {
+    console.log(o)
   },
   json2url(o) {
     return Object.keys(o).map(k => k + '=' + encodeURIComponent(o[k])).join('&')
@@ -44,46 +48,21 @@ export default {
     script.src = url + '?' + root.json2url(data)
     document.body.appendChild(script)
   },
-  fetchChannel(cb) {
+  lazyLoad() {
     const root = this.$root
     const r = root.router
-    let map = {}
-    let page = 0
+    const dh = window.innerHeight
     
-    try {
-      cb(JSON.parse(localStorage.channel))
-      console.warn('channel 在缓存中读取数据成功')
-      return
-    } catch (e) {
-      console.warn('channel 加载新数据')
-    }
+    clearTimeout(root.timerLazyLoad)
+    root.timerLazyLoad = setTimeout(() => {
+      ;[].slice.call(document.querySelectorAll('[lazy-load]')).forEach((node) => {
+        const pos = node.getBoundingClientRect()
 
-    function loop() {
-      root.jsonp('http://api.cntv.cn/lanmu/columnSearch', {
-        'p': ++page,
-        'n': '200',
-        'serviceId': 'tvcctv',
-        't': 'jsonp',
-      }, 'cb', (data) => {
-        data = ((data.response || {}).docs || [])
-        data.forEach((v) => {
-          const o = map[v.channel_name] = map[v.channel_name] || []
-          o.push({
-            id: v.column_topicid,
-            name: v.column_name,
-            children: [],
-          })
-        })
+        if (pos.top > dh || pos.bottom < 0) return
 
-        if (data.length < 100 || r.channel === '新闻联播') {
-          localStorage.channel = JSON.stringify(map)
-          cb && cb(map)
-        } else {
-          loop()
-        }
+        node.style.backgroundImage = 'url('+node.getAttribute('lazy-load')+')'
+        node.removeAttribute('lazy-load')
       })
-    }
-
-    loop()
-  }
+    }, 150)
+  },
 }
