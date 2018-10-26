@@ -11,6 +11,11 @@ export default {
     root.page.total = list.length
     list = list.splice((page.page - 1) * page.size, page.size)
     root.lazyLoad()
+
+    if ((page.page - 1) * page.size > page.total) {
+      root.updateRouter({page: 1})
+    }
+
     return list
   },
 }

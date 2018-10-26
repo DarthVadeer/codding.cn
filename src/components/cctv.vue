@@ -20,51 +20,66 @@
         >{{item.name + '(' + item.children.length + ')'}}</li>
       </ul>
     </div>
-    <div class="auto-flex flex-layout">
-      <div class="auto-flex" @scroll="$root.lazyLoad">
-        <div class="relative af">
-          <ul class="list-card">
-            <li
-              v-for="(item, idx) in $root.videos"
-              :key="item.id + '-' + idx"
-              @click="$root.getVideoUrl(idx)"
-            >
-              <div class="pt" :lazy-load="item.img">
-                <div class="text-box">
-                  <div class="title ellipsis" :title="item.title">{{item.title}}</div>
-                  <div class="desc line-2" :title="item.desc">{{item.time | date}} {{item.desc}}</div>
+    <div class="auto-flex">
+      <div class="abs flex-layout">
+        <div class="auto-flex" @scroll="$root.lazyLoad">
+          <div class="relative af">
+            <ul class="list-card">
+              <li
+                v-for="(item, idx) in $root.videos"
+                :key="item.id + '-' + idx"
+                @click="$root.getVideoUrl(idx)"
+              >
+                <div class="pt" :lazy-load="item.img">
+                  <div class="text-box">
+                    <div class="title ellipsis" :title="item.title">{{item.title}}</div>
+                    <div class="desc line-2" :title="item.desc">{{item.time | date}} {{item.desc}}</div>
+                  </div>
                 </div>
-              </div>
-            </li>
-          </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="pagination-box c" v-if="$root.page.total > 0">
+          <pagin :page="$root.page"></pagin>
         </div>
       </div>
-      <div class="pagination-box c" 
-        v-if="$root.page.total > 0"
-      >
-        <pagin
-          :page="$root.page"
-          @updatePage="page => $root.updateRouter({page})"
-          @updatePageSize="pageSize => $root.updateRouter({pageSize})"
-        ></pagin>
+
+      <div class="abs flex-layout" v-if="$root.router.m3u8">
+        <div class="gray-title">
+          <div class="fr">
+            <span class="btn btn-danger btn-xs"
+              @click="$root.cleaerVideoInfoOnRouter"
+            >关闭视频</span>
+          </div>
+          <strong>{{$root.router.videoTitle}}</strong>
+        </div>
+        <div class="auto-flex">
+          <player></player>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import player from '@/components/player'
+
 export default {
   rootData() {
-    return {}
+    return {
+      ...player.rootData.call(this.$root)
+    }
   },
   rootMethods: {
+    ...player.rootMethods,
     fetchChannel(cb) {
       const root = this.$root
       const r = root.router
       let result
       let map = {}
       let page = 0
-      
+
       try {
         result = JSON.parse(localStorage.channels)
       } catch (e) {
@@ -130,8 +145,8 @@ export default {
           data = data.map((v) => {
             return {
               id: (v.videoSharedCode || '').trim(),
-              title: ((v.videoTitle || '').replace(/《.*》/g, '').replace(/(\s+)?\d{8}(\s+)?(\d{2}:\d{2})?(\s+)?/, '') || v.videoTitle).trim(),
-              desc: ((v.videoBrief || '').replace(root.reDelBlank, ' ').replace('本期节目主要内容：', '')).trim(),
+              title: ((v.videoTitle || '').replace(/《.*》/g, '').replace(/\d{8}/, '').replace(/\d{2}:\d{2}/, '').replace(/\s+/g, ' ').trim() || v.videoTitle).trim(),
+              desc: ((v.videoBrief || '').replace(/(《.*?》)/g, '').replace('本期节目主要内容：', '').replace(/\s+/g, ' ')).trim(),
               img: (v.videoKeyFrameUrl || v.videoKeyFrameUrl2 || v.videoKeyFrameUrl3 || '').trim(),
               time: parseInt(v.videoProductiontime || v.videoLastmodifyDate || v.videoFocusDate || ''),
             }
@@ -141,6 +156,20 @@ export default {
 
           if (data.length < 100 || album.name === '新闻联播') {
             console.log('保存数据到localStorage', album.name)
+            const jsonNoRepeat = {}
+
+            // 通过shareCode去重
+            for (let i = 0; i < album.children.length; i++) {
+              const item = album.children[i]
+
+              if (jsonNoRepeat[item.id]) {
+                album.children.splice(i, 1)
+                i--
+              }
+              jsonNoRepeat[item.id] = jsonNoRepeat[item.id] || 0
+              jsonNoRepeat[item.id]++
+            }
+
             try {
               localStorage.channels = JSON.stringify(channel.map)
             } catch (e) {
@@ -158,7 +187,8 @@ export default {
     getVideoUrl(videoIndex) {
       const root = this.$root
       const script = document.createElement('script')
-      const elItem = root.videos[videoIndex]
+      const videos = root.videos
+      const elItem = videos[videoIndex]
 
       if (!elItem) {
         console.log('no video', videoIndex)
@@ -167,14 +197,17 @@ export default {
 
       root.updateRouter({
         videoIndex,
-        videoTitle: elItem.name,
+        videoTitle: elItem.title,
       })
       script.src = 'http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?pid=' + elItem.id + '&tai=ipad&from=html5&tsp=1513429887&vn=2049&vc=747D258B9ACE300ABA7C47B708C99495&uid=B55F93A05CDAE4A93D58FAEC106E2DF2&wlan='
-      script.onload = function() {
+      script.onload = () => {
         document.body.removeChild(script)
       }
       document.body.appendChild(script)
     },
+  },
+  components: {
+    player,
   },
   mounted() {
     const root = this.$root
@@ -194,6 +227,7 @@ $border-color: rgba(0,0,0,.1);
 
 .gray-title {
   @include gray-title(); background: #f3f6f9;
+  strong {vertical-align: top;}
   .fr {
     .btn {
       vertical-align: top; top: -4px;
@@ -226,7 +260,7 @@ $border-color: rgba(0,0,0,.1);
   }
 
   .pagination-box {
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    background: #f3f6f9; border-top: 1px solid rgba(0, 0, 0, 0.1);
   }
 }
 </style>

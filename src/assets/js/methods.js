@@ -1,3 +1,5 @@
+import Hls from 'hls.js'
+
 export default {
   routerInit() {
     const root = this.$root
@@ -64,5 +66,39 @@ export default {
         node.removeAttribute('lazy-load')
       })
     }, 150)
+  },
+  playVideo() {
+    const root = this.$root
+    const r = root.router
+    
+    root.$nextTick(() => {
+      const video = document.getElementById('videoEl')
+      const videoUrl = root.router.m3u8
+      const isSupportM3u8 = video.canPlayType('application/vnd.apple.mpegurl')
+
+      if(Hls.isSupported()) {
+        const hls = new Hls()
+        hls.loadSource(videoUrl)
+        hls.attachMedia(video)
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play()
+        })
+      } else if (isSupportM3u8) {
+        video.src = videoUrl
+        video.play()
+      } else {
+        alert('你的设备不支持播放m3u8')
+      }
+    })
+  },
+  cleaerVideoInfoOnRouter() {
+    const root = this.$root
+    const r = root.router
+    
+    root.updateRouter({
+      videoTitle: undefined,
+      videoIndex: undefined,
+      m3u8: undefined
+    }, 'push')
   },
 }

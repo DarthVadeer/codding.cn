@@ -15,7 +15,6 @@ window.vm = new Vue({
     const root = this.$root
 
     return {
-      reDelBlank: /(《.*?》)|(\s+)/g,
       router: {},
       channel: {
         list: [],
@@ -31,7 +30,7 @@ window.vm = new Vue({
         page: 1,
         size: 100,
         total: 0,
-        sizes: [100, 200, 300, 400],
+        sizes: [100, 200, 300, 400, 500],
       },
       ...App.rootData.call(root)
     }
@@ -87,7 +86,7 @@ window.vm = new Vue({
     const root = this.$root
     const r = root.router
     
-    root.init()
+    window.onload = root.init.bind(root)
     window.onpopstate = root.routerInit.bind(root)
   }
 })
@@ -95,5 +94,4 @@ window.vm = new Vue({
 window.getHtml5VideoData = (data) => {
   const videoUrl = JSON.parse(data).hls_url
   vm.updateRouter({m3u8: videoUrl}, 'push')
-  console.warn(videoUrl)
 }

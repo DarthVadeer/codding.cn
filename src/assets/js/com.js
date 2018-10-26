@@ -46,7 +46,6 @@ Vue.component('pagin', {
       handler(page) {
         const pageNum = this.pageNum
 
-        console.log('page changed', JSON.stringify(page))
         page.page = parseInt(page.page)
         page.size = parseInt(page.size)
         
