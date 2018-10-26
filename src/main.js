@@ -15,7 +15,7 @@ window.vm = new Vue({
     const root = this.$root
 
     return {
-      reDelBlank: /(《[^《》]*》)|(\s+)/g,
+      reDelBlank: /(《.*?》)|(\s+)/g,
       router: {},
       channel: {
         list: [],
@@ -39,6 +39,41 @@ window.vm = new Vue({
   methods: {
     ...require('@/assets/js/methods').default,
     ...App.rootMethods,
+    init() {
+      const root = this.$root
+      
+      root.fetchChannel((mapChannel) => {
+        let mapAlbum = {}
+        let listAlbum = []
+
+        root.channel.list = Object.keys(mapChannel).map((nameAlbum) => {
+          const v = mapChannel[nameAlbum]
+          listAlbum = listAlbum.concat(v)
+          v.forEach(v => mapAlbum[v.name] = v)
+
+          return {
+            idx: parseInt(nameAlbum.match(/\d+/)),
+            name: nameAlbum,
+          }
+        }).sort((a, b) => {
+          return a.idx - b.idx
+        }).map((v) => {
+          v.children = mapChannel[v.name]
+          return v
+        })
+
+        root.channel.map = mapChannel
+        root.channel.mapAlbum = mapAlbum
+        root.channel.listAlbum = listAlbum
+
+        root.routerInit()
+        const r = root.router
+        root.page.page = r.page || 1
+        root.page.size = r.pageSize || 100
+      })
+
+      window.addEventListener('resize', root.lazyLoad.bind(root))
+    },
   },
   watch: {
     ...require('@/assets/js/watch').default,
@@ -52,6 +87,7 @@ window.vm = new Vue({
     const root = this.$root
     const r = root.router
     
+    root.init()
     window.onpopstate = root.routerInit.bind(root)
   }
 })

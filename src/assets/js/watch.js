@@ -19,5 +19,9 @@ export default {
     if (oldVal !== undefined) root.page.page = 1
 
     newVal && this.$root.fetchVideos()
+  },
+  'router.m3u8'(newVal) {
+    if (!newVal) return
+    console.log(newVal)
   }
 }

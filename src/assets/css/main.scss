@@ -1,3 +1,20 @@
+.list-card {
+  padding: 4px; user-select: none; margin-bottom: 0;
+  &:after {
+    content: ""; display: block; clear: both;
+  }
+  li {
+    float: left; padding: 1px;
+    .pt {
+      padding-top: 60%; background: #e3e6e9 no-repeat center / cover; position: relative; cursor: pointer;
+      .text-box {
+        width: 100%; position: absolute; left: 0; bottom: 0; background: rgba(0,0,0,.5); color: #fff; padding: .4em .4em; font-size: 12px;
+        .desc {margin-top: .3em;}
+      }
+    }
+  }
+}
+
 .pagin {
   padding: .8em 0; white-space: nowrap; user-select: none;
   & > .ib {
