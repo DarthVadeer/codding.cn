@@ -1,31 +1,69 @@
 <template>
   <div class="player">
     <video id="videoEl" src="" controls=""
-      onclick="this[this.paused ? 'play' : 'pause']()"
-      @dblclick="toggleFullScreen"
+      @click="$root.togglePlay"
+      @dblclick="$root.toggleFullScreen"
+      @ended="$root.playVideoPrev"
     ></video>
   </div>
 </template>
 
 <script>
+import Hls from 'hls.js'
+
 export default {
   rootData() {
     return {}
   },
   rootMethods: {
-
-  },
-  methods: {
+    togglePlay() {
+      const video = document.getElementById('videoEl')
+      video[video.paused ? 'play' : 'pause']()
+    },
     toggleFullScreen(e) {
       e.preventDefault()
-      document.webkitFullscreenElement ? document.webkitExitFullscreen() : e.target.webkitRequestFullScreen()
-    }
+      const video = document.getElementById('videoEl')
+      document.webkitFullscreenElement ? document.webkitExitFullscreen() : video.webkitRequestFullScreen()
+    },
+    playVideo() {
+      const root = this.$root
+      const r = root.router
+      
+      clearTimeout(root.timerPlayVideo)
+      root.timerPlayVideo = setTimeout(() => {
+        const video = document.getElementById('videoEl')
+        const videoUrl = r.m3u8
+        const isSupportM3u8 = video.canPlayType('application/vnd.apple.mpegurl')
+
+        if (isSupportM3u8) {
+          console.log(r.m3u8, 'play by native')
+          video.src = videoUrl
+          // video.play()
+        } else if(Hls.isSupported()) {
+          console.log(r.m3u8, 'play by hls')
+          const hls = new Hls()
+          hls.loadSource(videoUrl)
+          hls.attachMedia(video)
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            // video.play()
+          })
+        } else {
+          alert('你的设备不支持播放m3u8')
+        }
+      }, 1)
+    },
+    playVideoPrev(e) {
+      const root = this.$root
+      const r = root.router
+
+      root.getVideoUrl(r.videoIndex - 1)
+    },
   },
   mounted() {
     const root = this.$root
     const r = root.router
 
-    console.log('player.vue mounted')
+    root.playVideo()
   }
 }
 </script>

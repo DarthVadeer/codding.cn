@@ -21,7 +21,6 @@ Vue.component('pagin', {
             :key="item.n + '-' + idx"
             :class="{on: item.n == page.page}"
             @click="item.n === '...' ? (item.isPrev ? page.page-- : page.page++) : page.page = item.n"
-            @contextmenu.prevent="$root.log(item.isPrev)"
           >{{item.n}}</li>
         </ul>
       </div>

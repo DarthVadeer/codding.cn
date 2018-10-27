@@ -162,12 +162,12 @@ export default {
             for (let i = 0; i < album.children.length; i++) {
               const item = album.children[i]
 
-              if (jsonNoRepeat[item.id]) {
+              if (jsonNoRepeat[item.title]) {
                 album.children.splice(i, 1)
                 i--
               }
-              jsonNoRepeat[item.id] = jsonNoRepeat[item.id] || 0
-              jsonNoRepeat[item.id]++
+              jsonNoRepeat[item.title] = jsonNoRepeat[item.title] || 0
+              jsonNoRepeat[item.title]++
             }
 
             try {
@@ -186,12 +186,23 @@ export default {
     },
     getVideoUrl(videoIndex) {
       const root = this.$root
+      const r = root.router
+      const page = root.page
+      let videos
+      
+      if (videoIndex < 0 && page.page > 1) {
+        page.page--
+        videos = root.videos
+        videoIndex = videos.length - 1
+      } else {
+        videos = root.videos
+      }
+
       const script = document.createElement('script')
-      const videos = root.videos
       const elItem = videos[videoIndex]
 
       if (!elItem) {
-        console.log('no video', videoIndex)
+        console.log('已经是最后一个视频了 no video', videoIndex)
         return
       }
 
@@ -204,6 +215,16 @@ export default {
         document.body.removeChild(script)
       }
       document.body.appendChild(script)
+    },
+    cleaerVideoInfoOnRouter() {
+      const root = this.$root
+      const r = root.router
+      
+      root.updateRouter({
+        videoTitle: undefined,
+        videoIndex: undefined,
+        m3u8: undefined
+      }, 'push')
     },
   },
   components: {
