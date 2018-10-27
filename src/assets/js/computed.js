@@ -24,4 +24,31 @@ export default {
 
     return list
   },
+  channelIndex() {
+    const root = this.$root
+    const r = root.router
+    let targetIndex = -1
+
+    root.channel.list.forEach((item) => {
+      if (r.channel === item.name) {
+        targetIndex = item.idx
+      }
+    })
+
+    return targetIndex
+  },
+  liveUrl() {
+    const root = this.$root
+    const r = root.router
+    
+    return 'http://cctv5.txty.5213.liveplay.myqcloud.com/live/cctv' + root.channelIndex + '_txty.m3u8'
+    /*let targetUrl = -1
+    root.channel.list.forEach((item, idx, arr) => {
+      if (item.name === r.channel) {
+        targetUrl = 'http://cctv5.txty.5213.liveplay.myqcloud.com/live/cctv' + item.idx + '_txty.m3u8'
+      }
+    })
+    console.log(targetUrl)
+    return targetUrl*/
+  },
 }

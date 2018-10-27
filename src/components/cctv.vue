@@ -22,6 +22,22 @@
     </div>
     <div class="auto-flex">
       <div class="abs flex-layout">
+        <div class="gray-title lmr">
+          <div class="fr">
+            <a
+              class="btn btn-success btn-xs"
+              :href="'http://tv.cctv.com/live/cctv' + $root.channelIndex + '/'"
+              target="_blank"
+            >官网直播 - {{$root.router.channel}}</a>
+            <span class="btn btn-info btn-xs"
+              v-if="$root.is.supportM3u8"
+              @click="$root.updateRouter({videoTitle: $root.router.channel, m3u8: $root.liveUrl}, 'push')"
+            >本站 {{$root.router.channel}} 直播</span>
+          </div>
+          <div class="ellipsis">
+            <strong>{{$root.router.album}}</strong>
+          </div>
+        </div>
         <div class="auto-flex" @scroll="$root.lazyLoad">
           <div class="relative af">
             <ul class="list-card">
@@ -39,6 +55,9 @@
               </li>
             </ul>
           </div>
+          
+          <no-data v-if="$root.page.total === 0 && !$root.channel.isLoading"></no-data>
+          <loading-abs :is-show="$root.page.total === 0 && $root.channel.isLoading"></loading-abs>
         </div>
         <div class="pagination-box c" v-if="$root.page.total > 0">
           <pagin :page="$root.page"></pagin>
@@ -49,10 +68,12 @@
         <div class="gray-title">
           <div class="fr">
             <span class="btn btn-danger btn-xs"
-              @click="$root.cleaerVideoInfoOnRouter"
+              @click="$root.clearVideoInfoOnRouter"
             >关闭视频</span>
           </div>
-          <strong>{{$root.router.videoTitle}}</strong>
+          <div class="ellipsis">
+            <strong>{{$root.router.videoTitle}}</strong>
+          </div>
         </div>
         <div class="auto-flex">
           <player></player>
@@ -126,9 +147,12 @@ export default {
       const channel = root.channel
       const album = channel.mapAlbum[r.album]
       let page = 0
+
+      channel.isLoading = true
       
       if (album.children.length > 0) {
         console.log('videos已经缓存过了，不请求新数据')
+        channel.isLoading = false
         return
       }
 
@@ -169,6 +193,8 @@ export default {
               jsonNoRepeat[item.title] = jsonNoRepeat[item.title] || 0
               jsonNoRepeat[item.title]++
             }
+
+            channel.isLoading = false
 
             try {
               localStorage.channels = JSON.stringify(channel.map)
@@ -216,7 +242,7 @@ export default {
       }
       document.body.appendChild(script)
     },
-    cleaerVideoInfoOnRouter() {
+    clearVideoInfoOnRouter() {
       const root = this.$root
       const r = root.router
       
@@ -224,7 +250,7 @@ export default {
         videoTitle: undefined,
         videoIndex: undefined,
         m3u8: undefined
-      }, 'push')
+      })
     },
   },
   components: {
@@ -237,6 +263,21 @@ export default {
     root.lazyLoad()
   }
 }
+
+const nodeStyle = document.createElement('style')
+nodeStyle.innerHTML = new Array(15).fill().map((_, idx) => {
+  let w, per
+
+  w = idx * (idx < 4 ? 200 : 280)
+  per = parseInt(100000 / (idx + 1)) / 1000
+
+  return `
+    @media (min-width: ${w}px) {
+      .list-card li {width: ${per}%;}
+    }
+  `
+}).join('')
+document.body.appendChild(nodeStyle)
 </script>
 
 <style lang="scss" scoped>
@@ -257,31 +298,55 @@ $border-color: rgba(0,0,0,.1);
 }
 
 .cctv {
-  flex-direction: row;
-  .channel,
-  .album {
-    background: #f3f6f9; border-right: 1px solid $border-color; overflow-y: auto; overflow-x: hidden; user-select: none; padding-bottom: 50px;
-    
-    ul {
-      li {
-        white-space: nowrap;
-        cursor: pointer;
-        @include gray-title();
-        &.on {
-          background: rgba(0,0,0,.05);
+  .pagination-box {
+    background: #f3f6f9; border-top: 1px solid rgba(0, 0, 0, 0.1); overflow: auto;
+  }
+}
+
+// 0...768 pad | mobile
+@media (max-width: 768px) {
+  .cctv {
+    .channel,
+    .album {
+      overflow: auto; border-bottom: 1px solid $border-color;
+      ul {
+        white-space: nowrap; margin: 0;
+        li {
+          display: inline-block; padding: .5em .5em;
+          &.on {
+            color: #f57600;
+          }
         }
       }
     }
   }
-  .channel {
-    min-width: 150px;
-  }
-  .album {
-    min-width: 160px;
-  }
+}
 
-  .pagination-box {
-    background: #f3f6f9; border-top: 1px solid rgba(0, 0, 0, 0.1);
+// 769...max pc
+@media (min-width: 769px) {
+  .cctv {
+    flex-direction: row;
+    .channel,
+    .album {
+      background: #f3f6f9; border-right: 1px solid $border-color; overflow-y: auto; overflow-x: hidden; user-select: none; padding-bottom: 50px;
+      ul {
+        li {
+          white-space: nowrap;
+          cursor: pointer;
+          @include gray-title();
+          &.on {
+            background: rgba(0,0,0,.05);
+          }
+        }
+      }
+    }
+    .channel {
+      min-width: 150px;
+    }
+    .album {
+      min-width: 160px;
+    }
   }
 }
+
 </style>

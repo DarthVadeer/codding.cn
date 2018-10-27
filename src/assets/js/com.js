@@ -106,8 +106,38 @@ Vue.component('no-data', {
     <div class="no-data">
       <div class="inner c">
         <img src="./static/img/no-data.png" alt="" />
-        <div class="text">暂无数据</div>
+        <div class="text-box" style="margin-top: 15px;">
+        <button class="btn btn-info btn-sm"
+          @click="$root.updateRouter({searchText: ''}, 'push')"
+        >暂无数据删掉筛选条件试试？</button>
+        </div>
       </div>
     </div>
   `
+})
+
+Vue.component('loading-div', {
+  template: `
+    <div class="loading-div">
+      <div class="item"
+        v-for="n in 12"
+        :style="{transform: 'rotate(' + (360 / 12 * n) + 'deg) translateY(-20px)', background: 'hsla(0 , 0%,' + (n / 14) * 100+'%, 1)', opacity: .8}"
+      ></div>
+    </div>
+  `,
+})
+
+Vue.component('loading-abs', {
+  template: `
+    <transition name="fade">
+      <div class="loading-abs"
+        v-if="isShow"
+      >
+        <div style="transform: scale(.7)">
+          <loading-div></loading-div>
+        </div>
+      </div>
+    </transition>
+  `,
+  props: ['isShow'],
 })

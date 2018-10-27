@@ -30,7 +30,7 @@ export default {
     if (!newVal) return
     if (oldVal !== undefined) {
       root.page.page = 1
-      root.cleaerVideoInfoOnRouter()
+      root.clearVideoInfoOnRouter()
     }
 
     if (newVal) {

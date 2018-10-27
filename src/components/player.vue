@@ -1,6 +1,7 @@
 <template>
   <div class="player">
     <video id="videoEl" src="" controls=""
+      webkit-playsinline playsinline x5-playsinline x-webkit-airplay="allow"
       @click="$root.togglePlay"
       @dblclick="$root.toggleFullScreen"
       @ended="$root.playVideoPrev"
@@ -33,7 +34,7 @@ export default {
       root.timerPlayVideo = setTimeout(() => {
         const video = document.getElementById('videoEl')
         const videoUrl = r.m3u8
-        const isSupportM3u8 = video.canPlayType('application/vnd.apple.mpegurl')
+        const isSupportM3u8 = root.is.supportM3u8 /* video.canPlayType('application/vnd.apple.mpegurl')*/
 
         if (isSupportM3u8) {
           console.log(r.m3u8, 'play by native')

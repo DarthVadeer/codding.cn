@@ -4,7 +4,7 @@
       <div class="topbar lmr">
         <div class="fl">
           <div class="logo">
-            <span class="text-bigger">Codding.cn</span>
+            <strong class="text-bigger">Codding.cn</strong>
           </div>
         </div>
         <form class="ho" @submit.prevent style="padding-top: 8px;">
@@ -62,21 +62,6 @@ export default {
     })()
   },
 }
-
-const nodeStyle = document.createElement('style')
-nodeStyle.innerHTML = new Array(15).fill().map((_, idx) => {
-  let w, per
-
-  w = idx * (idx < 5 ? 200 : 280)
-  per = parseInt(100000 / (idx + 1)) / 1000
-
-  return `
-    @media (min-width: ${w}px) {
-      .list-card li {width: ${per}%;}
-    }
-  `
-}).join('')
-document.body.appendChild(nodeStyle)
 
 </script>
 

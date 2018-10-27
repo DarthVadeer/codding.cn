@@ -25,6 +25,7 @@ window.vm = new Vue({
         ios,
         android,
         mobile,
+        supportM3u8: document.createElement('video').canPlayType('application/vnd.apple.mpegurl')
       },
       router: {
         searchText: '',
@@ -34,6 +35,7 @@ window.vm = new Vue({
         map: {},
         mapAlbum: {},
         listAlbum: [],
+        isLoading: 1,
       },
       album: {
         map: {},
