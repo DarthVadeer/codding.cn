@@ -28,11 +28,11 @@
               class="btn btn-success btn-xs"
               :href="'http://tv.cctv.com/live/cctv' + $root.channelIndex + '/'"
               target="_blank"
-            >官网直播 - {{$root.router.channel}}</a>
+            >官网直播</a>
             <span class="btn btn-info btn-xs"
               v-if="$root.is.supportM3u8"
               @click="$root.updateRouter({videoTitle: $root.router.channel, m3u8: $root.liveUrl}, 'push')"
-            >本站 {{$root.router.channel}} 直播</span>
+            >本站直播</span>
           </div>
           <div class="ellipsis">
             <strong>{{$root.router.album}}</strong>
@@ -56,7 +56,7 @@
             </ul>
           </div>
           
-          <no-data v-if="$root.page.total === 0 && !$root.channel.isLoading"></no-data>
+          <no-data :is-show="$root.page.total === 0 && !$root.channel.isLoading"></no-data>
           <loading-abs :is-show="$root.page.total === 0 && $root.channel.isLoading"></loading-abs>
         </div>
         <div class="pagination-box c" v-if="$root.page.total > 0">
@@ -68,7 +68,7 @@
         <div class="gray-title">
           <div class="fr">
             <span class="btn btn-danger btn-xs"
-              @click="$root.clearVideoInfoOnRouter"
+              @click="$root.clearVideoInfoOnRouter('push')"
             >关闭视频</span>
           </div>
           <div class="ellipsis">
@@ -109,7 +109,7 @@ export default {
 
       if (result) {
         cb && cb(result)
-        console.warn('channel 在缓存中读取数据成功')
+        // console.warn('channel 在缓存中读取数据成功')
         return
       }
 
@@ -151,7 +151,7 @@ export default {
       channel.isLoading = true
       
       if (album.children.length > 0) {
-        console.log('videos已经缓存过了，不请求新数据')
+        // console.log('videos已经缓存过了，不请求新数据')
         channel.isLoading = false
         return
       }
@@ -179,7 +179,7 @@ export default {
           album.children = album.children.concat(data)
 
           if (data.length < 100 || album.name === '新闻联播') {
-            console.log('保存数据到localStorage', album.name)
+            // console.log('保存数据到localStorage', album.name)
             const jsonNoRepeat = {}
 
             // 通过shareCode去重
@@ -242,7 +242,7 @@ export default {
       }
       document.body.appendChild(script)
     },
-    clearVideoInfoOnRouter() {
+    clearVideoInfoOnRouter(isPush) {
       const root = this.$root
       const r = root.router
       
@@ -250,7 +250,7 @@ export default {
         videoTitle: undefined,
         videoIndex: undefined,
         m3u8: undefined
-      })
+      }, isPush)
     },
   },
   components: {

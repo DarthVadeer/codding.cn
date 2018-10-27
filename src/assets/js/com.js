@@ -101,21 +101,6 @@ Vue.component('pagin', {
   },
 })
 
-Vue.component('no-data', {
-  template: `
-    <div class="no-data">
-      <div class="inner c">
-        <img src="./static/img/no-data.png" alt="" />
-        <div class="text-box" style="margin-top: 15px;">
-        <button class="btn btn-info btn-sm"
-          @click="$root.updateRouter({searchText: ''}, 'push')"
-        >暂无数据删掉筛选条件试试？</button>
-        </div>
-      </div>
-    </div>
-  `
-})
-
 Vue.component('loading-div', {
   template: `
     <div class="loading-div">
@@ -135,6 +120,28 @@ Vue.component('loading-abs', {
       >
         <div style="transform: scale(.7)">
           <loading-div></loading-div>
+        </div>
+      </div>
+    </transition>
+  `,
+  props: ['isShow'],
+})
+
+Vue.component('no-data', {
+  template: `
+    <transition name="fade">
+      <div class="no-data"
+        v-if="isShow"
+      >
+        <div class="inner c">
+          <img src="./static/img/no-data.png" alt="" />
+          <div class="text-box" style="margin-top: 15px;">
+          <span class="btn btn-info btn-sm"
+            v-if="$root.router.searchText && $root.router.com === 'cctv' "
+            @click="$root.updateRouter({searchText: ''}, 'push')"
+          >暂无数据删掉筛选条件试试？</span>
+          <span class="text-pale" v-else>暂无数据</span>
+          </div>
         </div>
       </div>
     </transition>

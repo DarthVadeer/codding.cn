@@ -35,7 +35,7 @@ a.def:visited {color: inherit; text-decoration: none;}
 .af:after {content: ""; display: block; clear: both;}
 .ib {display: inline-block; position: relative;}
 .relative {position: relative;}
-.space {padding: 12px; position: relative;}
+.space {padding: 15px; position: relative;}
 .ellipsis {overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative;}
 .btn {position: relative;}
 .ho {overflow: hidden;}
@@ -47,8 +47,8 @@ a.def:visited {color: inherit; text-decoration: none;}
 }
 
 .lmr {
-  & > .fl {margin-right: 10px;}
-  & > .fr {margin-left: 10px;}
+  & > .fl {margin-right: 15px;}
+  & > .fr {margin-left: 15px;}
   & > .ellipsis {}
 }
 

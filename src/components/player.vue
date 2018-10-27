@@ -37,16 +37,16 @@ export default {
         const isSupportM3u8 = root.is.supportM3u8 /* video.canPlayType('application/vnd.apple.mpegurl')*/
 
         if (isSupportM3u8) {
-          console.log(r.m3u8, 'play by native')
+          // console.log(r.m3u8, 'play by native')
           video.src = videoUrl
-          // video.play()
+          video.play()
         } else if(Hls.isSupported()) {
-          console.log(r.m3u8, 'play by hls')
+          // console.log(r.m3u8, 'play by hls')
           const hls = new Hls()
           hls.loadSource(videoUrl)
           hls.attachMedia(video)
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            // video.play()
+            video.play()
           })
         } else {
           alert('你的设备不支持播放m3u8')
