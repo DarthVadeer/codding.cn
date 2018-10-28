@@ -35,7 +35,7 @@
             >本站直播</span>
           </div>
           <div class="ellipsis">
-            <strong>{{$root.router.album}}</strong>
+            <span>{{$root.router.album}}</span>
           </div>
         </div>
         <div class="auto-flex white-bg" @scroll="$root.lazyLoad">
@@ -80,7 +80,7 @@
             >关闭视频</span>
           </div>
           <div class="ellipsis">
-            <strong>{{$root.router.videoTitle}}</strong>
+            <span>{{$root.router.videoTitle}}</span>
           </div>
         </div>
         <div class="auto-flex">
