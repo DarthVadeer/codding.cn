@@ -306,7 +306,9 @@ $border-color: rgba(0,0,0,.1);
 
 .gray-title {
   @include gray-title(); background: #f3f6f9;
-  strong {vertical-align: top;}
+  .ellipsis{
+    span {vertical-align: top;}
+  }
   .fr {
     .btn {
       vertical-align: top; top: -4px;
