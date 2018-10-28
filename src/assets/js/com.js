@@ -137,7 +137,7 @@ Vue.component('no-data', {
           <img src="./static/img/no-data.png" alt="" />
           <div class="text-box" style="margin-top: 15px;">
           <span class="btn btn-info btn-sm"
-            v-if="$root.router.searchText && $root.router.com === 'cctv' "
+            v-if="$root.router.searchText && $root.router.coms[0] === 'cctv' "
             @click="$root.updateRouter({searchText: ''}, 'push')"
           >暂无数据删掉筛选条件试试？</span>
           <span class="text-pale" v-else>暂无数据</span>

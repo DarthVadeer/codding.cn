@@ -9,7 +9,7 @@ import App from './App'
 
 Vue.config.productionTip = false
 
-window.vm = new Vue({
+window.$root = new Vue({
   el: '#app',
   data() {
     const root = this.$root
@@ -28,6 +28,7 @@ window.vm = new Vue({
         supportM3u8: document.createElement('video').canPlayType('application/vnd.apple.mpegurl')
       },
       router: {
+        coms: [],
         searchText: '',
       },
       channel: {
@@ -43,10 +44,11 @@ window.vm = new Vue({
       },
       page: {
         page: 1,
-        size: 100,
+        size: 50,
         total: 0,
-        sizes: [100, 200, 300, 400, 500],
+        sizes: new Array(8).fill().map((_, idx) => (idx + 1) * 50),
       },
+      lenAni: 30,
       ...App.rootData.call(root)
     }
   },
@@ -104,17 +106,19 @@ window.vm = new Vue({
 })
 
 window.getHtml5VideoData = (data) => {
+  const root = window.$root
   const videoUrl = JSON.parse(data).hls_url
-  vm.updateRouter({m3u8: videoUrl}, 'push')
+  root.updateRouter({m3u8: videoUrl}, 'push')
 }
 
 window.onload = (e) => {
-  window.onpopstate = vm.routerInit.bind(vm)
-  vm.init()
+  const root = window.$root
+  window.onpopstate = root.routerInit.bind(root)
+  root.init()
 }
 
 window.onkeydown = (e) => {
-  const root = vm
+  const root = window.$root
   const r = root.router
   const video = document.getElementById('videoEl')
   let volume
@@ -157,3 +161,42 @@ window.onkeydown = (e) => {
   volume > 100 && (volume = 100)
   video.volume = volume / 100
 }
+
+
+const nodeStyle = document.createElement('style')
+nodeStyle.innerHTML = new Array(window.$root.lenAni).fill().map((_, idx) => {
+  const dw = window.innerWidth
+  const rand = window.$root.rand
+  const arr = [
+    'translateX',
+    'translateY',
+    'translateZ',
+    'rotate',
+    'rotateX',
+    'rotateY',
+  ]
+  const json = {
+    translateX: 'translateX(' + ((rand(0, 1) ? 1 : -1) * rand(0, dw)) + 'px)',
+    translateY: 'translateY(' + ((rand(0, 1) ? 1 : -1) * rand(0, dw)) + 'px)',
+    translateZ: 'translateZ(' + ((rand(0, 1) ? 1 : -1) * rand(0, dw)) + 'px)',
+    rotate: 'rotate(' + ((rand(0, 1) ? 1 : -1) * rand(0, 360)) + 'deg)',
+    rotateX: 'rotateX(' + ((rand(0, 1) ? 1 : -1) * rand(0, 360)) + 'deg)',
+    rotateY: 'rotateY(' + ((rand(0, 1) ? 1 : -1) * rand(0, 360)) + 'deg)',
+  }
+  let map = {}
+  const styleTo = new Array(rand(1, 5)).fill().map((_, idx) => {
+    const k = arr[rand(0, arr.length - 1)]
+    map[k] = json[k]
+  })
+
+  return '\n\
+    .ani-com-' + idx + '-enter-active, .ani-com-' + idx + '-leave-active {\n\
+      transition: all 1s;\n\
+    }\n\
+    .ani-com-' + idx + '-enter, .ani-com-' + idx + '-leave-to {\n\
+      opacity: 0;\n\
+      transform: ' + Object.keys(map).map(v => map[v]).join(" ") + ';\n\
+    }\n\
+  '
+}).join('')
+document.body.appendChild(nodeStyle)

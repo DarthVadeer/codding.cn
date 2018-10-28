@@ -4,7 +4,7 @@
       webkit-playsinline playsinline x5-playsinline x-webkit-airplay="allow"
       @click="$root.togglePlay"
       @dblclick="$root.toggleFullScreen"
-      @ended="$root.playVideoPrev"
+      @ended="$root.getVideoUrl($root.router.videoIndex + 1)"
     ></video>
   </div>
 </template>
@@ -37,28 +37,32 @@ export default {
         const isSupportM3u8 = root.is.supportM3u8 /* video.canPlayType('application/vnd.apple.mpegurl')*/
 
         if (isSupportM3u8) {
-          // console.log(r.m3u8, 'play by native')
           video.src = videoUrl
-          video.play()
+          !root.isLocal && video.play()
         } else if(Hls.isSupported()) {
-          // console.log(r.m3u8, 'play by hls')
           const hls = new Hls()
           hls.loadSource(videoUrl)
           hls.attachMedia(video)
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            video.play()
+            !root.isLocal && video.play()
           })
         } else {
           alert('你的设备不支持播放m3u8')
         }
       }, 1)
     },
-    playVideoPrev(e) {
+    /*playVideoPrev() {
       const root = this.$root
       const r = root.router
 
       root.getVideoUrl(r.videoIndex - 1)
     },
+    playVideoNext() {
+      const root = this.$root
+      const r = root.router
+
+      root.getVideoUrl(r.videoIndex + 1)
+    },*/
   },
   mounted() {
     const root = this.$root

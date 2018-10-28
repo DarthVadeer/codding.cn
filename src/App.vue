@@ -3,8 +3,19 @@
     <div class="main-wrap flex-layout">
       <div class="topbar lmr">
         <div class="fl">
-          <div class="logo">
-            <strong class="text-bigger">Codding.cn</strong>
+          <div class="logo ib">
+            <a href="javascript:" onclick="location.reload()" class="def bold text-bigger">Codding.cn</a>
+          </div>
+        </div>
+        <div class="fl">
+          <div class="ib site-nav">
+            <ul>
+              <li
+                v-for="(item, idx) in $root.nav.list"
+                :class="{on: item.com === $root.router.coms[0]}"
+                @click="$root.pushCom(item.com)"
+              >{{item.name}}</li>
+            </ul>
           </div>
         </div>
         <div class="fr">
@@ -12,14 +23,21 @@
         </div>
         <form class="ho" @submit.prevent style="padding-top: 8px;">
           <div class="relative">
-            <input type="text" class="form-control search-input"
+            <input type="text" class="form-control search-input" placeholder="搜点什么" 
               v-model="$root.router.searchText"
             >
           </div>
         </form>
       </div>
       <div class="auto-flex">
-        <div :is="$root.router.com || 'cctv'"></div>
+        <transition-group :name="'ani-com-' + ($root.router.countAni % $root.lenAni)">
+          <div
+            v-for="(item, idx) in $root.router.coms"
+            :key="item.com + '-' + idx"
+            :is="item"
+            v-if="idx === 0"
+          ></div>
+        </transition-group>
       </div>
     </div>
   </div>
@@ -28,6 +46,7 @@
 <script>
 const coms = [
   {name: 'cctv', path: 'components/cctv'},
+  {name: 'blog', path: 'components/blog'},
 ].map((item) => {
   item.com = require('@/' + item.path).default
   return item
@@ -37,6 +56,12 @@ export default {
   name: 'app',
   rootData() {
     return {
+      nav: {
+        list: [
+          {name: '博文', com: 'blog'},
+          {name: '央视', com: 'cctv'},
+        ]
+      },
       ...(() => {
         let map = {}
         coms.forEach((item) => {
@@ -54,6 +79,15 @@ export default {
       })
       return map
     })(),
+    pushCom(com) {
+      const root = this.$root
+      const r = root.router
+      
+      root.router.countAni++
+      root.isRouterPush = true
+      r.coms.unshift(com)
+      while (r.coms.length > 2) r.coms.pop()
+    }
   },
   components: {
     ...(() => {
@@ -74,9 +108,30 @@ export default {
   .main-wrap {
     height: 100%; position: relative; font-size: 13px;
     .topbar {
-      height: 50px; line-height: 48px; background: #333840; color: #a0b0c0; padding: 0 12px; user-select: none;
+      height: 50px; line-height: 50px; background: #333840; color: #a0b0c0; padding: 0 12px; user-select: none;
+      * {
+        vertical-align: top;
+      }
+      .site-nav {
+        ul {
+          margin: 0;
+          li {
+            display: inline-block; padding: 0 .8em; cursor: pointer;
+            &.on {
+              color: #fff;
+            }
+          }
+        }
+      }
       .search-input {
         background: rgba(0,0,0,.3); border: none; color: inherit; box-shadow: none;
+      }
+    }
+    & > .auto-flex {
+      overflow: hidden;
+      & > span {
+        width: 100%; height: 100%; position: absolute; left: 0; top: 0;
+        transform-style: preserve-3d; transform: perspective(800px);
       }
     }
   }

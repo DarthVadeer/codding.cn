@@ -12,6 +12,12 @@ export default {
       delete root.isRouterPush
     }
   },
+  'router.com'(newVal) {
+    const root = this.$root
+    const r = root.router
+    
+    root.lazyLoad()
+  },
   'router.page'(newVal) {
     this.$root.page.page = newVal
   },

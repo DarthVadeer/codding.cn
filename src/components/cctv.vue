@@ -1,5 +1,5 @@
 <template>
-  <div class="auto-scroll flex-layout cctv">
+  <div class="abs flex-layout cctv">
     <div class="channel">
       <ul>
         <li
@@ -38,7 +38,7 @@
             <strong>{{$root.router.album}}</strong>
           </div>
         </div>
-        <div class="auto-flex" @scroll="$root.lazyLoad">
+        <div class="auto-flex white-bg" @scroll="$root.lazyLoad">
           <div class="relative af">
             <ul class="list-card">
               <li
@@ -55,7 +55,7 @@
               </li>
             </ul>
           </div>
-          
+
           <no-data :is-show="$root.page.total === 0 && !$root.channel.isLoading"></no-data>
           <loading-abs :is-show="$root.page.total === 0 && $root.channel.isLoading"></loading-abs>
         </div>
@@ -67,7 +67,15 @@
       <div class="abs flex-layout" v-if="$root.router.m3u8">
         <div class="gray-title">
           <div class="fr">
-            <span class="btn btn-danger btn-xs"
+            <span class="btn btn-info btn-xs"
+              @click="$root.getVideoUrl($root.router.videoIndex - 1)"
+              v-if="($root.page.page - 1) * $root.page.size + $root.router.videoIndex > 0"
+            >播左</span>
+            <span class="btn btn-info btn-xs"
+              @click="$root.getVideoUrl($root.router.videoIndex + 1)"
+              v-if="($root.page.page - 1) * $root.page.size + $root.router.videoIndex < $root.page.total - 1"
+            >播右</span>
+            <span class="btn btn-warning btn-xs"
               @click="$root.clearVideoInfoOnRouter('push')"
             >关闭视频</span>
           </div>
@@ -87,6 +95,7 @@
 import player from '@/components/player'
 
 export default {
+  name: 'cctv',
   rootData() {
     return {
       ...player.rootData.call(this.$root)
@@ -214,21 +223,29 @@ export default {
       const root = this.$root
       const r = root.router
       const page = root.page
-      let videos
-      
-      if (videoIndex < 0 && page.page > 1) {
-        page.page--
-        videos = root.videos
-        videoIndex = videos.length - 1
+      let videos = root.videos
+
+      if (videoIndex > -1 && videoIndex < videos.length) {
+        // 正常区间
       } else {
-        videos = root.videos
+        if (videoIndex < 0) {
+          if (page.page > 1) {
+            page.page--
+            videos = root.videos
+            videoIndex = videos.length - 1
+          }
+        } else {
+          page.page++
+          videos = root.videos
+          videoIndex = 0
+        }
       }
 
       const script = document.createElement('script')
       const elItem = videos[videoIndex]
 
       if (!elItem) {
-        console.log('已经是最后一个视频了 no video', videoIndex)
+        console.log('没有可以播放的视频了')
         return
       }
 
@@ -314,7 +331,7 @@ $border-color: rgba(0,0,0,.1);
         li {
           display: inline-block; padding: .5em .5em;
           &.on {
-            color: #f57600;
+            color: #337ab7;
           }
         }
       }

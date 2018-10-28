@@ -10,9 +10,12 @@ export default {
       console.warn('hash parse err')
     }
 
-    r.com = r.com || 'cctv'
+    r.coms = r.coms || ['blog']
+    r.countAni = r.countAni || 0
     r.channel = r.channel || channel.list[0].name
     r.album = r.album || ((channel.map[r.channel] || [])[0] || {}).name
+    r.page = r.page || 1
+    r.pageSize = r.pageSize || 50
     r.searchText = r.searchText || ''
     root.router = r
   },
@@ -24,6 +27,9 @@ export default {
     for (let key in o) {
       root.$set(root.router, key, o[key])
     }
+  },
+  rand(m, n) {
+    return Math.floor(Math.random() * (n - m + 1) + m)
   },
   log(o) {
     console.log(o)
@@ -66,4 +72,20 @@ export default {
       })
     }, 150)
   },
+  get(url, data, succ, fail) {
+    const root = this.$root
+    const xhr = new XMLHttpRequest()
+    const sData = root.json2url(data)
+    xhr.open('GET', url + (sData ? '?' + sData : sData), true)
+    xhr.send()
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          succ && succ.call(root, xhr.responseText)
+        } else {
+          fail && fail.call(root, e)
+        }
+      }
+    }
+  }
 }
