@@ -171,20 +171,20 @@ nodeStyle.innerHTML = new Array(window.$root.lenAni).fill().map((_, idx) => {
     'translateX',
     'translateY',
     'translateZ',
-    'rotate',
     'rotateX',
     'rotateY',
+    // 'rotate',
   ]
   const json = {
-    translateX: 'translateX(' + ((rand(0, 1) ? 1 : -1) * rand(0, dw)) + 'px)',
-    translateY: 'translateY(' + ((rand(0, 1) ? 1 : -1) * rand(0, dw)) + 'px)',
-    translateZ: 'translateZ(' + ((rand(0, 1) ? 1 : -1) * rand(0, dw)) + 'px)',
-    rotate: 'rotate(' + ((rand(0, 1) ? 1 : -1) * rand(0, 360)) + 'deg)',
-    rotateX: 'rotateX(' + ((rand(0, 1) ? 1 : -1) * rand(0, 360)) + 'deg)',
-    rotateY: 'rotateY(' + ((rand(0, 1) ? 1 : -1) * rand(0, 360)) + 'deg)',
+    translateX: 'translateX(' + rand(-dw / 2, dw / 2) + 'px)',
+    translateY: 'translateY(' + rand(-dw / 2, dw / 2) + 'px)',
+    translateZ: 'translateZ(' + rand(-dw / 2, dw / 2) + 'px)',
+    rotateX: 'rotateX(' + rand(-180, 180) + 'deg)',
+    rotateY: 'rotateY(' + rand(-180, 180) + 'deg)',
+    // rotate: 'rotate(' + rand(-180, 180) + 'deg)',
   }
   let map = {}
-  const styleTo = new Array(rand(1, 5)).fill().map((_, idx) => {
+  const styleTo = new Array(rand(2, 5)).fill().map((_, idx) => {
     const k = arr[rand(0, arr.length - 1)]
     map[k] = json[k]
   })
