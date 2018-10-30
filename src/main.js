@@ -166,7 +166,17 @@ document.addEventListener('keydown', (e) => {
   const root = window.$root
   const r = root.router
 
-  console.log(e.keyCode)
+  if (!e.ctrlKey) return
+
+  switch (e.keyCode) {
+    case 37:
+      history.back()
+      break
+    case 39:
+      history.forward()
+      break
+  }
+
 })
 
 
@@ -186,13 +196,13 @@ nodeStyle.innerHTML = new Array(window.$root.lenAni).fill().map((_, idx) => {
   const json = {
     translateX: 'translateX(' + rand(-dw, dw) + 'px)',
     translateY: 'translateY(' + rand(-dh, dh) + 'px)',
-    translateZ: 'translateZ(' + rand(-dw, dw) + 'px)',
+    translateZ: 'translateZ(' + rand(-dw, 0) + 'px)',
     rotateX: 'rotateX(' + rand(-180, 180) + 'deg)',
     rotateY: 'rotateY(' + rand(-180, 180) + 'deg)',
     // rotate: 'rotate(' + rand(-180, 180) + 'deg)',
   }
   let map = {}
-  const styleTo = new Array(rand(2, 5)).fill().map((_, idx) => {
+  new Array(rand(2, 5)).fill().forEach((_, idx) => {
     const k = arr[rand(0, arr.length - 1)]
     map[k] = json[k]
   })
