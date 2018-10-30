@@ -46,9 +46,13 @@ strong,
 .abs,
 .auto-scroll {position: absolute; left: 0; top: 0; right: 0; bottom: 0;}
 .auto-scroll {overflow: auto;}
+.auto-scroll > * {min-height: calc(100% + 1px)}
+.wrapper {max-width: 800px; margin: 0 auto; padding: 15px;}
+
 .line-2 {line-height: 1.4em; height: 2.8em; overflow: hidden; text-overflow: ellipsis; position: relative;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
 }
+
 
 .lmr {
   & > .fl {margin-right: 15px;}

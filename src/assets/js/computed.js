@@ -51,4 +51,19 @@ export default {
     console.log(targetUrl)
     return targetUrl*/
   },
+  com() {
+    const root = this.$root
+    const r = root.router
+    
+    switch (r.coms[0]) {
+      case 'algo':
+      case 'algo-info':
+      case 'algo-preview':
+        return 'algo'
+      case 'cctv':
+        return 'cctv'
+      case 'blog':
+        return 'blog'
+    }
+  }
 }

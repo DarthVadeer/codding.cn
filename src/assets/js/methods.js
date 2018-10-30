@@ -10,7 +10,7 @@ export default {
       console.warn('hash parse err')
     }
 
-    r.coms = r.coms || ['blog']
+    r.coms = r.coms || ['algo']
     r.countAni = r.countAni || 0
     r.channel = r.channel || channel.list[0].name
     r.album = r.album || ((channel.map[r.channel] || [])[0] || {}).name

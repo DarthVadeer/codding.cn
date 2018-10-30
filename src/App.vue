@@ -12,7 +12,7 @@
             <ul>
               <li
                 v-for="(item, idx) in $root.nav.list"
-                :class="{on: item.com === $root.router.coms[0]}"
+                :class="{on: item.com === $root.com}"
                 @click="$root.pushCom(item.com)"
               >{{item.name}}</li>
             </ul>
@@ -21,7 +21,7 @@
         <div class="fr">
           <a class="def" href="javascript:" onclick="localStorage.clear(); location.reload()">清除缓存</a>
         </div>
-        <form class="ho" @submit.prevent style="padding-top: 8px;">
+        <form class="hidden-xs ho" @submit.prevent style="padding-top: 8px;">
           <div class="relative">
             <input type="text" class="form-control search-input" placeholder="搜点什么" 
               v-model="$root.router.searchText"
@@ -45,6 +45,9 @@
 
 <script>
 const coms = [
+  {name: 'algo', path: 'components/algo'},
+  {name: 'algo-info', path: 'components/algo-info'},
+  {name: 'algo-preview', path: 'components/algo-preview'},
   {name: 'cctv', path: 'components/cctv'},
   {name: 'blog', path: 'components/blog'},
 ].map((item) => {
@@ -58,7 +61,8 @@ export default {
     return {
       nav: {
         list: [
-          {name: '博文', com: 'blog'},
+          // {name: '博文', com: 'blog'},
+          {name: '算法', com: 'algo'},
           {name: '央视', com: 'cctv'},
         ]
       },
@@ -79,10 +83,11 @@ export default {
       })
       return map
     })(),
-    pushCom(com) {
+    pushCom(com, o) {
       const root = this.$root
       const r = root.router
-      
+
+      o && root.updateRouter(o)
       root.router.countAni++
       root.isRouterPush = true
       r.coms.unshift(com)
@@ -132,6 +137,9 @@ export default {
       & > span {
         width: 100%; height: 100%; position: absolute; left: 0; top: 0;
         transform-style: preserve-3d; transform: perspective(800px);
+        & > div {
+          background: #f3f6f9;
+        }
       }
     }
   }

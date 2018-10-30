@@ -12,10 +12,15 @@ export default {
       delete root.isRouterPush
     }
   },
-  'router.com'(newVal) {
+  'router.coms'(newVal) {
     const root = this.$root
     const r = root.router
-    
+
+    /*if (!root.nav.list.some(v => v.com === newVal[0])) {
+      root.updateRouter({coms: ['algo']})
+      return
+    }*/
+
     root.lazyLoad()
   },
   'router.page'(newVal) {
