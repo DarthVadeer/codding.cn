@@ -117,7 +117,7 @@ window.onload = (e) => {
   root.init()
 }
 
-window.onkeydown = (e) => {
+document.addEventListener('keydown', (e) => {
   const root = window.$root
   const r = root.router
   const video = document.getElementById('videoEl')
@@ -160,12 +160,20 @@ window.onkeydown = (e) => {
   volume < 0 && (volume = 0)
   volume > 100 && (volume = 100)
   video.volume = volume / 100
-}
+})
+
+document.addEventListener('keydown', (e) => {
+  const root = window.$root
+  const r = root.router
+
+  console.log(e.keyCode)
+})
 
 
 const nodeStyle = document.createElement('style')
 nodeStyle.innerHTML = new Array(window.$root.lenAni).fill().map((_, idx) => {
   const dw = window.innerWidth
+  const dh = window.innerHeight
   const rand = window.$root.rand
   const arr = [
     'translateX',
@@ -176,9 +184,9 @@ nodeStyle.innerHTML = new Array(window.$root.lenAni).fill().map((_, idx) => {
     // 'rotate',
   ]
   const json = {
-    translateX: 'translateX(' + rand(-dw / 2, dw / 2) + 'px)',
-    translateY: 'translateY(' + rand(-dw / 2, dw / 2) + 'px)',
-    translateZ: 'translateZ(' + rand(-dw / 2, dw / 2) + 'px)',
+    translateX: 'translateX(' + rand(-dw, dw) + 'px)',
+    translateY: 'translateY(' + rand(-dh, dh) + 'px)',
+    translateZ: 'translateZ(' + rand(-dw, dw) + 'px)',
     rotateX: 'rotateX(' + rand(-180, 180) + 'deg)',
     rotateY: 'rotateY(' + rand(-180, 180) + 'deg)',
     // rotate: 'rotate(' + rand(-180, 180) + 'deg)',
