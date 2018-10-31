@@ -21,7 +21,7 @@
         <div class="fr">
           <a class="def" href="javascript:" onclick="localStorage.clear(); location.reload()">清除缓存</a>
         </div>
-        <form class="hidden-xs ho" @submit.prevent style="padding-top: 8px;">
+        <form class="ho" @submit.prevent style="padding-top: 8px;">
           <div class="relative">
             <input type="text" class="form-control search-input" placeholder="搜点什么" 
               v-model="$root.router.searchText"
