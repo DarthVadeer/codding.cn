@@ -179,7 +179,7 @@ document.addEventListener('keydown', (e) => {
 
 })
 
-
+/*
 const nodeStyle = document.createElement('style')
 nodeStyle.innerHTML = new Array(window.$root.lenAni).fill().map((_, idx) => {
   const dw = window.innerWidth
@@ -217,4 +217,4 @@ nodeStyle.innerHTML = new Array(window.$root.lenAni).fill().map((_, idx) => {
     }\n\
   '
 }).join('')
-document.body.appendChild(nodeStyle)
+document.body.appendChild(nodeStyle)*/

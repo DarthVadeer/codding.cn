@@ -46,8 +46,7 @@ export default {
   mounted() {
     const root = this.$root
     const r = root.router
-    
-    console.log(this.algo.urlXhr)
+
     root.get(this.algo.urlXhr, {}, (str) => {
       root.code = str
     })

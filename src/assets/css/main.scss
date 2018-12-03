@@ -93,13 +93,11 @@ table.form-table {
   }
 }
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
-}
+.fade-enter-active, .fade-leave-active {transition: opacity .5s;}
+.fade-enter, .fade-leave-to {opacity: 0;}
 
-.fade-enter, .fade-leave-to {
-  opacity: 0;
-}
+.flip-enter-active, .flip-leave-active {transition: all .8s;}
+.flip-enter, .flip-leave-to {opacity: 0; transform: translateY(50px);}
 
 
 /* 

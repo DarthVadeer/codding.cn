@@ -30,7 +30,8 @@
         </form>
       </div>
       <div class="auto-flex">
-        <transition-group :name="'ani-com-' + ($root.router.countAni % $root.lenAni)">
+        <!-- <transition-group :name="'ani-com-' + ($root.router.countAni % $root.lenAni)"> -->
+        <transition-group :name="'flip'">
           <div
             v-for="(item, idx) in $root.router.coms"
             :key="item.com + '-' + idx"
