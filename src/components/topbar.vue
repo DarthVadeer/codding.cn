@@ -29,7 +29,6 @@
     <form class="box-form m" @submit.prevent="doSearch">
       <input type="search" class="form-control" placeholder="搜点什么..."
         v-model="$root.router.searchText"
-        @input="$event.target.value.trim() && $root.fetchVideoList"
       >
     </form>
   </div>

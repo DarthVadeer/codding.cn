@@ -187,7 +187,7 @@ export default {
         }
 
         function fetchBySearch() {
-          root.get('api/api.php', {
+          root.get('api/interface.php', {
             a: 'get',
             url: 'https://search.cctv.com/ifsearch.php?page=' + r.page.cur + '&qtext=' + searchText + '&sort=relevance&pageSize=20&type=video&vtime=-1&datepid=1&channel=&pageflag=1&qtext_str=' + searchText
           }, (dataOrigin) => {
@@ -320,7 +320,7 @@ export default {
     initChannel(cb) {
       const root = this.$root
 
-      root.get(location.origin + '/static/cctv.json', {}, (result) => {
+      root.get(location.origin + (root.is.local ? '/static/cctv.json' : '/new/static/cctv.json'), {}, (result) => {
         result.forEach((item, idx, arr) => {
           item.children.forEach((item, idx, arr) => {
             item.n = 0
