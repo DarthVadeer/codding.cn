@@ -1,4 +1,7 @@
+import Hls from 'hls.js'
+
 export default {
+  rand: window.rand,
   routerInit() {
     const root = this.$root
     const channel = root.channel
@@ -12,11 +15,12 @@ export default {
 
     r.coms = r.coms || ['algo']
     r.countAni = r.countAni || 0
-    r.channel = r.channel || channel.list[0].name
-    r.album = r.album || ((channel.map[r.channel] || [])[0] || {}).name
-    r.page = r.page || 1
-    r.pageSize = r.pageSize || 50
-    r.searchText = r.searchText || ''
+    r.idxChannel = r.idxChannel || 0
+    r.idxAlbum = r.idxAlbum || 0
+    r.page = r.page || {}
+    r.page.cur = r.page.cur || 1
+    r.page.size = r.page.size || 100
+    r.page.total = r.page.total || 0
     root.router = r
   },
   updateRouter(o, isRouterPush) {
@@ -28,19 +32,32 @@ export default {
       root.$set(root.router, key, o[key])
     }
   },
-  rand(m, n) {
-    return Math.floor(Math.random() * (n - m + 1) + m)
+  pushCom(com, o) {
+    const root = this.$root
+    const r = root.router
+
+    o && root.updateRouter(o)
+    if (com === r.coms[0]) return
+    root.router.countAni++
+    root.isRouterPush = true
+    r.coms.unshift(com)
+    while (r.coms.length > 2) r.coms.pop()
   },
   log(o) {
     console.log(o)
   },
+  warn(o) {
+    console.warn(o)
+  },
   json2url(o) {
     return Object.keys(o).map(k => k + '=' + encodeURIComponent(o[k])).join('&')
   },
-  jsonp(url, data, cbName, succ, fail) {
+  jsonp(url, data, succ, fail) {
     const root = this.$root
     const script = document.createElement('script')
+    const cbName = data['?']
 
+    delete data['?']
     data[cbName] = ('jsonp_' + Math.random()).replace('0.', '')
 
     window[data[cbName]] = (data) => {
@@ -67,25 +84,103 @@ export default {
 
         if (pos.top > dh || pos.bottom < 0) return
 
-        node.style.backgroundImage = 'url('+node.getAttribute('lazy-load')+')'
+        node.style.backgroundImage = 'url(' + node.getAttribute('lazy-load') + ')'
         node.removeAttribute('lazy-load')
       })
-    }, 150)
+    }, 200)
   },
-  get(url, data, succ, fail) {
+  ajax(opt) {
     const root = this.$root
+    const data = opt.data || {}
     const xhr = new XMLHttpRequest()
-    const sData = root.json2url(data)
-    xhr.open('GET', url + (sData ? '?' + sData : sData), true)
-    xhr.send()
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          succ && succ.call(root, xhr.responseText)
-        } else {
-          fail && fail.call(root, e)
+    let url = opt.url || ''
+
+    url = /^http/.test(url) ? url : root.baseUrl + url
+    opt.method = (opt.method || 'GET').toUpperCase()
+
+    xhr.onload = xhr.onerror = (e) => {
+      if (xhr.status === 200 || xhr.status === 304) {
+        let data = xhr.responseText
+
+        try {
+          data = JSON.parse(data)
+        } catch(e) {
+          console.warn('数据解析失败： ' + data)
+          return
         }
+
+        if (data.code) {
+          switch (data.code) {
+            case 1:
+              console.log(data.msg)
+              return
+          }
+          opt.error && opt.error.call(root, xhr, {})
+        } else {
+          opt.succ && opt.succ.call(root, data, xhr)
+        }
+      } else {
+        opt.error && opt.error.call(root, xhr, {})
       }
     }
-  }
+
+    switch (opt.method) {
+      case 'GET':
+        xhr.open('GET', url + '?' + root.json2url(data), true)
+        xhr.send()
+        break
+      case 'POST':
+        const formData = new FormData()
+        xhr.open('POST', url, true)
+        for (let key in data) {
+          formData.append(key, data[key])
+        }
+        xhr.send(formData)
+        break
+    }
+  },
+  get(url, data, succ, error) {
+    this.ajax({
+      method: 'GET',
+      url,
+      data,
+      succ,
+      error,
+    })
+  },
+  post(url, data, succ, error) {
+    this.ajax({
+      method: 'POST',
+      url,
+      data,
+      succ,
+      error,
+    })
+  },
+  playM3u8() {
+    const root = this.$root
+    const r = root.router
+    
+    if (!r.m3u8) return
+
+    root.$nextTick(() => {
+      const videoUrl = r.m3u8
+      const video = document.getElementById('hls-video-el')
+      const isSupportM3u8 = root.is.supportM3u8
+
+      if (isSupportM3u8) {
+        video.src = videoUrl
+        !rootis.local && video.play()
+      } else if(Hls.isSupported()) {
+        const hls = new Hls()
+        hls.loadSource(videoUrl)
+        hls.attachMedia(video)
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          !rootis.local && video.play()
+        })
+      } else {
+        alert('你的设备不支持播放m3u8')
+      }
+    })
+  },
 }

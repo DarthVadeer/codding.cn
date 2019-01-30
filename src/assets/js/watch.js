@@ -3,53 +3,46 @@ export default {
     deep: true,
     handler(newVal) {
       const root = this.$root
-      
+
       let hashData = JSON.stringify(root.router)
-      !root.isLocal && (hashData = encodeURIComponent(hashData))
+      !root.is.local && (hashData = encodeURIComponent(hashData))
       const newUrl = location.origin + location.pathname + location.search + '#' + hashData
       history[root.isRouterPush ? 'pushState' : 'replaceState']({}, '', newUrl)
 
       delete root.isRouterPush
     }
   },
-  'router.coms'(newVal) {
-    const root = this.$root
-    const r = root.router
-
-    /*if (!root.nav.list.some(v => v.com === newVal[0])) {
-      root.updateRouter({coms: ['algo']})
-      return
-    }*/
-
-    root.lazyLoad()
+  'router.idxChannel'(newVal) {
+    this.fetchVideoList()
   },
-  'router.page'(newVal) {
-    this.$root.page.page = newVal
+  'router.idxAlbum'(newVal) {
+    this.fetchVideoList()
   },
-  'router.pageSize'(newVal) {
-    this.$root.page.pageSize = newVal
+  'router.page.cur'(newVal) {
+    this.fetchVideoList()
   },
-  'page.page'(newVal) {
-    this.$root.updateRouter({page: newVal})
-  },
-  'page.size'(newVal) {
-    this.$root.updateRouter({pageSize: newVal})
-  },
-  'router.album'(newVal, oldVal) {
-    const root = this.$root
-
-    if (!newVal) return
-    if (oldVal !== undefined) {
-      root.page.page = 1
-      root.clearVideoInfoOnRouter()
-    }
-
-    if (newVal) {
-      root.fetchVideos()
-    }
+  'router.page.size'(newVal) {
+    this.fetchVideoList()
   },
   'router.m3u8'(newVal) {
-    if (!newVal) return
-    this.$root.playVideo()
-  }
+    if (newVal) {
+      this.playM3u8()
+    } else {
+      this.$root.lazyLoad()
+    }
+  },
+  'com'(newVal) {
+    const root = this.$root
+    const r = root.router
+    
+    switch (newVal) {
+      case 'algo':
+
+        break
+      case 'cctv':
+        this.fetchVideoList()
+        r.m3u8 && this.playM3u8()
+        break
+    }
+  },
 }

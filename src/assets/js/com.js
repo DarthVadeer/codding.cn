@@ -2,15 +2,15 @@ import Vue from 'vue'
 
 Vue.component('pagin', {
   template: `
-    <div class="pagin">
+    <div class="pagin" v-if="$root.router.page.total > 0">
       <div class="ib hidden-sm">
         <span>共 {{page.total}} 条</span>
       </div>
-      <div class="ib hidden-sm">
+      <div class="ib hidden-sm" v-if="0">
         <select class="form-control" style="width: 80px;"
           v-model="page.size"
         >
-          <option :value="n" v-for="n in page.sizes">{{n}}</option>
+          <option :value="n" v-for="n in [20, 40, 60, 80, 100]">{{n}}</option>
         </select>
       </div>
       <div class="ib" v-if="1">
@@ -19,18 +19,18 @@ Vue.component('pagin', {
             v-for="(item, idx) in lis"
             v-if="!item.isHide"
             :key="item.n + '-' + idx"
-            :class="{on: item.n == page.page}"
-            @click="item.n === '...' ? (item.isPrev ? page.page-- : page.page++) : page.page = item.n"
+            :class="{on: item.n == page.cur}"
+            @click="item.n === '...' ? (item.isPrev ? page.cur-- : page.cur++) : page.cur = item.n"
           >{{item.n}}</li>
         </ul>
       </div>
       <div class="ib">
         <input type="text" style="width: 50px;" class="form-control c"
-          :value="page.page"
-          @change="page.page = $event.target.value"
-          @keydown.enter="page.page = $event.target.value"
-          @keydown.38="page.page--"
-          @keydown.40="page.page++"
+          :value="page.cur"
+          @change="page.cur = $event.target.value"
+          @keydown.enter="page.cur = $event.target.value"
+          @keydown.38="page.cur--"
+          @keydown.40="page.cur++"
         >
       </div>
     </div>
@@ -45,7 +45,7 @@ Vue.component('pagin', {
       handler(page) {
         const pageNum = this.pageNum
 
-        page.page = parseInt(page.page)
+        page.cur = parseInt(page.cur)
         page.size = parseInt(page.size)
         
         if (!(page.total > 0 || page.size > 0)) {
@@ -53,12 +53,12 @@ Vue.component('pagin', {
           return
         }
 
-        if (!(page.page > 0 && page.page <= pageNum)) {
-          page.page = 1
-        }
+        /*if (!(page.cur > 0 && page.cur <= pageNum)) {
+          page.cur = 1
+        }*/
       }
     },
-    'page.page'(newVal) {
+    'page.cur'(newVal) {
       this.$emit('updatePage', newVal)
     },
     'page.size'(newVal) {
@@ -80,17 +80,17 @@ Vue.component('pagin', {
           return {n: idx + 1}
         })
       } else {
-        if (page.page < 7) {
+        if (page.cur < 7) {
           return [...new Array(7).fill().map((_, idx) => {
             return {n: idx + 1}
           }), {n: '...', isHide: pageNum < 9}, {n: pageNum, isHide: pageNum < 8}]
-        } else if (pageNum - page.page < 6) {
+        } else if (pageNum - page.cur < 6) {
           return [{n: 1, isHide: pageNum < 8}, {n: '...', isPrev: true, isHide: pageNum < 9}, ...new Array(7).fill().map((_, idx) => {
             return {n: pageNum + idx - 6}
           })]
         } else {
           return [{n: 1}, {n: '...', isPrev: true, isHide: 0}, ...new Array(5).fill().map((_, idx) => {
-            return {n: page.page + idx - 2}
+            return {n: page.cur + idx - 2}
           }), {n: '...', ieNext: true, isHide: 0}, {n: pageNum}]
         }
       }
@@ -101,50 +101,65 @@ Vue.component('pagin', {
   },
 })
 
-Vue.component('loading-div', {
+Vue.component('hls-player', {
   template: `
-    <div class="loading-div">
-      <div class="item"
-        v-for="n in 12"
-        :style="{transform: 'rotate(' + (360 / 12 * n) + 'deg) translateY(-20px)', background: 'hsla(0 , 0%,' + (n / 14) * 100+'%, 1)', opacity: .8}"
-      ></div>
+    <div id="hls-player">
+      <video id="hls-video-el" :src="src" controls
+        @click="togglePlay"
+      ></video>
     </div>
   `,
+  props: ['src'],
+  methods: {
+    togglePlay(e) {
+      const root = this.$root
+      const r = root.router
+      const video = e.target
+
+      if (root.is.safari) {
+        console.log('safari out...')
+        return
+      }
+
+      video[video.paused ? 'play' : 'pause']()
+    }
+  }
 })
 
-Vue.component('loading-abs', {
+Vue.component('loading-div', {
+  template: `
+    <div class="loading-div"
+      style="transform: scale(.8)"
+    >
+      <ul>
+        <li
+          v-for="n in len"
+          :style="{transform: 'rotate(' + (n * (360 / len)) + 'deg) translateY(-16px) scale(.8, 1)', backgroundColor: 'rgba(' + getColorN(n) + ',' + getColorN(n) + ',' + getColorN(n) + ',1)'}"
+        ></li>
+      </ul>
+    </div>
+  `,
+  data() {
+    return {
+      len: 12
+    }
+  },
+  methods: {
+    getColorN(idx) {
+      return parseInt(idx / this.len * 100 + 100)
+    }
+  }
+})
+
+Vue.component('loading', {
   template: `
     <transition name="fade">
-      <div class="loading-abs"
+      <div class="loading"
         v-if="isShow"
       >
-        <div style="transform: scale(.7)">
-          <loading-div></loading-div>
-        </div>
+        <loading-div></loading-div>
       </div>
     </transition>
   `,
-  props: ['isShow'],
-})
-
-Vue.component('no-data', {
-  template: `
-    <transition name="fade">
-      <div class="no-data"
-        v-if="isShow"
-      >
-        <div class="inner c">
-          <img src="./static/img/no-data.png" alt="" />
-          <div class="text-box" style="margin-top: 15px;">
-          <span class="btn btn-info btn-sm"
-            v-if="$root.router.searchText && $root.router.coms[0] === 'cctv' "
-            @click="$root.updateRouter({searchText: ''}, 'push')"
-          >暂无数据删掉筛选条件试试？</span>
-          <span class="text-pale" v-else>暂无数据</span>
-          </div>
-        </div>
-      </div>
-    </transition>
-  `,
-  props: ['isShow'],
+  props: ['isShow']
 })
