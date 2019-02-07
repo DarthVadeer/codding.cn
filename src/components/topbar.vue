@@ -41,7 +41,7 @@ export default {
     return {
       nav: {
         list: [
-          {name: '算法', com: 'algo'},
+          // {name: '算法', com: 'algo'},
           {name: '央视', com: 'cctv'},
         ]
       }

@@ -259,7 +259,9 @@ export default {
         document.body.appendChild(nodeStyleVideoWidth)
       }
 
-      nodeStyleVideoWidth.innerHTML = '.cctv .box-main .list-video ul li {width: ' + (100 / Math.ceil((window.innerWidth - 350) / 240)) + '% !important;}'
+      let w = 100 / Math.ceil((window.innerWidth - 350) / 240)
+      w = w > 50 ? 50 : w
+      nodeStyleVideoWidth.innerHTML = '.cctv .box-main .list-video ul li {width: ' + (w) + '% !important;}'
     },
     fetchChannelFromCCTV(cb) {
       const root = this.$root
@@ -393,6 +395,41 @@ window.getHtml5VideoData = function(data) {
 </script>
 
 <style lang="scss" scoped>
+@media (max-width: 650px) {
+  .cctv {
+    & > .flex-row {
+      flex-direction: column; 
+      .box-channel,
+      .box-album {
+        overflow-x: auto; overflow-y: hidden;
+        ul {
+          margin-bottom: 0; white-space: nowrap;
+          li {
+            display: inline-block; vertical-align: top;
+            border: none;
+          }
+        }
+      }
+      .box-main {
+        .gray-title {
+          border: none;
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: 650px) {
+  .cctv {
+    .box-channel,
+    .box-album {
+      ul {
+        margin-bottom: 50px;
+      }
+    }
+  }
+}
+
 .cctv {
   .box-channel,
   .box-album {
@@ -400,7 +437,6 @@ window.getHtml5VideoData = function(data) {
     border-left: 1px solid #fff;
     border-right: 1px solid #ddd;
     ul {
-      margin-bottom: 50px;
       border-bottom: 1px solid #fff;
       li {
         cursor: pointer;
@@ -442,7 +478,7 @@ window.getHtml5VideoData = function(data) {
     }
   }
   .box-pagination {
-    min-height: 42px; border-top: 1px solid #ddd;
+    min-height: 42px; border-top: 1px solid #ddd; overflow: auto;
     ul {
       li {
         display: inline-block; padding: 0 10px;

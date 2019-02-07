@@ -37,7 +37,7 @@ export default {
     
     switch (newVal) {
       case 'algo':
-
+        root.router.coms[0] = 'cctv'
         break
       case 'cctv':
         this.fetchVideoList()
