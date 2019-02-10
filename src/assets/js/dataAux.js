@@ -81,6 +81,15 @@ export default {
         supportM3u8: !!document.createElement('video').canPlayType('application/vnd.apple.mpegurl'),
         supportHls: Hls.isSupported(),
       },
+      keyMap: {
+        '13': 'enter',
+        '27': 'esc',
+        '32': 'space',
+        '37': 'left',
+        '38': 'up',
+        '39': 'right',
+        '40': 'down',
+      },
       router: {
         // idxChannel: 0,
         // idxAlbum: 0,

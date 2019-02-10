@@ -3,13 +3,7 @@ input:-moz-placeholder {color: #9396af !important;}
 input::-moz-placeholder {color: #9396af !important;}
 input:-ms-input-placeholder {color: #9396af !important;}
 
-@media (max-width: 1023px) {
-  .hidden-on-pad {display: none !important;}
-}
-@media (max-width: 600px) {
-  .hidden-on-mobile {display: none !important;}
-}
-@media (min-width: 800px) {
+@media (min-width: 650px) {
   *::-webkit-scrollbar {width: 7px; height: 7px;}
   *::-webkit-scrollbar-thumb {border-radius: 7px; background: #ccc;}
   *::-webkit-scrollbar-track {border-radius: 7px; background: transparent;}
@@ -36,6 +30,7 @@ a {color: inherit; text-decoration: none;}
 .c {text-align: center; position: relative;}
 .ib {display: inline-block; position: relative;}
 .oh {overflow: hidden;}
+.inner {position: relative;}
 .auto-scroll {width: 100%; height: 100%; position: absolute; left: 0; top: 0; overflow: auto;}
 .space {padding: 12px;}
 
@@ -75,10 +70,10 @@ a {color: inherit; text-decoration: none;}
 }
 
 .gray-title {
-  font-size: 13px; height: 32px; line-height: 32px; padding: 0 12px;
+  font-size: 13px; line-height: 32px; padding: 0 12px;
   background: #eee;
   border-top: 1px solid #fff;
-  border-bottom: 1px solid #ddd;
+  box-shadow: 0 -1px 0 #ddd inset;
   .fr {
     .btn {vertical-align: middle; top: -2px;}
   }
@@ -98,7 +93,7 @@ a {color: inherit; text-decoration: none;}
     li {
       height: 26px; line-height: 26px; padding: 0 .9em; display: inline-block; margin: 0 1px; cursor: pointer; border-radius: 4px;
       &.on {
-        color: #fff; background-color: #09f;
+        color: #fff; background-color: #337ab7;
       }
     }
   }

@@ -17,11 +17,13 @@ export default {
     r.countAni = r.countAni || 0
     r.idxChannel = r.idxChannel || 0
     r.idxAlbum = r.idxAlbum || 0
+    r.searchText = r.searchText || ''
     r.page = r.page || {}
     r.page.cur = r.page.cur || 1
     r.page.size = r.page.size || 100
     r.page.total = r.page.total || 0
     root.router = r
+    root.sugg.text = r.searchText
   },
   updateRouter(o, isRouterPush) {
     const root = this.$root
@@ -182,5 +184,57 @@ export default {
         alert('你的设备不支持播放m3u8')
       }
     })
+  },
+  initEvents() {
+    const root = this.$root
+    const r = root.router
+
+    window.onkeydown = (e) => {
+      const video = document.getElementById('hls-video-el')
+      const keyMap = root.keyMap
+
+      if (video) {
+        switch (keyMap[e.keyCode]) {
+          case 'enter':
+
+            break
+          case 'esc':
+            
+            break
+          case 'space':
+            video[video.paused ? 'play' : 'pause']()
+            break
+          case 'left':
+            video.currentTime -= 10
+            video.play()
+            break
+          case 'right':
+            video.currentTime += 10
+            video.play()
+            break
+          case 'up':
+          case 'down':
+            let curVolume = video.volume
+            keyMap[e.keyCode] === 'up' ? (curVolume += .1) : (curVolume -= .1)
+            curVolume > 1 && (curVolume = 1)
+            curVolume < 0 && (curVolume = 0)
+            curVolume = parseFloat(curVolume.toFixed(1))
+            video.volume = curVolume
+            break
+        }
+      } else {
+
+      }
+    }
+
+    window.onresize = () => {
+      root.lazyLoad()
+      root.setVideoListItemWidth()
+    }
+    window.onresize()
+
+    document.onclick = (e) => {
+      root.sugg.isShow = 0
+    }
   },
 }

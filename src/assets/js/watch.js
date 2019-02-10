@@ -45,4 +45,10 @@ export default {
         break
     }
   },
+  'router.searchText'(newVal) {
+    const root = this.$root
+    const r = root.router
+    
+    root.sugg.text = root.sugg.oldText = newVal
+  },
 }

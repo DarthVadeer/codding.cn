@@ -7,7 +7,9 @@
             v-for="(item, idx) in listChannel"
             :class="['gray-title', {on: idx === $root.router.idxChannel}]"
             @click="clickChannel(item, idx)"
-          >{{item.name + ' (' + item.children.length + ')' }}</li>
+          >
+            <a href="javascript:">{{item.name + ' (' + item.children.length + ')' }}</a>
+          </li>
         </ul>
       </div>
       <div class="box-album">
@@ -16,7 +18,9 @@
             v-for="(item, idx) in listAlbum"
             :class="['gray-title', {on: idx === $root.router.idxAlbum}]"
             @click="clickAlbum(item, idx)"
-          >{{item.name + ' (' + item.n + ')' }}</li>
+          >
+            <a href="javascript:">{{item.name + ' (' + item.n + ')' }}</a>
+          </li>
         </ul>
       </div>
       <div class="box-main auto-flex">
@@ -28,8 +32,8 @@
               <!-- <button class="btn btn-xs btn-primary">评论</button> -->
             </div>
             <div class="m">
-              <span v-if="!$root.router.searchText">{{curAlbum.name + ' (' + curAlbum.n + ')'}}</span>
-              <span v-else>搜索结果：{{$root.router.searchText}}</span>
+              <span v-if="$root.router.isInSearch && $root.router.searchText">搜索结果：{{$root.router.searchText}}</span>
+              <span v-else>{{curAlbum.name + ' (' + curAlbum.n + ')'}}</span>
             </div>
           </div>
           <div class="auto-flex">
@@ -42,7 +46,7 @@
                       @click="$root.fetchVideoInfo(item)"
                     >
                       <div class="text-box">
-                        <div class="title ellipsis" :title="item.title" v-if="item.title">{{item.title}}</div>
+                        <div class="title" :title="item.title" v-if="item.title">{{item.title}}</div>
                         <div class="desc line-2" :title="item.desc" v-if="item.desc">{{item.desc}}</div>
                       </div>
                     </div>
@@ -68,9 +72,7 @@
             <div class="m">{{$root.router.videoTitle}}</div>
           </div>
           <div class="auto-flex">
-            <hls-player
-              :src="$root.router.m3u8"
-            ></hls-player>
+            <hls-player :src="$root.router.m3u8"></hls-player>
           </div>
         </div>
 
@@ -106,6 +108,7 @@ export default {
         idxAlbum: 0,
         m3u8: '',
         searchText: '',
+        isInSearch: undefined,
         page: {
           ...r.page,
           cur: 1
@@ -120,6 +123,7 @@ export default {
         idxAlbum: idx,
         m3u8: '',
         searchText: '',
+        isInSearch: undefined,
         page: {
           ...r.page,
           cur: 1
@@ -259,8 +263,9 @@ export default {
         document.body.appendChild(nodeStyleVideoWidth)
       }
 
-      let w = 100 / Math.ceil((window.innerWidth - 350) / 240)
-      w = w > 50 ? 50 : w
+      let w = window.innerWidth > 600 ?
+      100 / Math.ceil((window.innerWidth - 350) / 250) : 50
+
       nodeStyleVideoWidth.innerHTML = '.cctv .box-main .list-video ul li {width: ' + (w) + '% !important;}'
     },
     fetchChannelFromCCTV(cb) {
@@ -423,7 +428,10 @@ window.getHtml5VideoData = function(data) {
   .cctv {
     .box-channel,
     .box-album {
+      border-left: 1px solid #fff;
+      border-right: 1px solid #ddd;
       ul {
+        border-bottom: 1px solid #fff;
         margin-bottom: 50px;
       }
     }
@@ -434,14 +442,12 @@ window.getHtml5VideoData = function(data) {
   .box-channel,
   .box-album {
     user-select: none; white-space: nowrap; overflow-x: hidden;
-    border-left: 1px solid #fff;
-    border-right: 1px solid #ddd;
     ul {
       border-bottom: 1px solid #fff;
       li {
         cursor: pointer;
         &.on {
-          background: rgba(0,0,0,.06);
+          background: rgba(0,0,0,.07);
         }
       }
     }

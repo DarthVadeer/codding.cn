@@ -104,7 +104,12 @@ Vue.component('pagin', {
 Vue.component('hls-player', {
   template: `
     <div id="hls-player">
-      <video id="hls-video-el" :src="src" controls
+      <video id="hls-video-el" controls
+        :src="src"
+        webkit-playsinline
+        playsinline
+        x5-playsinline
+        x-webkit-airplay="allow"
         @click="togglePlay"
       ></video>
     </div>
@@ -112,7 +117,7 @@ Vue.component('hls-player', {
   props: ['src'],
   methods: {
     togglePlay(e) {
-      const root = this.$root
+      /*const root = this.$root
       const r = root.router
       const video = e.target
 
@@ -121,7 +126,7 @@ Vue.component('hls-player', {
         return
       }
 
-      video[video.paused ? 'play' : 'pause']()
+      video[video.paused ? 'play' : 'pause']()*/
     }
   }
 })

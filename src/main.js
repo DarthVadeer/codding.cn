@@ -34,12 +34,7 @@ window.vm = new Vue({
     const root = this.$root
     const r = root.router
     
-    window.onresize = () => {
-      root.lazyLoad()
-      root.setVideoListItemWidth()
-    }
-    window.onresize()
-
+    root.initEvents()
     root.initChannel(() => {
       root.routerInit()
       window.onpopstate = root.routerInit.bind(root)
@@ -87,4 +82,8 @@ window.vm = new Vue({
     `
   }).join('')
   document.body.appendChild(nodeStyle)
+}
+
+if (location.origin.indexOf('jojojs.com') > -1) {
+  location.href = './fans'
 }
