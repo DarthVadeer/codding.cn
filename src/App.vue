@@ -10,7 +10,6 @@
             :key="item.com + '-' + idx"
             :is="item"
             v-if="idx === 0"
-            :style="{background: '#fff url(./static/img/bg.png)'}"
           ></div>
         </transition-group>
       </div>

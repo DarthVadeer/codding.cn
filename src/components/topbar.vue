@@ -26,13 +26,13 @@
         </li>
       </ul>
     </div>
-    <form class="box-form m" @submit.prevent="$root.sugg.isShow = 0; doSearch()">
+    <form class="box-form m" @submit.prevent="doSearch">
       <div class="inner">
         <input type="search" class="form-control" placeholder="搜点什么..."
           v-model="$root.sugg.text"
           @keydown="handleKeydown"
           @input="$root.fetchSugg"
-          @click.stop="$root.sugg.isShow = 1; $root.sugg.cur = -1"
+          @click.stop="$root.fetchSugg"
         >
         <div class="panel-sugg"
           v-if="$root.sugg.list.length > 0 && $root.sugg.isShow"
@@ -40,7 +40,7 @@
           <ul>
             <li
               v-for="(item, idx) in $root.sugg.list"
-              @click.stop="setSearchTextByIdx(idx)"
+              @click.stop="$root.sugg.text = item; doSearch()"
               :class="{on: idx === $root.curSuggIdx}"
               @mouseover="$root.sugg.cur = idx"
             >{{item}}</li>
@@ -69,17 +69,12 @@ export default {
         cur: -1,
         list: [],
       },
+      searchResult: {
+        list: [],
+      }
     }
   },
   methods: {
-    setSearchTextByIdx(idx) {
-      const root = this.$root
-      const r = root.router
-      const sugg = root.sugg
-
-      sugg.text = sugg.list[idx] || ''
-      this.doSearch()
-    },
     doSearch() {
       const root = this.$root
       const r = root.router
@@ -99,7 +94,7 @@ export default {
       }, 'push')
 
       sugg.isShow = 0
-      root.fetchVideoList()
+      root.fetchSearchResult()
     },
     handleKeydown(e) {
       const root = this.$root
@@ -109,9 +104,6 @@ export default {
       const searchText = sugg.text.trim()
 
       switch (keyMap[e.keyCode]) {
-        case 'enter':
-          sugg.isShow = 0
-          break
         case 'esc':
           sugg.isShow = 0
           break
@@ -131,35 +123,31 @@ export default {
       const root = this.$root
       const r = root.router
       const sugg = root.sugg
+      const searchText = sugg.text.trim()
 
+      sugg.oldText = searchText
       sugg.cur = -1
-      sugg.oldText = sugg.text
       sugg.isShow = 1
+      sugg.list = []
+
+      if (!searchText) {
+        console.log('no searchText')
+        return
+      }
+
       clearTimeout(root.timerFetchCctvSugg)
       root.timerFetchCctvSugg = setTimeout(() => {
-        const searchText = sugg.text.trim()
-
-        if (!searchText) {
-          console.log('no searchText')
-          return
-        }
-
-        const script = document.createElement('script')
-        script.src = 'https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText)
-        script.onload = () => {
+        root.loadScript('https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText), () => {
           const list = window.suggestJSON
           root.sugg.list = list.map(v => v.name)
           root.sugg.cur = list.length
-          document.body.removeChild(script)
-        }
-        document.body.appendChild(script)
+        })
       }, 250)
     },
   },
   mounted() {
     const root = this.$root
     const r = root.router
-    const sugg = root.sugg
     
     root.comCCTV = this
   }

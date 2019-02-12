@@ -8,6 +8,7 @@ export default {
       !root.is.local && (hashData = encodeURIComponent(hashData))
       const newUrl = location.origin + location.pathname + location.search + '#' + hashData
       history[root.isRouterPush ? 'pushState' : 'replaceState']({}, '', newUrl)
+      document.title = newVal.videoTitle || 'codding.cn | By 摘星fy'
 
       delete root.isRouterPush
     }
@@ -50,5 +51,6 @@ export default {
     const r = root.router
     
     root.sugg.text = root.sugg.oldText = newVal
+    root.fetchSearchResult()
   },
 }

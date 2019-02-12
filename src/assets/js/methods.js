@@ -18,6 +18,7 @@ export default {
     r.idxChannel = r.idxChannel || 0
     r.idxAlbum = r.idxAlbum || 0
     r.searchText = r.searchText || ''
+    r.videoTitle = r.videoTitle || ''
     r.page = r.page || {}
     r.page.cur = r.page.cur || 1
     r.page.size = r.page.size || 100
@@ -86,7 +87,15 @@ export default {
 
         if (pos.top > dh || pos.bottom < 0) return
 
-        node.style.backgroundImage = 'url(' + node.getAttribute('lazy-load') + ')'
+        const oImg = new Image()
+        const src = node.getAttribute('lazy-load')
+
+        oImg.onload = oImg.onerror = (e) => {
+          node.style.background = e.type === 'load' ?
+          'url(' + src + ') no-repeat center / cover' :
+          'url(' + src + 'url(/static/img/img-blank.png)'
+        }
+        oImg.src = src
         node.removeAttribute('lazy-load')
       })
     }, 200)
@@ -107,8 +116,8 @@ export default {
         try {
           data = JSON.parse(data)
         } catch(e) {
-          console.warn('数据解析失败： ' + data)
-          return
+          // 啥都不做
+          // console.warn('数据解析失败')
         }
 
         if (data.code) {
@@ -158,6 +167,16 @@ export default {
       succ,
       error,
     })
+  },
+  loadScript(url, succ, error) {
+    const script = document.createElement('script')
+    script.src = url
+    script.onload = script.onerror = (e) => {
+      const cb = e.type === 'load' ? succ : error
+      cb && cb()
+      document.body.removeChild(script)
+    }
+    document.body.appendChild(script)
   },
   playM3u8() {
     const root = this.$root

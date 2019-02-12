@@ -5,11 +5,19 @@ import Vue from 'vue'
   return idx < 3
 }).join('/'))
 
-!Array.prototype.fill && (Array.prototype.fill = function(fillBy, start, end) {
-  start = start || 0
-  end = end || this.length
+Array.prototype.first = function() {
+  return this[0]
+}
 
-  for (let i = 0, len = this.length; i < len; i++) {
+Array.prototype.last = function() {
+  return this[this.length - 1]
+}
+
+!Array.prototype.fill && (Array.prototype.fill = function(fillBy, start, end) {
+  start = start === undefined ? 0 : start
+  end = end === undefined ? this.length : end
+
+  for (let i = 0; i < end; i++) {
     this[i] = fillBy
   }
 
@@ -99,6 +107,7 @@ export default {
           size: 0,
           total: 0,
         },
+        videoTitle: '',
         searchText: '',
       },
     }

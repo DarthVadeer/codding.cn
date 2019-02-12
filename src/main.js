@@ -12,7 +12,7 @@ window.vm = new Vue({
   el: '#app',
   data() {
     const root = this.$root
-    
+
     return {
       ...dataAux.rootData.call(root),
       ...App.rootData.call(root),

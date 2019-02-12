@@ -27,9 +27,8 @@
         <div class="flex-layout">
           <div class="gray-title lmr">
             <div class="fr" v-if="!$root.router.searchText">
-              <button class="btn btn-xs btn-primary" @click="livePlaySelf()" v-if="$root.is.supportM3u8">本站直播</button>
+              <button class="btn btn-xs btn-primary" @click="livePlaySelf()" v-if="isLivePlaySupport">本站直播</button>
               <button class="btn btn-xs btn-primary" @click="livePlay()">央视直播</button>
-              <!-- <button class="btn btn-xs btn-primary">评论</button> -->
             </div>
             <div class="m">
               <span v-if="$root.router.isInSearch && $root.router.searchText">搜索结果：{{$root.router.searchText}}</span>
@@ -39,11 +38,35 @@
           <div class="auto-flex">
             <div class="auto-scroll" @scroll="$root.lazyLoad()">
               <div class="list-video">
+                <template v-if="$root.router.isInSearch">
+                  <template v-for="(item, idx) in $root.searchResult.list">
+                    <div class="search-header">{{item.title}}</div>
+                    <ul class="af">
+                      <li v-for="(item, idx) in item.list">
+                        <div class="pt"
+                          :lazy-load="item.img"
+                          :key="item.id"
+                          @click="$root.fetchVideoInfo(item)"
+                          :style="{backgroundImage: 'url(/static/img/img-blank.png)'}"
+                        >
+                          <div class="text-box">
+                            <div class="title" :title="item.title" v-if="item.title">{{item.title}}</div>
+                            <div class="desc line-2" :title="item.desc" v-if="item.desc">{{item.desc}}</div>
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                  </template>
+                  <div class="search-header">全部视频结果共{{$root.router.page.total}}条</div>
+                </template>
+
                 <ul class="af">
                   <li v-for="(item, idx) in $root.cctv.video.list">
                     <div class="pt"
                       :lazy-load="item.img"
+                      :key="item.id"
                       @click="$root.fetchVideoInfo(item)"
+                      :style="{backgroundImage: 'url(/static/img/img-blank.png)'}"
                     >
                       <div class="text-box">
                         <div class="title" :title="item.title" v-if="item.title">{{item.title}}</div>
@@ -108,6 +131,7 @@ export default {
         idxAlbum: 0,
         m3u8: '',
         searchText: '',
+        videoTitle: '',
         isInSearch: undefined,
         page: {
           ...r.page,
@@ -123,6 +147,7 @@ export default {
         idxAlbum: idx,
         m3u8: '',
         searchText: '',
+        videoTitle: '',
         isInSearch: undefined,
         page: {
           ...r.page,
@@ -136,8 +161,8 @@ export default {
       const curChannel = root.cctv.channel.list[r.idxChannel]
       const n = (curChannel.name.match(/\d+/g) || [])[0]
       const videoUrl = n == '14' ?
-      'http://cctvalih5c.v.myalicdn.com/live/cctvchild_1/index.m3u8?contentid=2820180516001&uid=default' :
-      'http://cctvalih5c.v.myalicdn.com/live/cctv' + n + '_1/index.m3u8?contentid=2820180516001&uid=default'
+      'http://cctvcnch5c.v.wscdns.com/live/cctvchild_2/index.m3u8?contentid=2820180516001&uid=default' :
+      'http://cctvtxyh5c.liveplay.myqcloud.com/live/cctv' + n + '_2/index.m3u8'
 
       root.updateRouter({
         videoId: '',
@@ -159,27 +184,87 @@ export default {
     },
   },
   rootMethods: {
+    getVideoId(str) {
+      return str.slice(str.lastIndexOf('/') + 1, str.search(/[^_-]*?$/) - 1)
+    },
     fetchVideoInfo(elItem) {
-      const script = document.createElement('script')
-      script.src = 'http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?pid=' + elItem.id + '&tai=ipad&from=html5&tsp=1513429887&vn=2049&vc=747D258B9ACE300ABA7C47B708C99495&uid=B55F93A05CDAE4A93D58FAEC106E2DF2&wlan='
-      document.body.appendChild(script)
+      const root = this.$root
+      
       vm.videoInfo = {
         id: elItem.id,
         title: elItem.title || elItem.desc,
         site: elItem.site,
       }
-      script.onload = () => {
-        document.body.removeChild(script)
+      root.loadScript('http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?pid=' + elItem.id + '&tai=ipad&from=html5&tsp=1513429887&vn=2049&vc=747D258B9ACE300ABA7C47B708C99495&uid=B55F93A05CDAE4A93D58FAEC106E2DF2&wlan=')
+    },
+    fetchSearchResult() {
+      const root = this.$root
+      const r = root.router
+      const fetchSearchResultId = root.fetchSearchResultId = Math.random()
+
+      root.fetchVideoList()
+      r.searchText.trim() ? fetchSearchResult() : (root.searchResult.list = [])
+
+      function fetchSearchResult() {
+        root.get('api/interface.php', {
+          a: 'get',
+          url: 'https://search.cctv.com/search.php?qtext=' + encodeURIComponent(r.searchText) + '&type=video'
+        }, async (sHtml) => {
+          if (fetchSearchResultId !== root.fetchSearchResultId) return
+
+          const arr = (sHtml.match(/<script src="[^>]*?>/g) || []).filter((item) => {
+            return item.indexOf('https://r.img.cctvpic.com/so/cctv/list/') > -1
+          }).map((item) => {
+            return (item.match(/(?:src=")(.*?)(?:")/) || [])[1] || ''
+          })
+
+          const newList = []
+          arr.forEach(async (src, idx, arr) => {
+            await new Promise((succ) => {
+              root.get('api/interface.php', {
+                a: 'get',
+                url: src,
+              }, (sHtml) => {
+                if (fetchSearchResultId !== root.fetchSearchResultId) return
+
+                const arr = (sHtml.split('\n') || []).filter(v => v.trim()).map((str) => {
+                  str = str.slice(str.indexOf('eval(\'(') + 7, str.lastIndexOf(')\');'))
+                  return JSON.parse(str)
+                })
+
+                const jsonData = {
+                  title: decodeURIComponent(arr[0].playlist.title),
+                  list: (arr[1] instanceof Array ? arr[1] : arr[0].video).map((item) => {
+                    return {
+                      id: item.detailsid || root.getVideoId(item.imagelink),
+                      // title: item.all_title,
+                      desc: decodeURIComponent(item.title),
+                      img: item.imagelink,
+                      site: item.targetpage,
+                    }
+                  })
+                }
+
+                newList.push(jsonData)
+                succ()
+              })
+            })
+          })
+          
+          root.searchResult.list = newList
+          root.lazyLoad()
+        })
       }
     },
     fetchVideoList() {
+      // console.warn('一会去掉')
+      // return
       const root = this.$root
       const r = root.router
       const curAlbum = root.cctv.channel.list[r.idxChannel].children[r.idxAlbum]
       const searchText = (r.searchText || '').trim()
       const xid = vm.xid = Math.random()
 
-      root.cctv.video.list = []
       root.is.loading = true
 
       clearTimeout(root.timerFetchVideoList)
@@ -187,6 +272,7 @@ export default {
         if (searchText) {
           fetchBySearch()
         } else {
+          root.searchResult.list = []
           fetchByAlbum()
         }
 
@@ -198,9 +284,8 @@ export default {
             const data = dataOrigin.list
 
             root.cctv.video.list = data.map((item) => {
-              const id = item.imglink.substring(item.imglink.lastIndexOf('/') + 1).replace(/(-|_)[^-_]*$/, '')
               return {
-                id,
+                id: root.getVideoId(item.imglink),
                 // title: item.all_title,
                 desc: item.all_title,
                 img: item.imglink,
@@ -341,6 +426,14 @@ export default {
     }
   },
   computed: {
+    isLivePlaySupport() {
+      const root = this.$root
+      const r = root.router
+      
+      if (root.is.supportM3u8) return true
+
+      return this.curChannel.name !== 'CCTV-14 少儿'
+    },
     listChannel() {
       return this.$root.cctv.channel.list
     },
@@ -349,6 +442,12 @@ export default {
       const r = root.router
       
       return (this.listChannel[r.idxChannel] || {}).children || []
+    },
+    curChannel() {
+      const root = this.$root
+      const r = root.router
+
+      return this.listChannel[r.idxChannel] || {}
     },
     curAlbum() {
       const root = this.$root
@@ -364,12 +463,6 @@ export default {
   mounted() {
     const root = this.$root
     const r = root.router
-
-    root.is.local && setTimeout(() => {
-      root.lazyLoad()
-      root.setVideoListItemWidth()
-      // root.fetchVideoInfo(root.cctv.video.list[0])
-    }, 1000)
   }
 }
 
@@ -381,21 +474,15 @@ window.getHtml5VideoData = function(data) {
     return
   }
 
-  console.log(data.hls_url)
-  if (data.hls_url) {
-    if (vm.is.supportM3u8 || vm.is.supportHls) {
-      vm.updateRouter({
-        videoId: vm.videoInfo.id,
-        videoTitle: vm.videoInfo.title,
-        m3u8: data.hls_url,
-      }, 'push')
-    } else {
-      // location.href = vm.videoInfo.site
-      window.open(vm.videoInfo.site)
-    }
-  } else {
-    location.href = vm.videoInfo.site
+  if (data.hls_url && (vm.is.supportM3u8 || vm.is.supportHls)) {
+    vm.updateRouter({
+      videoId: vm.videoInfo.id,
+      videoTitle: vm.videoInfo.title,
+      m3u8: data.hls_url,
+    }, 'push')
+    return
   }
+  window.open(vm.videoInfo.site)
 }
 </script>
 
@@ -428,6 +515,7 @@ window.getHtml5VideoData = function(data) {
   .cctv {
     .box-channel,
     .box-album {
+      background: #eee;
       border-left: 1px solid #fff;
       border-right: 1px solid #ddd;
       ul {
@@ -460,17 +548,24 @@ window.getHtml5VideoData = function(data) {
         background: #fff;
         .auto-scroll {padding: 12px;}
         .list-video {
+          .search-header {
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+            &:first-child {margin-top: 0;}
+          }
           ul {
-            margin: -2px;
+            margin: -2px; clear: both;
             li {
               width: 180px; padding: 2px; overflow: hidden; float: left;
               .pt {
-                padding-top: 60%; background: #eff0f0 no-repeat center / cover;
+                padding-top: 60%;
                 position: relative; cursor: pointer;
+                background: #eff0f0 no-repeat center / 15% auto;
                 .text-box {
                   width: 100%; font-size: 12px; color: #fff;
                   position: absolute; left: 0; bottom: 0;
-                  background: rgba(0,0,0,.5); padding: .1px .4em;
+                  padding: .1px .4em;
+                  background: rgba(0,0,0,.5);
                   .title,
                   .desc {
                     margin: .4em 0;
@@ -485,6 +580,7 @@ window.getHtml5VideoData = function(data) {
   }
   .box-pagination {
     min-height: 42px; border-top: 1px solid #ddd; overflow: auto;
+    background: #eee;
     ul {
       li {
         display: inline-block; padding: 0 10px;
