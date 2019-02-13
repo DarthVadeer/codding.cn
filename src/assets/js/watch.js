@@ -46,7 +46,6 @@ export default {
         break
       case 'cctv':
         this.fetchVideoList()
-        r.m3u8 && this.playM3u8()
         break
     }
   },
@@ -57,4 +56,10 @@ export default {
     root.sugg.text = root.sugg.oldText = newVal
     root.fetchSearchResult()
   },
+  'mapPlayTime': {
+    deep: true,
+    handler(newVal) {
+      localStorage.mapPlayTime = JSON.stringify(newVal)
+    }
+  }
 }

@@ -192,8 +192,6 @@ export default {
       const r = root.router
 
       root.listVideo = listVideo
-      r.isPlayNext = listVideo !== root.cctv.video.list
-
       vm.videoInfo = {
         id: elItem.id,
         idx,
@@ -254,17 +252,23 @@ export default {
                   return JSON.parse(str)
                 })
 
+                let list = (arr[1] instanceof Array ? arr[1] : arr[0].video).map((item) => {
+                  item.title = decodeURIComponent(item.title)
+                  return {
+                    id: item.detailsid || root.getVideoId(item.imagelink),
+                    // title: item.all_title,
+                    desc: item.title,
+                    img: item.imagelink,
+                    site: item.targetpage,
+                    idx: (item.title.match(/\d+/) || [])[0] || 1e8,
+                  }
+                }).sort((a, b) => {
+                  console.log(a.idx, b.idx)
+                  return a.idx - b.idx
+                })
                 const jsonData = {
                   title: decodeURIComponent(arr[0].playlist.title),
-                  list: (arr[1] instanceof Array ? arr[1] : arr[0].video).map((item) => {
-                    return {
-                      id: item.detailsid || root.getVideoId(item.imagelink),
-                      // title: item.all_title,
-                      desc: decodeURIComponent(item.title),
-                      img: item.imagelink,
-                      site: item.targetpage,
-                    }
-                  })
+                  list,
                 }
 
                 newList.push(jsonData)
@@ -435,7 +439,7 @@ export default {
     initChannel(cb) {
       const root = this.$root
 
-      root.get(location.origin + (root.is.local ? '/static/cctv.json' : '/new/static/cctv.json'), {}, (result) => {
+      root.get(location.origin + '/static/cctv.json', {}, (result) => {
         result.forEach((item, idx, arr) => {
           item.children.forEach((item, idx, arr) => {
             item.n = 0
@@ -559,7 +563,7 @@ window.getHtml5VideoData = function(data) {
       ul {
         border-bottom: 1px solid #fff;
         margin-bottom: 50px;
-        li.on {background: rgba(0,0,0,.1);}
+        li.on {background: rgba(0,0,0,.07);}
       }
     }
   }

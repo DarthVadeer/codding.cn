@@ -29,6 +29,7 @@
     <form class="box-form m" @submit.prevent="doSearch">
       <div class="inner">
         <input type="search" class="form-control" placeholder="搜点什么..."
+          autocomplete="off" 
           v-model="$root.sugg.text"
           @keydown="handleKeydown"
           @input="$root.fetchSugg"

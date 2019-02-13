@@ -189,19 +189,31 @@ export default {
       const video = document.getElementById('hls-video-el')
       const isSupportM3u8 = root.is.supportM3u8
 
-      if (isSupportM3u8) {
-        video.src = videoUrl
-        /*!root.is.local && */video.play()
-      } else if(Hls.isSupported()) {
+      if (Hls.isSupported()) {
         const hls = new Hls()
         hls.loadSource(videoUrl)
         hls.attachMedia(video)
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          /*!root.is.local && */video.play()
+          video.currentTime = root.mapPlayTime[r.m3u8] || 0
+          video.play()
         })
       } else {
         alert('你的设备不支持播放m3u8')
       }
+
+      // if (isSupportM3u8) {
+      //   video.src = videoUrl
+      //   /*!root.is.local && */video.play()
+      // } else if(Hls.isSupported()) {
+      //   const hls = new Hls()
+      //   hls.loadSource(videoUrl)
+      //   hls.attachMedia(video)
+      //   hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      //     /*!root.is.local && */video.play()
+      //   })
+      // } else {
+      //   alert('你的设备不支持播放m3u8')
+      // }
     })
   },
   initEvents() {
@@ -221,7 +233,7 @@ export default {
             
             break
           case 'space':
-            if (root.is.edge) {
+            if (root.is.edge || root.is.fireFox) {
               if (document.activeElement !== video) {
                 video[video.paused ? 'play' : 'pause']()
               }

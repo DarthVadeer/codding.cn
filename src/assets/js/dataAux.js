@@ -71,6 +71,13 @@ export default {
     isChrome = isChrome && !isEdge
     isSafari = isSafari && !isChrome && !isEdge
 
+    let mapPlayTime = {}
+    try {
+      mapPlayTime = JSON.parse(localStorage.mapPlayTime)
+    } catch (e) {
+      console.log('localStorage.mapPlayTime parse err')
+    }
+
     return {
       lenAni: 30,
       baseUrl,
@@ -89,6 +96,7 @@ export default {
         supportM3u8: !!document.createElement('video').canPlayType('application/vnd.apple.mpegurl'),
         supportHls: Hls.isSupported(),
       },
+      mapPlayTime,
       keyMap: {
         '13': 'enter',
         '27': 'esc',

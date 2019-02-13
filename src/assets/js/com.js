@@ -110,21 +110,32 @@ Vue.component('hls-player', {
         playsinline
         x5-playsinline
         x-webkit-airplay="allow"
+        ref="videoEl"
         @click.prevent="togglePlay"
-        @ended="ctrlPlay"
+        @timeupdate="handleTimeupdate"
+        @ended="handleEnded"
       ></video>
     </div>
   `,
   props: ['src'],
   methods: {
-    ctrlPlay(e) {
+    handleTimeupdate(e) {
+      const root = this.$root
+      const r = root.router
+      const videoEl = this.$refs.videoEl
+
+      if (!videoEl || videoEl.currentTime === 0) return
+      root.$set(root.mapPlayTime, r.m3u8, videoEl.currentTime)
+    },
+    handleEnded(e) {
       const root = this.$root
       const r = root.router
       const idxVideo = r.idxVideo
       let listVideo = root.listVideo || []
 
+      root.$delete(root.mapPlayTime, r.m3u8)
       listVideo = listVideo.length > 0 ? listVideo : root.cctv.video.list
-      r.isPlayNext ? r.idxVideo++ : r.idxVideo--
+      r.isInSearch ? r.idxVideo++ : r.idxVideo--
 
       if (!(r.idxVideo >= 0 && r.idxVideo < listVideo.length)) {
         console.log('out of range l: ' + 0 +' m: ' + r.idxVideo +' r: ' + (listVideo.length - 1) +' ', )
