@@ -110,23 +110,40 @@ Vue.component('hls-player', {
         playsinline
         x5-playsinline
         x-webkit-airplay="allow"
-        @click="togglePlay"
+        @click.prevent="togglePlay"
+        @ended="ctrlPlay"
       ></video>
     </div>
   `,
   props: ['src'],
   methods: {
-    togglePlay(e) {
-      /*const root = this.$root
+    ctrlPlay(e) {
+      const root = this.$root
       const r = root.router
-      const video = e.target
+      const idxVideo = r.idxVideo
+      let listVideo = root.listVideo || []
 
-      if (root.is.safari) {
-        console.log('safari out...')
+      listVideo = listVideo.length > 0 ? listVideo : root.cctv.video.list
+      r.isPlayNext ? r.idxVideo++ : r.idxVideo--
+
+      if (!(r.idxVideo >= 0 && r.idxVideo < listVideo.length)) {
+        console.log('out of range l: ' + 0 +' m: ' + r.idxVideo +' r: ' + (listVideo.length - 1) +' ', )
         return
       }
 
-      video[video.paused ? 'play' : 'pause']()*/
+      root.fetchVideoInfo(listVideo[r.idxVideo], r.idxVideo, listVideo)
+    },
+    togglePlay(e) {
+      const root = this.$root
+      const r = root.router
+      const video = e.target
+
+      if (root.is.mac && root.is.safari) {
+        console.log('mac safari out...')
+        return
+      }
+
+      video[video.paused ? 'play' : 'pause']()
     }
   }
 })

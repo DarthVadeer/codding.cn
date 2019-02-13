@@ -8,7 +8,6 @@ export default {
       !root.is.local && (hashData = encodeURIComponent(hashData))
       const newUrl = location.origin + location.pathname + location.search + '#' + hashData
       history[root.isRouterPush ? 'pushState' : 'replaceState']({}, '', newUrl)
-      document.title = newVal.videoTitle || 'codding.cn | By 摘星fy'
 
       delete root.isRouterPush
     }
@@ -29,8 +28,13 @@ export default {
     if (newVal) {
       this.playM3u8()
     } else {
+      this.listVideo = []
+      this.updateRouter({idxVideo: undefined})
       this.$root.lazyLoad()
     }
+  },
+  'router.videoTitle'(newVal) {
+    document.title = newVal || 'codding.cn | By 摘星fy'
   },
   'com'(newVal) {
     const root = this.$root

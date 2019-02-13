@@ -27,8 +27,10 @@
         <div class="flex-layout">
           <div class="gray-title lmr">
             <div class="fr" v-if="!$root.router.searchText">
-              <button class="btn btn-xs btn-primary" @click="livePlaySelf()" v-if="isLivePlaySupport">本站直播</button>
-              <button class="btn btn-xs btn-primary" @click="livePlay()">央视直播</button>
+              <div class="btn-box">
+                <button class="btn btn-xs btn-success" @click="livePlaySelf()" v-if="isLivePlaySupport">本站直播</button>
+                <a :href="livePlayUrl" class="btn btn-xs btn-success" target="_blank">央视直播</a>
+              </div>
             </div>
             <div class="m">
               <span v-if="$root.router.isInSearch && $root.router.searchText">搜索结果：{{$root.router.searchText}}</span>
@@ -39,15 +41,15 @@
             <div class="auto-scroll" @scroll="$root.lazyLoad()">
               <div class="list-video">
                 <template v-if="$root.router.isInSearch">
-                  <template v-for="(item, idx) in $root.searchResult.list">
-                    <div class="search-header">{{item.title}}</div>
+                  <template v-for="(itemOut, idx) in $root.searchResult.list">
+                    <div class="search-header">{{itemOut.title}}</div>
                     <ul class="af">
-                      <li v-for="(item, idx) in item.list">
+                      <li v-for="(item, idx) in itemOut.list">
                         <div class="pt"
                           :lazy-load="item.img"
                           :key="item.id"
-                          @click="$root.fetchVideoInfo(item)"
-                          :style="{backgroundImage: 'url(/static/img/img-blank.png)'}"
+                          @click="$root.fetchVideoInfo(item, idx, itemOut.list)"
+                          :style="{backgroundImage: 'url(./static/img/img-blank.png)'}"
                         >
                           <div class="text-box">
                             <div class="title" :title="item.title" v-if="item.title">{{item.title}}</div>
@@ -60,13 +62,15 @@
                   <div class="search-header">全部视频结果共{{$root.router.page.total}}条</div>
                 </template>
 
+                <div class="search-header" v-if="!$root.router.isInSearch && $root.cctv.video.list.length === 0">暂无相关视频</div>
+
                 <ul class="af">
                   <li v-for="(item, idx) in $root.cctv.video.list">
                     <div class="pt"
                       :lazy-load="item.img"
                       :key="item.id"
-                      @click="$root.fetchVideoInfo(item)"
-                      :style="{backgroundImage: 'url(/static/img/img-blank.png)'}"
+                      @click="$root.fetchVideoInfo(item, idx, $root.cctv.video.list)"
+                      :style="{backgroundImage: 'url(./static/img/img-blank.png)'}"
                     >
                       <div class="text-box">
                         <div class="title" :title="item.title" v-if="item.title">{{item.title}}</div>
@@ -88,9 +92,15 @@
         <div class="flex-layout" v-if="$root.router.m3u8">
           <div class="gray-title lmr">
             <div class="fr">
-              <button class="btn btn-xs btn-warning"
-                @click="$root.updateRouter({m3u8: ''}, 'push')"
-              >关闭视频</button>
+              <div class="btn-box">
+                <a class="btn btn-xs btn-success" target="_blank" 
+                  v-if="$root.router.site"
+                  :href="$root.router.site"
+                >央视播放</a>
+                <button class="btn btn-xs btn-warning"
+                  @click="$root.updateRouter({m3u8: '', videoId: '', videoTitle: ''}, 'push')"
+                >关闭视频</button>
+              </div>
             </div>
             <div class="m">{{$root.router.videoTitle}}</div>
           </div>
@@ -132,6 +142,7 @@ export default {
         m3u8: '',
         searchText: '',
         videoTitle: '',
+        site: '',
         isInSearch: undefined,
         page: {
           ...r.page,
@@ -148,6 +159,7 @@ export default {
         m3u8: '',
         searchText: '',
         videoTitle: '',
+        site: '',
         isInSearch: undefined,
         page: {
           ...r.page,
@@ -170,32 +182,41 @@ export default {
         m3u8: videoUrl,
       }, 'push')
     },
-    livePlay() {
-      const root = this.$root
-      const r = root.router
-      const aName = root.cctv.channel.list[r.idxChannel].name
-      const n = (aName.match(/\d+/g) || [])[0]
-      
-      window.open(
-        n == '14' ?
-        'http://tv.cctv.com/live/cctvchild/' :
-        'http://tv.cctv.com/live/cctv' + n + '/'
-      )
-    },
   },
   rootMethods: {
     getVideoId(str) {
       return str.slice(str.lastIndexOf('/') + 1, str.search(/[^_-]*?$/) - 1)
     },
-    fetchVideoInfo(elItem) {
+    fetchVideoInfo(elItem, idx, listVideo) {
       const root = this.$root
-      
+      const r = root.router
+
+      root.listVideo = listVideo
+      r.isPlayNext = listVideo !== root.cctv.video.list
+
       vm.videoInfo = {
         id: elItem.id,
+        idx,
         title: elItem.title || elItem.desc,
         site: elItem.site,
       }
-      root.loadScript('http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?pid=' + elItem.id + '&tai=ipad&from=html5&tsp=1513429887&vn=2049&vc=747D258B9ACE300ABA7C47B708C99495&uid=B55F93A05CDAE4A93D58FAEC106E2DF2&wlan=')
+
+      if (/-|_/.test(elItem.id)) {
+        root.get('api/interface.php', {
+          a: 'get',
+          url: elItem.site,
+        }, (sHtml) => {
+          const id = (sHtml.match(/"videoCenterId","([^"]*)"/m) || [])[1] || ''
+          vm.videoInfo.id = elItem.id = id
+          root.loadScript(createSrc())
+        })
+      } else {
+        root.loadScript(createSrc())
+      }
+
+      function createSrc() {
+        return 'http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?pid=' + elItem.id + '&tai=ipad&from=html5&tsp=1513429887&vn=2049&vc=747D258B9ACE300ABA7C47B708C99495&uid=B55F93A05CDAE4A93D58FAEC106E2DF2&wlan='
+      }
     },
     fetchSearchResult() {
       const root = this.$root
@@ -205,7 +226,7 @@ export default {
       root.fetchVideoList()
       r.searchText.trim() ? fetchSearchResult() : (root.searchResult.list = [])
 
-      function fetchSearchResult() {
+      function fetchSearchResult(cb) {
         root.get('api/interface.php', {
           a: 'get',
           url: 'https://search.cctv.com/search.php?qtext=' + encodeURIComponent(r.searchText) + '&type=video'
@@ -219,7 +240,8 @@ export default {
           })
 
           const newList = []
-          arr.forEach(async (src, idx, arr) => {
+          for (let i = 0; i < arr.length; i++) {
+            const src = arr[i]
             await new Promise((succ) => {
               root.get('api/interface.php', {
                 a: 'get',
@@ -249,10 +271,11 @@ export default {
                 succ()
               })
             })
-          })
-          
+          }
+
           root.searchResult.list = newList
           root.lazyLoad()
+          cb && cb()
         })
       }
     },
@@ -426,6 +449,18 @@ export default {
     }
   },
   computed: {
+    livePlayUrl() {
+      const root = this.$root
+      const r = root.router
+      const aName = root.cctv.channel.list[r.idxChannel].name
+      const n = (aName.match(/\d+/g) || [])[0]
+
+      return (
+        n == '14' ?
+        'http://tv.cctv.com/live/cctvchild/' :
+        'http://tv.cctv.com/live/cctv' + n + '/'
+      )
+    },
     isLivePlaySupport() {
       const root = this.$root
       const r = root.router
@@ -476,9 +511,11 @@ window.getHtml5VideoData = function(data) {
 
   if (data.hls_url && (vm.is.supportM3u8 || vm.is.supportHls)) {
     vm.updateRouter({
+      idxVideo: vm.videoInfo.idx,
       videoId: vm.videoInfo.id,
       videoTitle: vm.videoInfo.title,
       m3u8: data.hls_url,
+      site: vm.videoInfo.site,
     }, 'push')
     return
   }
@@ -497,9 +534,10 @@ window.getHtml5VideoData = function(data) {
         ul {
           margin-bottom: 0; white-space: nowrap;
           li {
-            display: inline-block; vertical-align: top;
+            display: inline-block; vertical-align: top; overflow: hidden;
             border: none;
           }
+          li.on {color: #337ab7;}
         }
       }
       .box-main {
@@ -521,6 +559,7 @@ window.getHtml5VideoData = function(data) {
       ul {
         border-bottom: 1px solid #fff;
         margin-bottom: 50px;
+        li.on {background: rgba(0,0,0,.1);}
       }
     }
   }
@@ -534,9 +573,6 @@ window.getHtml5VideoData = function(data) {
       border-bottom: 1px solid #fff;
       li {
         cursor: pointer;
-        &.on {
-          background: rgba(0,0,0,.07);
-        }
       }
     }
   }

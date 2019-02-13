@@ -93,7 +93,7 @@ export default {
         oImg.onload = oImg.onerror = (e) => {
           node.style.background = e.type === 'load' ?
           'url(' + src + ') no-repeat center / cover' :
-          'url(' + src + 'url(/static/img/img-blank.png)'
+          'url(' + src + 'url(./static/img/img-blank.png)'
         }
         oImg.src = src
         node.removeAttribute('lazy-load')
@@ -191,13 +191,13 @@ export default {
 
       if (isSupportM3u8) {
         video.src = videoUrl
-        !rootis.local && video.play()
+        /*!root.is.local && */video.play()
       } else if(Hls.isSupported()) {
         const hls = new Hls()
         hls.loadSource(videoUrl)
         hls.attachMedia(video)
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          !rootis.local && video.play()
+          /*!root.is.local && */video.play()
         })
       } else {
         alert('你的设备不支持播放m3u8')
@@ -221,7 +221,13 @@ export default {
             
             break
           case 'space':
-            video[video.paused ? 'play' : 'pause']()
+            if (root.is.edge) {
+              if (document.activeElement !== video) {
+                video[video.paused ? 'play' : 'pause']()
+              }
+            } else {
+              video[video.paused ? 'play' : 'pause']()
+            }
             break
           case 'left':
             video.currentTime -= 10

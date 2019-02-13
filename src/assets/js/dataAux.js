@@ -68,8 +68,8 @@ export default {
     let isEdge = ua.indexOf('Edge/') > -1
     let isFireFox = ua.indexOf('Firefox/') > -1
 
-    isSafari = isSafari && !isChrome && !isEdge
     isChrome = isChrome && !isEdge
+    isSafari = isSafari && !isChrome && !isEdge
 
     return {
       lenAni: 30,

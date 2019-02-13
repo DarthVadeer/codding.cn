@@ -38,7 +38,8 @@ a {color: inherit; text-decoration: none;}
 .line-2 {max-height: 3em; line-height: 1.5em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;}
 .af:after {content: ""; display: block; clear: both;}
 
-.btn {position: relative;}
+a.btn {position: relative; color: #fff;}
+a.btn-default {position: relative; color: #333;}
 .glyphicon {cursor: pointer; position: relative;}
 
 .lmr {
@@ -75,7 +76,7 @@ a {color: inherit; text-decoration: none;}
   border-top: 1px solid #fff;
   box-shadow: 0 -1px 0 #ddd inset;
   .fr {
-    .btn {vertical-align: middle; top: -2px;}
+    .btn-box {position: relative; top: -2px;}
   }
 }
 

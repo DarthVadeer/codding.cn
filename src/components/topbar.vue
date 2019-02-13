@@ -83,7 +83,7 @@ export default {
 
       root.updateRouter({
         m3u8: '',
-        videoId: undefined,
+        videoId: '',
         videoTitle: '',
         isInSearch: !!searchText,
         searchText,
