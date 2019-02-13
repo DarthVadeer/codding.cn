@@ -263,7 +263,6 @@ export default {
                     idx: (item.title.match(/\d+/) || [])[0] || 1e8,
                   }
                 }).sort((a, b) => {
-                  console.log(a.idx, b.idx)
                   return a.idx - b.idx
                 })
                 const jsonData = {
