@@ -98,7 +98,7 @@
                   :href="$root.router.site"
                 >央视播放</a>
                 <button class="btn btn-xs btn-warning"
-                  @click="$root.updateRouter({m3u8: '', videoId: '', videoTitle: ''}, 'push')"
+                  @click="$root.updateRouter({m3u8: '', videoId: '', videoTitle: '', site: ''}, 'push')"
                 >关闭视频</button>
               </div>
             </div>
