@@ -220,14 +220,25 @@ export default {
       const root = this.$root
       const r = root.router
       const fetchSearchResultId = root.fetchSearchResultId = Math.random()
+      const searchText = r.searchText.trim()
 
-      root.fetchVideoList()
-      r.searchText.trim() ? fetchSearchResult() : (root.searchResult.list = [])
+      // root.is.loading = true
+      // root.fetchVideoList()
+      // searchText ? fetchSearchResult() : (root.searchResult.list = [])
+
+      if (searchText) {
+        fetchSearchResult(() => {
+          root.fetchVideoList()
+        })
+      } else {
+        root.searchResult.list = []
+        root.fetchVideoList()
+      }
 
       function fetchSearchResult(cb) {
         root.get('api/interface.php', {
           a: 'get',
-          url: 'https://search.cctv.com/search.php?qtext=' + encodeURIComponent(r.searchText) + '&type=video'
+          url: 'https://search.cctv.com/search.php?qtext=' + encodeURIComponent(searchText) + '&type=video'
         }, async (sHtml) => {
           if (fetchSearchResultId !== root.fetchSearchResultId) return
 
