@@ -215,7 +215,7 @@ export default {
 
     window.open('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + root.json2url({
       pics: elItem.img || location.origin + '/static/img/logo.png',
-      url: location.href,
+      url: root.is.local ? 'http://codding.cn' : location.href,
       title: elItem.title || elItem.desc || document.title,
       summary: elItem.desc || elItem.title || '摘星fy的世界',
     }))
