@@ -80,14 +80,13 @@ export default {
       const root = this.$root
       const r = root.router
       const sugg = root.sugg
-      const searchText = sugg.text.trim()
 
       root.updateRouter({
         m3u8: '',
         videoId: '',
         videoTitle: '',
-        isInSearch: !!searchText,
-        searchText,
+        isInSearch: !!sugg.text.trim(),
+        searchText: sugg.text,
         page: {
           ...r.page,
           cur: 1,
@@ -102,7 +101,7 @@ export default {
       const r = root.router
       const sugg = root.sugg
       const keyMap = root.keyMap
-      const searchText = sugg.text.trim()
+      const searchText = sugg.text
 
       switch (keyMap[e.keyCode]) {
         case 'esc':
@@ -124,14 +123,13 @@ export default {
       const root = this.$root
       const r = root.router
       const sugg = root.sugg
-      const searchText = sugg.text.trim()
 
-      sugg.oldText = searchText
+      sugg.oldText = sugg.text
       sugg.cur = -1
       sugg.isShow = 1
       sugg.list = []
 
-      if (!searchText) {
+      if (!sugg.text.trim()) {
         console.log('no searchText')
         return
       }

@@ -24,7 +24,6 @@ export default {
     r.page.size = r.page.size || 100
     r.page.total = r.page.total || 0
     root.router = r
-    root.sugg.text = r.searchText
   },
   updateRouter(o, isRouterPush) {
     const root = this.$root

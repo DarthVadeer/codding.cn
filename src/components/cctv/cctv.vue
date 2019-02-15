@@ -567,7 +567,6 @@ window.getHtml5VideoData = function(data) {
   .cctv {
     .box-channel,
     .box-album {
-      background: #eee;
       border-left: 1px solid #fff;
       border-right: 1px solid #ddd;
       ul {
@@ -582,6 +581,7 @@ window.getHtml5VideoData = function(data) {
 .cctv {
   .box-channel,
   .box-album {
+    background: #eee;
     user-select: none; white-space: nowrap; overflow-x: hidden;
     ul {
       border-bottom: 1px solid #fff;
