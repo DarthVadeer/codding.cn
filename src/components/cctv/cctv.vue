@@ -93,7 +93,6 @@
           <div class="gray-title lmr">
             <div class="fr">
               <div class="btn-box">
-                <button class="btn btn-primary btn-xs">分享</button>
                 <a class="btn btn-xs btn-success" target="_blank" 
                   v-if="$root.router.site"
                   :href="$root.router.site"
