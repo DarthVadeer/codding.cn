@@ -211,13 +211,13 @@ export default {
   handleShare(e) {
     const root = this.$root
     const r = root.router
-    const elItem = root.listVideo[r.idxVideo] || {}
+    const elItem = (root.listVideo || [])[r.idxVideo] || {}
 
     window.open('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + root.json2url({
-      pics: elItem.img,
-      summary: elItem.title || elItem.desc,
+      pics: elItem.img || location.origin + '/static/img/logo.png',
       url: location.href,
-      title: elItem.title || elItem.desc,
+      title: elItem.title || elItem.desc || document.title,
+      summary: elItem.desc || elItem.title || '摘星fy的世界',
     }))
   },
   initEvents() {
