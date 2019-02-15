@@ -93,6 +93,7 @@
           <div class="gray-title lmr">
             <div class="fr">
               <div class="btn-box">
+                <button class="btn btn-primary btn-xs" @click="handleShare">分享</button>
                 <a class="btn btn-xs btn-success" target="_blank" 
                   v-if="$root.router.site"
                   :href="$root.router.site"
@@ -132,6 +133,18 @@ export default {
     }
   },
   methods: {
+    handleShare(e) {
+      const root = this.$root
+      const r = root.router
+      const elItem = root.listVideo[r.idxVideo] || {}
+
+      window.open('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + root.json2url({
+        pics: elItem.img,
+        summary: elItem.title || elItem.desc,
+        url: location.href,
+        title: elItem.title || elItem.desc,
+      }))
+    },
     clickChannel(elItem, idx) {
       const root = this.$root
       const r = root.router
@@ -191,6 +204,7 @@ export default {
       const root = this.$root
       const r = root.router
 
+      root.is.loading = true
       root.listVideo = listVideo
       vm.videoInfo = {
         id: elItem.id,
@@ -274,6 +288,7 @@ export default {
                 }).sort((a, b) => {
                   return a.idx - b.idx
                 })
+
                 const jsonData = {
                   title: decodeURIComponent(arr[0].playlist.title),
                   list,
@@ -284,6 +299,14 @@ export default {
               })
             })
           }
+
+          newList.forEach((item, idx, arr) => {
+            item.list.forEach((item, idx, arr) => {
+              if (item.id === root.router.videoId) {
+                root.listVideo = arr
+              }
+            })
+          })
 
           root.searchResult.list = newList
           root.lazyLoad()
@@ -514,6 +537,10 @@ export default {
 }
 
 window.getHtml5VideoData = function(data) {
+  const root = window.vm
+
+  root.is.loading = false
+
   try {
     data = JSON.parse(data)
   } catch (e) {
@@ -521,17 +548,17 @@ window.getHtml5VideoData = function(data) {
     return
   }
 
-  if (data.hls_url && (vm.is.supportM3u8 || vm.is.supportHls)) {
-    vm.updateRouter({
-      idxVideo: vm.videoInfo.idx,
-      videoId: vm.videoInfo.id,
-      videoTitle: vm.videoInfo.title,
+  if (data.hls_url && (root.is.supportM3u8 || root.is.supportHls)) {
+    root.updateRouter({
+      idxVideo: root.videoInfo.idx,
+      videoId: root.videoInfo.id,
+      videoTitle: root.videoInfo.title,
       m3u8: data.hls_url,
-      site: vm.videoInfo.site,
+      site: root.videoInfo.site,
     }, 'push')
     return
   }
-  window.open(vm.videoInfo.site)
+  window.open(root.videoInfo.site)
 }
 </script>
 

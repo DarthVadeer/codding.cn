@@ -172,6 +172,7 @@ export default {
     script.src = url
     script.onload = script.onerror = (e) => {
       const cb = e.type === 'load' ? succ : error
+      e.type === 'error' && (root.is.loading = false)
       cb && cb()
       document.body.removeChild(script)
     }
@@ -190,15 +191,17 @@ export default {
 
       if (isSupportM3u8) {
         video.src = videoUrl
-        video.currentTime = root.mapPlayTime[r.m3u8] || 0
-        video.play()
+        setTimeout(() => {
+          video.currentTime = root.mapPlayTime[r.m3u8] || 0
+          video.play()
+        }, 10)
       } else if(Hls.isSupported()) {
         const hls = new Hls()
         hls.loadSource(videoUrl)
         hls.attachMedia(video)
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           video.currentTime = root.mapPlayTime[r.m3u8] || 0
-          video.play()
+          !root.is.local && video.play()
         })
       } else {
         alert('你的设备不支持播放m3u8')

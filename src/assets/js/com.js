@@ -133,9 +133,9 @@ Vue.component('hls-player', {
       const idxVideo = r.idxVideo
       let listVideo = root.listVideo || []
 
-      root.$delete(root.mapPlayTime, r.m3u8)
       listVideo = listVideo.length > 0 ? listVideo : root.cctv.video.list
       r.isInSearch ? r.idxVideo++ : r.idxVideo--
+      root.$delete(root.mapPlayTime, r.m3u8)
 
       if (!(r.idxVideo >= 0 && r.idxVideo < listVideo.length)) {
         console.log('out of range l: ' + 0 +' m: ' + r.idxVideo +' r: ' + (listVideo.length - 1) +' ', )
