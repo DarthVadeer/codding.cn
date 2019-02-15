@@ -222,9 +222,7 @@ export default {
       const fetchSearchResultId = root.fetchSearchResultId = Math.random()
       const searchText = r.searchText.trim()
 
-      // root.is.loading = true
-      // root.fetchVideoList()
-      // searchText ? fetchSearchResult() : (root.searchResult.list = [])
+      root.is.loading = true
 
       if (searchText) {
         fetchSearchResult(() => {
