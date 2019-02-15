@@ -62,7 +62,7 @@
                   <div class="search-header">全部视频结果共{{$root.router.page.total}}条</div>
                 </template>
 
-                <div class="search-header" v-if="!$root.router.isInSearch && $root.cctv.video.list.length === 0">暂无相关视频</div>
+                <div class="search-header" v-if="!$root.router.isInSearch && $root.cctv.video.list.length === 0 && !$root.is.loading">暂无相关视频</div>
 
                 <ul class="af">
                   <li v-for="(item, idx) in $root.cctv.video.list">
