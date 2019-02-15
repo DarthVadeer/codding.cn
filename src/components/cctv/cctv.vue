@@ -93,7 +93,7 @@
           <div class="gray-title lmr">
             <div class="fr">
               <div class="btn-box">
-                <button class="btn btn-primary btn-xs" @click="handleShare">分享</button>
+                <button class="btn btn-primary btn-xs">分享</button>
                 <a class="btn btn-xs btn-success" target="_blank" 
                   v-if="$root.router.site"
                   :href="$root.router.site"
@@ -133,18 +133,6 @@ export default {
     }
   },
   methods: {
-    handleShare(e) {
-      const root = this.$root
-      const r = root.router
-      const elItem = root.listVideo[r.idxVideo] || {}
-
-      window.open('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + root.json2url({
-        pics: elItem.img,
-        summary: elItem.title || elItem.desc,
-        url: location.href,
-        title: elItem.title || elItem.desc,
-      }))
-    },
     clickChannel(elItem, idx) {
       const root = this.$root
       const r = root.router

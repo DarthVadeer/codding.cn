@@ -208,6 +208,18 @@ export default {
       }
     })
   },
+  handleShare(e) {
+    const root = this.$root
+    const r = root.router
+    const elItem = root.listVideo[r.idxVideo] || {}
+
+    window.open('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + root.json2url({
+      pics: elItem.img,
+      summary: elItem.title || elItem.desc,
+      url: location.href,
+      title: elItem.title || elItem.desc,
+    }))
+  },
   initEvents() {
     const root = this.$root
     const r = root.router

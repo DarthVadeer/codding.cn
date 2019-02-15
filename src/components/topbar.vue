@@ -16,16 +16,6 @@
         </li>
       </ul>
     </div>
-    <div class="box-fr fr" v-if="0">
-      <ul>
-        <li>
-          <a href="javascript:">摘星fy</a>
-        </li>
-        <li>
-          <a href="javascript:">退出</a>
-        </li>
-      </ul>
-    </div>
     <form class="box-form m" @submit.prevent="doSearch">
       <div class="inner">
         <input type="search" class="form-control" placeholder="搜点什么..."
@@ -49,6 +39,13 @@
         </div>
       </div>
     </form>
+    <div>
+      <ul>
+        <li style="padding-right: 0;">
+          <button @click="$root.handleShare" class="btn btn-primary btn-xs">分享</button>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
