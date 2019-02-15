@@ -447,7 +447,7 @@ export default {
     initChannel(cb) {
       const root = this.$root
 
-      root.get(location.origin + '/static/cctv.json', {}, (result) => {
+      root.get('./static/data/cctv.json', {}, (result) => {
         result.forEach((item, idx, arr) => {
           item.children.forEach((item, idx, arr) => {
             item.n = 0
