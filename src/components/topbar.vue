@@ -120,6 +120,7 @@ export default {
       const root = this.$root
       const r = root.router
       const sugg = root.sugg
+      const searchText = sugg.text.trim()
 
       sugg.oldText = sugg.text
       sugg.cur = -1
@@ -134,7 +135,7 @@ export default {
       clearTimeout(root.timerFetchCctvSugg)
       root.timerFetchCctvSugg = setTimeout(() => {
         root.loadScript('https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText), () => {
-          const list = window.suggestJSON
+          const list = window.suggestJSON || []
           root.sugg.list = list.map(v => v.name)
           root.sugg.cur = list.length
         })

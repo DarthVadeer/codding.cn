@@ -582,7 +582,6 @@ window.getHtml5VideoData = function(data) {
       border-left: 1px solid #fff;
       border-right: 1px solid #ddd;
       ul {
-        border-bottom: 1px solid #fff;
         margin-bottom: 50px;
         li.on {background: rgba(0,0,0,.07);}
       }
@@ -596,7 +595,6 @@ window.getHtml5VideoData = function(data) {
     background: #eee;
     user-select: none; white-space: nowrap; overflow-x: hidden;
     ul {
-      border-bottom: 1px solid #fff;
       li {
         cursor: pointer;
       }
