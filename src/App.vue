@@ -112,7 +112,7 @@ export default {
 #main-container {
   z-index: 9;
   & > span {
-    width: 100%; height: 100%; display: block; position: relative;
+    width: 100%; height: 100%; display: block; position: absolute;
     transform-style: preserve-3d; transform: perspective(800px);
     & > div {
       width: 100%; height: 100%; position: absolute; left: 0; top: 0;
