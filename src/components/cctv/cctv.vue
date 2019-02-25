@@ -5,10 +5,11 @@
         <ul>
           <li
             v-for="(item, idx) in listChannel"
-            :class="['gray-title', {on: idx === $root.router.idxChannel}]"
-            @click="clickChannel(item, idx)"
           >
-            <a href="javascript:">{{item.name + ' (' + item.children.length + ')' }}</a>
+            <a href="javascript:"
+              :class="['gray-title', {on: idx === $root.router.idxChannel}]"
+              @click="clickChannel(item, idx)"
+            >{{item.name + ' (' + item.children.length + ')' }}</a>
           </li>
         </ul>
       </div>
@@ -16,10 +17,11 @@
         <ul>
           <li
             v-for="(item, idx) in listAlbum"
-            :class="['gray-title', {on: idx === $root.router.idxAlbum}]"
-            @click="clickAlbum(item, idx)"
           >
-            <a href="javascript:">{{item.name + ' (' + item.n + ')' }}</a>
+            <a href="javascript:"
+              :class="['gray-title', {on: idx === $root.router.idxAlbum}]"
+              @click="clickAlbum(item, idx)"
+            >{{item.name + ' (' + item.n + ')' }}</a>
           </li>
         </ul>
       </div>
@@ -587,7 +589,7 @@ window.getHtml5VideoData = function(data) {
             display: inline-block; vertical-align: top; overflow: hidden;
             border: none;
           }
-          li.on {color: #337ab7;}
+          .on {color: #337ab7;}
         }
       }
       .box-main {
@@ -607,7 +609,7 @@ window.getHtml5VideoData = function(data) {
       border-right: 1px solid #ddd;
       ul {
         margin-bottom: 50px;
-        li.on {background: rgba(0,0,0,.07);}
+        .on {background: rgba(0,0,0,.07);}
       }
     }
   }
