@@ -28,8 +28,12 @@ export default {
     if (newVal) {
       this.playM3u8()
     } else {
+      console.log('def')
       this.listVideo = []
-      this.updateRouter({idxVideo: undefined})
+      this.updateRouter({
+        idxVideo: undefined,
+        isLivePlay: undefined,
+      })
       this.$root.lazyLoad()
     }
   },

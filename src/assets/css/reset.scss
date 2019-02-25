@@ -3,12 +3,12 @@ input:-moz-placeholder {color: #9396af !important;}
 input::-moz-placeholder {color: #9396af !important;}
 input:-ms-input-placeholder {color: #9396af !important;}
 
-@media (min-width: 650px) {
+/* @media (min-width: 650px) {
   *::-webkit-scrollbar {width: 7px; height: 7px;}
   *::-webkit-scrollbar-thumb {border-radius: 7px; background: #ccc;}
   *::-webkit-scrollbar-track {border-radius: 7px; background: transparent;}
   *::-webkit-input-placeholder {color: inherit !important; opacity: .5;}
-}
+} */
 
 * {padding: 0; margin: 0; box-sizing: border-box; font: inherit;
   -webkit-overflow-scrolling: touch;

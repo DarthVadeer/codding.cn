@@ -28,7 +28,7 @@
           <div class="gray-title lmr">
             <div class="fr" v-if="!$root.router.searchText">
               <div class="btn-box">
-                <button class="btn btn-xs btn-success" @click="livePlaySelf()" v-if="isLivePlaySupport">本站直播</button>
+                <button class="btn btn-xs btn-success" @click="$root.livePlaySelf()" v-if="isLivePlaySupport">本站直播</button>
                 <a :href="livePlayUrl" class="btn btn-xs btn-success" target="_blank">央视直播</a>
               </div>
             </div>
@@ -136,19 +136,23 @@ export default {
       const root = this.$root
       const r = root.router
 
-      root.updateRouter({
-        idxChannel: idx,
-        idxAlbum: 0,
-        m3u8: '',
-        searchText: '',
-        videoTitle: '',
-        site: '',
-        isInSearch: undefined,
-        page: {
-          ...r.page,
-          cur: 1
-        }
-      }, 'push')
+      if (r.isLivePlay) {
+        root.livePlaySelf(idx)
+      } else {
+        root.updateRouter({
+          idxChannel: idx,
+          idxAlbum: 0,
+          m3u8: '',
+          searchText: '',
+          videoTitle: '',
+          site: '',
+          isInSearch: undefined,
+          page: {
+            ...r.page,
+            cur: 1
+          }
+        }, 'push')
+      }
     },
     clickAlbum(elItem, idx) {
       const root = this.$root
@@ -165,21 +169,6 @@ export default {
           ...r.page,
           cur: 1
         }
-      }, 'push')
-    },
-    livePlaySelf() {
-      const root = this.$root
-      const r = root.router
-      const curChannel = root.cctv.channel.list[r.idxChannel]
-      const n = (curChannel.name.match(/\d+/g) || [])[0]
-      const videoUrl = n == '14' ?
-      'http://cctvcnch5c.v.wscdns.com/live/cctvchild_2/index.m3u8?contentid=2820180516001&uid=default' :
-      'http://cctvtxyh5c.liveplay.myqcloud.com/live/cctv' + n + '_2/index.m3u8'
-
-      root.updateRouter({
-        videoId: '',
-        videoTitle: '直播：' + curChannel.name,
-        m3u8: videoUrl,
       }, 'push')
     },
   },
@@ -468,20 +457,55 @@ export default {
         root.cctv.channel.list = result
         cb && cb()
       })
-    }
+    },
+    livePlaySelf(idxChannel) {
+      const root = this.$root
+      const r = root.router
+      idxChannel = idxChannel === undefined ? (r.idxChannel || 0) : idxChannel
+      const curChannel = root.cctv.channel.list[idxChannel] || {}
+      const n = idxChannel + 1
+      let videoUrl = 'http://cctvtxyh5c.liveplay.myqcloud.com/live/cctv' + n + '_2/index.m3u8'
+
+      console.log(idxChannel)
+      switch (n) {
+        case 9:
+        case 14:
+          if (root.is.win) {
+            window.open(({
+              '9': 'http://tv.cctv.com/live/cctvjilu/',
+              '14': 'http://tv.cctv.com/live/cctvchild/',
+            })[n])
+            return
+          } else {
+            videoUrl = ({
+              '9': 'http://cctvtxyh5c.liveplay.myqcloud.com/live/cctvjilu_2/index.m3u8?contentid=2820180516001&uid=default',
+              '14': 'http://cctvcnch5c.v.wscdns.com/live/cctvchild_2/index.m3u8?contentid=2820180516001&uid=default',
+            })[n]
+          }
+        default:
+
+          break
+      }
+
+      root.updateRouter({
+        isLivePlay: true,
+        idxChannel,
+        videoId: '',
+        videoTitle: '直播：' + curChannel.name,
+        m3u8: videoUrl,
+      }, 'push')
+    },
   },
   computed: {
     livePlayUrl() {
       const root = this.$root
       const r = root.router
-      const aName = root.cctv.channel.list[r.idxChannel].name
-      const n = (aName.match(/\d+/g) || [])[0]
+      const n = r.idxChannel + 1
 
-      return (
-        n == '14' ?
-        'http://tv.cctv.com/live/cctvchild/' :
-        'http://tv.cctv.com/live/cctv' + n + '/'
-      )
+      return ({
+        '9': 'http://tv.cctv.com/live/cctvjilu/',
+        '14': 'http://tv.cctv.com/live/cctvchild/',
+      })[n] || 'http://tv.cctv.com/live/cctv' + n + '/'
     },
     isLivePlaySupport() {
       const root = this.$root
@@ -489,7 +513,7 @@ export default {
       
       if (root.is.supportM3u8) return true
 
-      return this.curChannel.name !== 'CCTV-14 少儿'
+      return !([9, 14].indexOf(r.idxChannel + 1) > -1)
     },
     listChannel() {
       return this.$root.cctv.channel.list
