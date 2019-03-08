@@ -28,7 +28,6 @@ export default {
     if (newVal) {
       this.playM3u8()
     } else {
-      console.log('def')
       this.listVideo = []
       this.updateRouter({
         idxVideo: undefined,

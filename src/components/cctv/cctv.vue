@@ -21,7 +21,7 @@
             <a href="javascript:"
               :class="['gray-title', {on: idx === $root.router.idxAlbum}]"
               @click="clickAlbum(item, idx)"
-            >{{item.name + ' (' + item.n + ')' }}</a>
+            >{{item.name + (item.n > 0 ? ' (' + item.n + ')' : '') }}</a>
           </li>
         </ul>
       </div>
@@ -30,6 +30,7 @@
           <div class="gray-title lmr">
             <div class="fr" v-if="!$root.router.searchText">
               <div class="btn-box">
+                <button class="btn btn-xs btn-success" @click="$root.fetchVideoList()">刷新</button>
                 <button class="btn btn-xs btn-success" @click="$root.livePlaySelf()" v-if="isLivePlaySupport">本站直播</button>
                 <a :href="livePlayUrl" class="btn btn-xs btn-success" target="_blank">央视直播</a>
               </div>
@@ -340,11 +341,18 @@ export default {
           root.jsonp('http://api.cntv.cn/lanmu/videolistByColumnId', {
             'id': curAlbum.id,
             'n': r.page.size,
-            'p': r.page.cur,
             'of': 'fdate',
+            'p': r.page.cur,
             'type': '0',
             'serviceId': 'tvcctv',
             '?': 'cb',
+            // 'id': curAlbum.id,
+            // 'n': r.page.size,
+            // 'p': r.page.cur,
+            // 'of': 'fdate',
+            // 'type': '0',
+            // 'serviceId': 'tvcctv',
+            // '?': 'cb',
           }, (dataOrigin) => {
             if (xid !== vm.xid) return
 
@@ -466,7 +474,8 @@ export default {
       idxChannel = idxChannel === undefined ? (r.idxChannel || 0) : idxChannel
       const curChannel = root.cctv.channel.list[idxChannel] || {}
       const n = idxChannel + 1
-      let videoUrl = 'http://cctvtxyh5c.liveplay.myqcloud.com/live/cctv' + n + '_2/index.m3u8'
+      // let videoUrl = 'http://cctvtxyh5c.liveplay.myqcloud.com/live/cctv' + n + '_2/index.m3u8'
+      let videoUrl = 'http://cctvcnch5c.v.wscdns.com/live/cctv' + n + '_2/index.m3u8?contentid=2820180516001&uid=default'
 
       console.log(idxChannel)
       switch (n) {
@@ -480,7 +489,8 @@ export default {
             return
           } else {
             videoUrl = ({
-              '9': 'http://cctvtxyh5c.liveplay.myqcloud.com/live/cctvjilu_2/index.m3u8?contentid=2820180516001&uid=default',
+              // '9': 'http://cctvtxyh5c.liveplay.myqcloud.com/live/cctvjilu_2/index.m3u8?contentid=2820180516001&uid=default',
+              '9': 'http://cctvcnch5c.v.wscdns.com/live/cctvjilu_2/index.m3u8?contentid=2820180516001&uid=default',
               '14': 'http://cctvcnch5c.v.wscdns.com/live/cctvchild_2/index.m3u8?contentid=2820180516001&uid=default',
             })[n]
           }
@@ -513,9 +523,9 @@ export default {
       const root = this.$root
       const r = root.router
       
-      if (root.is.supportM3u8) return true
-
-      return !([9, 14].indexOf(r.idxChannel + 1) > -1)
+      return root.is.supportM3u8
+      // if (root.is.supportM3u8) return true
+      // return !([9, 14].indexOf(r.idxChannel + 1) > -1)
     },
     listChannel() {
       return this.$root.cctv.channel.list
@@ -587,15 +597,12 @@ window.getHtml5VideoData = function(data) {
           margin-bottom: 0; white-space: nowrap;
           li {
             display: inline-block; vertical-align: top; overflow: hidden;
-            border: none;
           }
           .on {color: #337ab7;}
         }
       }
       .box-main {
-        .gray-title {
-          border: none;
-        }
+        .gray-title {}
       }
     }
   }

@@ -9,4 +9,15 @@ export default {
 
     return (cur % len + len) % len
   },
+  topPt() {
+    const root = this.$root
+
+    return ({
+      iphoneSe: '20px',
+      iphone: '20px',
+      iphonePlus: '20px',
+      iphoneX: '32px',
+      iphoneXsMax: '35px',
+    })[root.urlSearchData.platform] || 0
+  },
 }

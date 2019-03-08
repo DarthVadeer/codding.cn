@@ -5,6 +5,7 @@ export default {
   routerInit() {
     const root = this.$root
     const channel = root.channel
+    const urlSearchData = {}
     let r = {}
 
     try {
@@ -22,8 +23,19 @@ export default {
     r.page = r.page || {}
     r.page.cur = r.page.cur || 1
     r.page.size = r.page.size || 100
+    // r.page.size = 20
     r.page.total = r.page.total || 0
     root.router = r
+
+    location.search.substring(1).split('&').forEach((v, idx) => {
+      const t = v.split('=')
+      try {
+        t[1] = decodeURIComponent(t[1])
+      } catch (e) {}
+      urlSearchData[t[0]] = t[1]
+    })
+
+    root.urlSearchData = urlSearchData
   },
   updateRouter(o, isRouterPush) {
     const root = this.$root
@@ -279,3 +291,12 @@ export default {
     }
   },
 }
+
+// alert(innerWidth * devicePixelRatio)
+// alert(innerWidth)
+
+
+
+
+
+

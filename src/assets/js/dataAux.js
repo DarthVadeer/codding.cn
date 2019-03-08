@@ -106,6 +106,7 @@ export default {
         '39': 'right',
         '40': 'down',
       },
+      urlSearchData: {},
       router: {
         // idxChannel: 0,
         // idxAlbum: 0,
