@@ -12,12 +12,10 @@ export default {
   topPt() {
     const root = this.$root
 
-    return ({
-      iphoneSe: '20px',
-      iphone: '20px',
-      iphonePlus: '20px',
-      iphoneX: '32px',
-      iphoneXsMax: '35px',
-    })[root.urlSearchData.platform] || 0
+    if (root.urlSearchData.isInApp) {
+      return root.urlSearchData.isSpecialScreen === "true" ? '35px' : '20px'
+    } else {
+      return '0px'
+    }
   },
 }

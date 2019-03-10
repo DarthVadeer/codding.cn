@@ -81,6 +81,10 @@ export default {
     return {
       lenAni: 30,
       baseUrl,
+      alertData: {
+        isShow: 0,
+        msg: 'Hello Again'
+      },
       is: {
         win: isWin,
         mac: isMac,

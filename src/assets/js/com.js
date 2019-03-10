@@ -4,7 +4,7 @@ Vue.component('pagin', {
   template: `
     <div class="pagin" v-if="$root.router.page.total > 0">
       <div class="ib hidden-sm">
-        <span>共 {{page.total}} 条</span>
+        <span>共 {{page.total}}</span>
       </div>
       <div class="ib hidden-sm" v-if="0">
         <select class="form-control" style="width: 80px;"
@@ -24,7 +24,7 @@ Vue.component('pagin', {
           >{{item.n}}</li>
         </ul>
       </div>
-      <div class="ib">
+      <div class="ib hidden-xs">
         <input type="text" style="width: 50px;" class="form-control c"
           :value="page.cur"
           @change="page.cur = $event.target.value"
@@ -195,4 +195,23 @@ Vue.component('loading', {
     </transition>
   `,
   props: ['isShow']
+})
+
+Vue.component('alert', {
+  template: `
+    <div id="alert" class="panel-notice"
+      v-if="$root.alertData.isShow"
+    >
+      <div class="inner">
+        <div class="box-msg" v-html="$root.alertData.msg"></div>
+        <div class="box-btn flex">
+          <div class="_1">
+            <a href="javascript:"
+              @click="$root.alertData.isShow = 0"
+            >确定</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
 })

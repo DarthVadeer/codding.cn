@@ -55,6 +55,8 @@
         </div>
       </div>
     </transition>
+
+    <alert></alert>
   </div>
 </template>
 

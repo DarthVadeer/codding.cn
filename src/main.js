@@ -39,6 +39,8 @@ window.vm = new Vue({
       root.routerInit()
       window.onpopstate = root.routerInit.bind(root)
       setTimeout(root.lazyLoad.bind(root), 600)
+
+      // root.alert(JSON.stringify(root.urlSearchData))
     })
   }
 })

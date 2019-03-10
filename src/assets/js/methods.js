@@ -2,6 +2,12 @@ import Hls from 'hls.js'
 
 export default {
   rand: window.rand,
+  alert(msg) {
+    const root = this.$root
+
+    root.alertData.isShow = true
+    root.alertData.msg = msg
+  },
   routerInit() {
     const root = this.$root
     const channel = root.channel
@@ -23,11 +29,11 @@ export default {
     r.page = r.page || {}
     r.page.cur = r.page.cur || 1
     r.page.size = r.page.size || 100
-    // r.page.size = 20
     r.page.total = r.page.total || 0
     root.router = r
 
     location.search.substring(1).split('&').forEach((v, idx) => {
+      if (!v) return
       const t = v.split('=')
       try {
         t[1] = decodeURIComponent(t[1])
@@ -291,12 +297,6 @@ export default {
     }
   },
 }
-
-// alert(innerWidth * devicePixelRatio)
-// alert(innerWidth)
-
-
-
 
 
 
