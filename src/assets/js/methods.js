@@ -11,7 +11,6 @@ export default {
   routerInit() {
     const root = this.$root
     const channel = root.channel
-    const urlSearchData = {}
     let r = {}
 
     try {
@@ -31,6 +30,10 @@ export default {
     r.page.size = r.page.size || 100
     r.page.total = r.page.total || 0
     root.router = r
+  },
+  initUrlSearchData() {
+    const root = this.$root
+    const urlSearchData = {}
 
     location.search.substring(1).split('&').forEach((v, idx) => {
       if (!v) return
@@ -231,9 +234,9 @@ export default {
     const r = root.router
     const elItem = (root.listVideo || [])[r.idxVideo] || {}
 
-    window.open('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + root.json2url({
+    location.href = ('https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + root.json2url({
       pics: elItem.img || location.origin + '/static/img/logo.png',
-      url: root.is.local ? 'http://codding.cn' : location.href,
+      url: root.is.local ? 'http://codding.cn' : location.origin + location.pathname + location.hash,
       title: elItem.title || elItem.desc || document.title,
       summary: elItem.desc || elItem.title || '摘星fy的世界',
     }))

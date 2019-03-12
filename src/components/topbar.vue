@@ -42,7 +42,15 @@
     <div>
       <ul>
         <li style="padding-right: 0;">
-          <button @click="$root.handleShare" class="btn btn-primary btn-xs" style="position: relative; top: -1px;">分享</button>
+          <button
+            @click="$root.handleShare"
+            class="btn btn-primary btn-xs" style="position: relative; top: -1px;"
+            v-if="!$root.urlSearchData.isInApp"
+          >分享</button>
+          <template v-else>
+            <span class="btn btn-xs btn-primary" onclick="history.back()">后退</span>
+            <span class="btn btn-xs btn-primary" onclick="history.forward()">前进</span>
+          </template>
         </li>
       </ul>
     </div>

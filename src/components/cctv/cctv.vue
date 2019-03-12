@@ -30,7 +30,7 @@
           <div class="gray-title lmr">
             <div class="fr" v-if="!$root.router.searchText">
               <div class="btn-box">
-                <button class="btn btn-xs btn-success" @click="$root.fetchVideoList()">刷新</button>
+                <button class="btn btn-xs btn-success" onclick="location.reload()">刷新</button>
                 <button class="btn btn-xs btn-success" @click="$root.livePlaySelf()" v-if="isLivePlaySupport">本站直播</button>
                 <a :href="livePlayUrl" class="btn btn-xs btn-success" target="_blank">央视直播</a>
               </div>
@@ -482,7 +482,7 @@ export default {
         case 9:
         case 14:
           if (root.is.win) {
-            window.open(({
+            location.href = (({
               '9': 'http://tv.cctv.com/live/cctvjilu/',
               '14': 'http://tv.cctv.com/live/cctvchild/',
             })[n])
@@ -583,7 +583,7 @@ window.getHtml5VideoData = function(data) {
     }, 'push')
     return
   }
-  window.open(root.videoInfo.site)
+  location.href = (root.videoInfo.site)
 }
 </script>
 

@@ -34,6 +34,7 @@ window.vm = new Vue({
     const root = this.$root
     const r = root.router
     
+    root.initUrlSearchData()
     root.initEvents()
     root.initChannel(() => {
       root.routerInit()
