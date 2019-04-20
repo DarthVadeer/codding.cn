@@ -1,68 +1,52 @@
 export default {
-  router: {
+  'router': {
     deep: true,
     handler(newVal) {
-      const root = this.$root
+      // console.warn('changed router')
+      const vm = this
+      let hashData = JSON.stringify(newVal)
+      !vm.is.local && (hashData = encodeURIComponent(hashData))
+      const targetUrl = location.origin + location.pathname + location.search + '#' + hashData
+      history[vm.isRouterPush ? 'pushState' : 'replaceState']({}, '', targetUrl)
 
-      let hashData = JSON.stringify(root.router)
-      !root.is.local && (hashData = encodeURIComponent(hashData))
-      const newUrl = location.origin + location.pathname + location.search + '#' + hashData
-      history[root.isRouterPush ? 'pushState' : 'replaceState']({}, '', newUrl)
-
-      delete root.isRouterPush
+      vm.isRouterPush = false
     }
   },
   'router.idxChannel'(newVal) {
-    this.fetchVideoList()
+    // console.warn('changed router.idxChannel')
+    vm.cctv.fetchVideoList()
   },
   'router.idxAlbum'(newVal) {
-    this.fetchVideoList()
+    // console.warn('changed router.idxAlbum')
+    vm.cctv.fetchVideoList()
   },
-  'router.page.cur'(newVal) {
-    this.fetchVideoList()
-  },
-  'router.page.size'(newVal) {
-    this.fetchVideoList()
-  },
-  'router.m3u8'(newVal) {
-    if (newVal) {
-      this.playM3u8()
-    } else {
-      this.listVideo = []
-      this.updateRouter({
-        idxVideo: undefined,
-        isLivePlay: undefined,
-      })
-      this.$root.lazyLoad()
-    }
-  },
-  'router.videoTitle'(newVal) {
-    document.title = newVal || 'codding.cn | By 摘星fy'
-  },
-  'com'(newVal) {
-    const root = this.$root
-    const r = root.router
-    
-    switch (newVal) {
-      case 'algo':
-        root.router.coms[0] = 'cctv'
-        break
-      case 'cctv':
-        this.fetchVideoList()
-        break
-    }
+  'router.videoInfo.m3u8'(newVal) {
+    // console.warn('changed router.videoInfo.m3u8')
+    if (!newVal) return
+    this.$root.playM3u8()
   },
   'router.searchText'(newVal) {
-    const root = this.$root
-    const r = root.router
+    // console.warn('changed router.searchText')
+    const vm = this.$root
+    vm.cctv.sugg.text = newVal
+    newVal ? vm.cctv.justFetchAlbum() : vm.cctv.fetchVideoList()
+  },
+  'router.page.cur'() {
+    const me = this
+    const vm = me.$root
+    const r = vm.router
     
-    root.sugg.text = root.sugg.oldText = newVal
-    root.fetchSearchResult()
+    switch (vm.com) {
+      case 'cctv':
+        vm.cctv.fetchVideoList()
+        break
+    }
   },
   'mapPlayTime': {
     deep: true,
     handler(newVal) {
+      // console.warn('changed mapPlayTime')
       localStorage.mapPlayTime = JSON.stringify(newVal)
     }
-  }
+  },
 }
