@@ -30,11 +30,12 @@ export default {
     r.coms[0] = r.coms[0] || 'cctv'
     r.idxChannel = r.idxChannel || 0
     r.idxAlbum = r.idxAlbum || 0
+    r.idxAux9 = r.idxAux9 || 0
     r.playDirection = r.playDirection === undefined ? 1 : r.playDirection
     r.searchText = r.searchText || ''
 
     r.page = r.page || {}
-    r.page.cur = r.page.cur || 1
+    r.page.cur = r.page.cur || 0
     r.page.size = r.page.size || 100
     r.page.total = r.page.total || 0
 

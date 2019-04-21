@@ -1,3 +1,5 @@
+import Hls from 'hls.js'
+
 export default {
   rootData() {
     const ua = navigator.userAgent
@@ -12,7 +14,7 @@ export default {
     } catch (e) {}
 
     return {
-      localUrl: 'http://10.0.1.2/codding/',
+      localUrl: 'http://10.0.1.5/codding/',
       dw: window.innerWidth,
       dh: window.innerHeight,
       mapPlayTime,
@@ -22,6 +24,8 @@ export default {
         ios: isIos,
         android: isAndroid,
         win: isWin,
+        supportM3u8: !!document.createElement('video').canPlayType('application/vnd.apple.mpegurl'),
+        supportHls: Hls.isSupported(),
       },
       searchData: {},
       router: {

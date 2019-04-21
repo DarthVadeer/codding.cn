@@ -39,6 +39,12 @@ export default {
     let url = o.url
     const extension = vm.getFileType(url)
 
+    if (!navigator.onLine) {
+      vm.alert('你断网了，请保持网络畅通')
+      vm.is.loading = false
+      return
+    }
+
     if (vm.is.local && ['php'].some(ex => ex === extension)) {
       url = vm.localUrl + url.replace(/^\.\//, '', '')
     }

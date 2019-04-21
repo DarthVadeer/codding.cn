@@ -135,8 +135,9 @@ Vue.component('alert', {
     <transition name="fade">
       <div class="panel-notice" id="panel-alert"
         v-if="$root.alertData.isShow"
+        @click="$root.alertData.isShow = false"
       >
-        <div class="inner">
+        <div class="inner" @click.stop>
           <div class="box-msg" v-html="$root.alertData.msg"></div>
           <div class="flex btn-box">
             <div class="_1 text-blue" tabindex="1" @click="$root.alertData.isShow = false">确定</div>
@@ -152,8 +153,9 @@ Vue.component('confirm', {
     <transition name="fade">
       <div class="panel-notice" id="panel-confirm"
         v-if="$root.confirmData.isShow"
+        @click="$root.confirmData.isShow = false"
       >
-        <div class="inner">
+        <div class="inner" @click.stop>
           <div class="box-msg" v-html="$root.confirmData.msg"></div>
           <div class="flex btn-box">
             <div class="_1 text-blue" tabindex="1" @click="handleConfirm">确定</div>

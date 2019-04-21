@@ -4,8 +4,8 @@
       <div class="box-list box-list-channel">
         <ul>
           <li
-            :class="['gray-title', {on: idx === r.idxChannel}]"
             v-for="(item, idx) in channel.list"
+            :class="['gray-title', {on: idx === r.idxChannel}]"
             @click="clickChannel(item, idx)"
           >{{item.name}}</li>
         </ul>
@@ -13,18 +13,29 @@
       <div class="box-list box-list-album">
         <ul>
           <li
-            :class="['gray-title', {on: idx === r.idxAlbum}]"
             v-for="(item, idx) in listAlbum"
+            :class="['gray-title', {on: idx === r.idxAlbum}]"
             @click="clickAlbum(item, idx)"
           >{{item.name}}</li>
+        </ul>
+      </div>
+      <div class="box-list box-list-aux9"
+        v-if="r.idxChannel === 8 && listAux9.length > 0"
+      >
+        <ul>
+          <li
+            v-for="(item, idx) in listAux9"
+            :class="['gray-title ellipsis', {on: idx === r.idxAux9}]"
+            @click="clickAux9(item, idx)"
+          >{{item}}</li>
         </ul>
       </div>
       <div class="box-main auto-flex">
         <div class="flex-layout">
           <div class="gray-title">
             <div>
-              <span v-if="r.searchText.trim()">搜索：{{r.searchText}}</span>
-              <span v-else>{{curAlbum.name}}</span>
+              <span v-if="r.searchText.trim()">搜索：{{r.searchText + (r.page.total > 0 ? ' (' + (r.page.total) + ')' : '')}}</span>
+              <span v-else>{{curAlbum.name + (r.page.total > 0 ? ' (' + (r.page.total) + ')' : '')}}</span>
             </div>
           </div>
 
@@ -37,7 +48,6 @@
                   <div class="inner">
                     <input type="text" class="form-control" placeholder="搜点什么..."
                       v-model="sugg.text"
-                      @blur="sugg.list = []"
                       @input="fetchSugg"
                       @click.stop="fetchSugg"
                       @keydown="handleKeydownToCtrlSugg"
@@ -75,7 +85,7 @@
                   @change="$root.isRouterPush = true; r.page.cur = parseInt($event.target.value);"
                 >
                   <option
-                    :value="n"
+                    :value="n - 1"
                     v-for="n in Math.ceil((r.page.total || 1) / r.page.size)"
                   >{{'第' + n + '页'}}</option>
                 </select>
@@ -138,7 +148,8 @@ export default {
       video: {
         group: [],
         group2: [],
-      }
+        aux9: {},
+      },
     }
   },
   methods: {
@@ -182,7 +193,7 @@ export default {
 
       if (!searchText) return
 
-      sugg.list = []
+      // sugg.list = []
       clearTimeout(vm.timerFetchSugg)
       vm.timerFetchSugg = setTimeout(() => {
         vm.loadScript('https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText), () => {
@@ -204,8 +215,9 @@ export default {
         idxChannel: idx,
         idxAlbum: 0,
         searchText: '',
+        idxAux9: 0,
         page: {
-          cur: 1,
+          cur: 0,
           size: 100,
           total: 0,
         },
@@ -222,8 +234,27 @@ export default {
       vm.updateRouter({
         idxAlbum: idx,
         searchText: '',
+        idxAux9: 0,
         page: {
-          cur: 1,
+          cur: 0,
+          size: 100,
+          total: 0,
+        },
+        videoInfo: {},
+      }, 'push')
+
+      me.fetchVideoList()
+    },
+    clickAux9(elItem, idx) {
+      const me = this
+      const vm = me.$root
+      const r = vm.router
+      
+      vm.updateRouter({
+        searchText: '',
+        idxAux9: idx,
+        page: {
+          cur: 0,
           size: 100,
           total: 0,
         },
@@ -441,38 +472,30 @@ export default {
             me.$refs.videoWrapper.scrollTop = 0
             me.playVideoByChangeCurPage && me.playVideoByChangeCurPage()
             delete me.playVideoByChangeCurPage
+
+            const list = (me.video.aux9[me.curAlbum.name] || {})[me.listAux9[r.idxAux9]] || []
+            
+            me.video.group = [{
+              title: '全部视频共' + list.length + '条',
+              list,
+            }]
           }
 
           if (r.idxChannel === 8) {
-            if (me.video.aux9) {
-              const list = me.video.aux9[curAlbum.name]
-
-              me.video.group = [{
-                title: '全部视频共' + list.length + '条',
-                list,
-              }]
-
+            if (Object.keys(me.video.aux9).length > 0) {
               defFinish()
             } else {
-              vm.get('./static/data/aux9.json', {}, (map) => {
-                console.log(map)
-                const list = map[curAlbum.name]
-
-                me.video.aux9 = map
-                me.video.group = [{
-                  title: '全部视频共' + list.length + '条',
-                  list,
-                }]
-                
+              vm.get('./static/data/aux9.json', {}, (data) => {
+                me.video.aux9 = data
                 defFinish()
-              })
+              }, defFinish)
             }
           } else {
             vm.jsonp('http://api.cntv.cn/lanmu/videolistByColumnId', {
               'id': curAlbum.id,
               'n': 100,
               'of': 'fdate',
-              'p': r.page.cur,
+              'p': r.page.cur + 1,
               'type': '0',
               'serviceId': 'tvcctv',
               '?': 'cb',
@@ -501,14 +524,7 @@ export default {
               }]
 
               defFinish()
-            }, (e) => {
-              vm.is.loading = false
-              vm.alert(navigator.online ? '接口异常' : '你断网了，请保持网络畅通')
-              me.video.group = [{
-                title: '暂无数据',
-                list: [],
-              }]
-            })
+            }, defFinish)
           }
         }
       }, 200)
@@ -526,6 +542,13 @@ export default {
     },
     curAlbum() {
       return this.listAlbum[this.r.idxAlbum] || {name: ''}
+    },
+    listAux9() {
+      const me = this
+      const vm = me.$root
+      const r = vm.router
+      
+      return Object.keys(me.video.aux9[me.curAlbum.name] || {})
     },
   },
   components: {
@@ -589,7 +612,7 @@ export default {
   nodeStyle.id = 'cctv-media'
   let sHtml = new Array(50).fill().map((_, idx) => {
     return `
-      @media (min-width: ${idx * 200 + 750}px) {
+      @media (min-width: ${idx * 200 + 720}px) {
         .cctv .box-main .video-list li {
           width: ${1 / (idx + 2) * 100}%;
         }
@@ -598,7 +621,7 @@ export default {
   }).join('')
 
   sHtml += `
-    @media (max-width: 750px) {
+    @media (max-width: 720px) {
       .cctv .box-main .video-list li {
         width: 33.33%;
       }
@@ -649,7 +672,9 @@ export default {
               padding-top: 62.5%; cursor: pointer; overflow: hidden;
               background: #eee no-repeat center / cover;
               .text-box {
-                width: 100%; position: absolute; left: 0; bottom: 0; color: #fff; background: rgba(0,0,0,.5); padding: 8px;
+                width: 100%; padding: 8px;
+                position: absolute; left: 0; bottom: 0;
+                color: #fff; background: rgba(0,0,0,.5);
                 .title {margin-bottom: 5px;}
               }
             }
