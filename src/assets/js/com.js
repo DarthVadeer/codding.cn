@@ -13,10 +13,20 @@ Vue.component('player', {
         x-webkit-airplay="allow"
         @timeupdate="handleTimeupdate"
         @ended="playNext"
+        @error="playOnCCTV"
       ></video>
     </div>
   `,
   methods: {
+    playOnCCTV() {
+      const me = this
+      const vm = me.$root
+      const r = vm.router
+      
+      vm.confirm('视频播放失败，点击确定进入央视播放', () => {
+        location.href = r.videoInfo.site
+      })
+    },
     handleTimeupdate(e) {
       const vm = this.$root
       const r = vm.router

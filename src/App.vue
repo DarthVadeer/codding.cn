@@ -44,12 +44,18 @@ export default {
     initEvents() {
       const vm = this.$root
 
-      window.onpopstate = vm.initRouter.bind(vm)
-      window.onresize = window.onorientationchange = (e) => {
+      // window.onpopstate = vm.initRouter.bind(vm)
+      window.addEventListener('popstate', vm.initRouter.bind(vm), false)
+      window.addEventListener('resize', handleResize, false)
+      window.addEventListener('orientationchange', handleResize, false)
+      // window.onresize = window.onorientationchange = 
+
+      function handleResize(e) {
         vm.dw = window.innerWidth
         vm.dh = window.innerHeight
         vm.lazyLoad.call(vm)
       }
+
       document.addEventListener('keydown', (e) => {
         if (e.ctrlKey) {
           switch (vm.keyMap[e.keyCode]) {

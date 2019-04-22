@@ -30,5 +30,17 @@ window.vm = new Vue({
     ...require('@/assets/js/computed').default,
   },
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
+  mounted() {
+    const me = this
+    const vm = me.$root
+    const r = vm.router
+    
+    vm.get('./api/pub.php', {
+      a: 'test'
+    }, (data) => {}, (e) => {
+      console.log(e)
+      vm.alert('接口探测失败')
+    })
+  }
 })

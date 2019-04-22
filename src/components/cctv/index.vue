@@ -6,7 +6,7 @@
           <li
             v-for="(item, idx) in channel.list"
             :class="['gray-title', {on: idx === r.idxChannel}]"
-            @click="clickChannel(item, idx)"
+            @click="clickNav({idxChannel: idx, idxAlbum: 0, idxAux9: 0})"
           >{{item.name}}</li>
         </ul>
       </div>
@@ -15,7 +15,7 @@
           <li
             v-for="(item, idx) in listAlbum"
             :class="['gray-title', {on: idx === r.idxAlbum}]"
-            @click="clickAlbum(item, idx)"
+            @click="clickNav({idxAlbum: idx, idxAux9: 0})"
           >{{item.name}}</li>
         </ul>
       </div>
@@ -26,21 +26,29 @@
           <li
             v-for="(item, idx) in listAux9"
             :class="['gray-title ellipsis', {on: idx === r.idxAux9}]"
-            @click="clickAux9(item, idx)"
+            @click="clickNav({idxAux9: idx})"
           >{{item}}</li>
         </ul>
       </div>
       <div class="box-main auto-flex">
         <div class="flex-layout">
-          <div class="gray-title">
-            <div>
+          <div class="gray-title lmr">
+            <div class="fr btn-box">
+              <button class="btn btn-primary btn-xs"
+                @click="$root.updateRouter({isShowHotWord: !r.isShowHotWord}, 'push')"
+              >
+                <i class="glyphicon glyphicon-info-sign"></i>
+                <span>检索关键词</span>
+              </button>
+            </div>
+            <div class="mid">
               <span v-if="r.searchText.trim()">搜索：{{r.searchText + (r.page.total > 0 ? ' (' + (r.page.total) + ')' : '')}}</span>
               <span v-else>{{curAlbum.name + (r.page.total > 0 ? ' (' + (r.page.total) + ')' : '')}}</span>
             </div>
           </div>
 
           <form class="space"
-            @submit.prevent="chooseSugg"
+            @submit.prevent="chooseSugg()"
           >
             <div class="flex-layout flex-row">
               <div class="auto-flex" style="overflow: visible;">
@@ -101,7 +109,31 @@
               <video-group :group-list="video.group2"></video-group>
               <video-group :group-list="video.group"></video-group>
             </div>
+
             <loading :is-show="$root.is.loading"></loading>
+
+            <div class="auto-scroll panel-hot-word"
+              v-show="r.isShowHotWord"
+            >
+              <div class="space" style="padding-top: 0;">
+                <!-- <div class="hot-word-title">
+                  <strong>检索关键词</strong>
+                </div> -->
+                <div>
+                  <canvas class="canvasHotWord" ref="canvasHotWord"
+                    @click="renderHotWord"
+                  ></canvas>
+                </div>
+                <!-- <ul class="video-list"
+                  @click="deligateHotWord"
+                >
+                  <li class="ellipsis"
+                    v-for="(item, idx) in hotWord.list"
+                    :title="item"
+                  >{{item}}</li>
+                </ul> -->
+              </div>
+            </div>
           </div>
         </div>
 
@@ -109,7 +141,7 @@
         <div class="box-player flex-layout"
           v-if="r.videoInfo.m3u8"
         >
-          <div class="gray-title">
+          <div class="gray-title lmr">
             <div class="btn-box fr">
               <span class="btn btn-success btn-xs"
                 @click="clickAndPlayInCCTV()"
@@ -118,7 +150,7 @@
                 @click="$root.updateRouter({videoInfo: {}}, 'push')"
               >关闭视频</span>
             </div>
-            <div class="ellipsis">
+            <div class="mid">
               <span class="hidden-sm hidden-xs">正在播放：</span>
               <span>{{r.videoInfo.title}}</span>
             </div>
@@ -150,19 +182,87 @@ export default {
         group2: [],
         aux9: {},
       },
+      hotWord: {
+        isLoaded: false,
+        list: [],
+      },
     }
   },
   methods: {
-    chooseSugg() {
+    renderHotWord(e = {}) {
+      const me = this
+      const vm = me.$root
+      const r = vm.router
+      
+      if (!r.isShowHotWord) return
+
+      me.$nextTick(() => {
+        const c = this.$refs.canvasHotWord
+        const gd = c.getContext('2d')
+        const col = Math.ceil(c.offsetWidth / 200)
+        const colSize = c.offsetWidth / col
+        const space = 10
+        const list = me.hotWord.list
+        let floor = -1
+
+        c.width = c.offsetWidth
+        c.height = Math.ceil(list.length / col) * 26
+        gd.clearRect(0, 0, c.offsetWidth, c.offsetHeight)
+        gd.fillStyle = '#333'
+
+        for (let i = 0; i < list.length; i++) {
+          const text = list[i]
+          let _i = i % col
+
+          if (_i === 0) floor++
+
+          const x = _i * colSize
+          const y = floor * 28
+
+          gd.save()
+          gd.beginPath()
+          gd.rect(x, y, colSize - space, 24)
+          // gd.fillStyle = 'rgba(255,0,0,.5)'
+          // gd.fill()
+          gd.clip()
+
+          if (gd.isPointInPath(e.offsetX, e.offsetY)) {
+            vm.updateRouter({
+              searchText: text,
+              isShowHotWord: false,
+            }, 'push')
+          }
+
+          gd.font = '14px Arial'
+          gd.textBaseline = 'top'
+          gd.fillStyle = '#333'
+          gd.fillText(text, x, y + 5)
+          gd.restore()
+        }
+      })
+    },
+    /*deligateHotWord(e) {
+      const me = this
+      const vm = me.$root
+      const r = vm.router
+      
+      vm.isRouterPush = true
+      r.searchText = me.sugg.text = e.target.innerText.trim()
+      me.chooseSugg()
+    },*/
+    chooseSugg(suggText) {
       const me = this
       const vm = me.$root
       const r = vm.router
       const sugg = me.sugg
-      const searchText = (sugg.list[sugg.cur] || sugg.text).trim()
+      const searchText = (sugg.list[sugg.cur] || sugg.text || suggText).trim()
 
       if (!searchText) return
       
-      vm.updateRouter({searchText}, 'push')
+      vm.updateRouter({
+        searchText,
+        isShowHotWord: false,
+      }, 'push')
       me.justFetchAlbum()
     },
     handleKeydownToCtrlSugg(e) {
@@ -206,53 +306,15 @@ export default {
     clickAndPlayInCCTV() {
       location.href = this.r.videoInfo.site
     },
-    clickChannel(elItem, idx) {
+    clickNav(o) {
       const me = this
       const vm = me.$root
       const r = vm.router
-      
-      vm.updateRouter({
-        idxChannel: idx,
-        idxAlbum: 0,
-        searchText: '',
-        idxAux9: 0,
-        page: {
-          cur: 0,
-          size: 100,
-          total: 0,
-        },
-        videoInfo: {},
-      }, 'push')
 
-      me.fetchVideoList()
-    },
-    clickAlbum(elItem, idx) {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      
       vm.updateRouter({
-        idxAlbum: idx,
+        ...o,
+        isShowHotWord: false,
         searchText: '',
-        idxAux9: 0,
-        page: {
-          cur: 0,
-          size: 100,
-          total: 0,
-        },
-        videoInfo: {},
-      }, 'push')
-
-      me.fetchVideoList()
-    },
-    clickAux9(elItem, idx) {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      
-      vm.updateRouter({
-        searchText: '',
-        idxAux9: idx,
         page: {
           cur: 0,
           size: 100,
@@ -473,12 +535,13 @@ export default {
             me.playVideoByChangeCurPage && me.playVideoByChangeCurPage()
             delete me.playVideoByChangeCurPage
 
-            const list = (me.video.aux9[me.curAlbum.name] || {})[me.listAux9[r.idxAux9]] || []
-            
-            me.video.group = [{
-              title: '全部视频共' + list.length + '条',
-              list,
-            }]
+            if (r.idxChannel === 8) {
+              const list = (me.video.aux9[me.curAlbum.name] || {})[me.listAux9[r.idxAux9]] || []
+              me.video.group = [{
+                title: '全部视频共' + list.length + '条',
+                list,
+              }]
+            }
           }
 
           if (r.idxChannel === 8) {
@@ -528,6 +591,19 @@ export default {
           }
         }
       }, 200)
+    },
+    fetchHotWord() {
+      const me = this
+      const vm = me.$root
+      const r = vm.router
+      
+      if (me.hotWord.isLoaded) return
+
+      me.hotWord.isLoaded = true
+      vm.get('./static/data/hotWord.json', {}, (list) => {
+        me.hotWord.list = list
+        me.renderHotWord()
+      })
     },
   },
   computed: {
@@ -591,6 +667,11 @@ export default {
       props: ['groupList'],
     }
   },
+  watch: {
+    'r.isShowHotWord'(newVal) {
+      this.fetchHotWord()
+    },
+  },
   beforeCreate() {
     this.$root.cctv = this
   },
@@ -598,11 +679,16 @@ export default {
     const me = this
     const vm = me.$root
     const r = vm.router
-    
+
     me.sugg.text = r.searchText
     me.fetchChannel(() => {
       r.searchText ? me.justFetchAlbum() : me.fetchVideoList()
     })
+    r.isShowHotWord && me.fetchHotWord()
+    window.onresize = me.renderHotWord.bind(me)
+  },
+  destroyed() {
+    window.onresize = null
   },
 }
 
@@ -654,6 +740,22 @@ export default {
     & > div {
       width: 100%; height: 100%;
       position: absolute; left: 0; top: 0; z-index: 1;
+    }
+    .panel-hot-word {
+      background: #fff;
+      /* .hot-word-title {
+        margin-bottom: 10px;
+      } */
+      .canvasHotWord {
+        width: 100%; cursor: pointer;
+      }
+      /* .video-list {
+        li {
+          line-height: 1.8em; cursor: pointer;
+          display: inline-block; border-right: 15px solid transparent;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+      } */
     }
     .video-wrapper {
       padding-top: 0; padding-bottom: 100px;

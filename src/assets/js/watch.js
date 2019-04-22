@@ -20,6 +20,10 @@ export default {
     // console.warn('changed router.idxAlbum')
     vm.cctv.fetchVideoList()
   },
+  'router.idxAux9'(newVal) {
+    // console.warn('changed router.idxAux9')
+    vm.cctv.fetchVideoList()
+  },
   'router.videoInfo.m3u8'(newVal) {
     // console.warn('changed router.videoInfo.m3u8')
     if (!newVal) return

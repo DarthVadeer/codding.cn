@@ -14,7 +14,7 @@ export default {
     } catch (e) {}
 
     return {
-      localUrl: 'http://10.0.1.5/codding/',
+      localUrl: 'http://10.0.1.3/codding/',
       dw: window.innerWidth,
       dh: window.innerHeight,
       mapPlayTime,
