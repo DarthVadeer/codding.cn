@@ -58,6 +58,7 @@ Vue.component('player', {
           }
 
           r.playDirection == 1 ? targetIndex++ : targetIndex--
+          vm.$delete(vm.mapPlayTime, r.videoInfo.m3u8)
 
           if (targetIndex.isInRange(0, arr.length - 1)) {
             vm.cctv.fetchVideoUrl(arr[targetIndex])
