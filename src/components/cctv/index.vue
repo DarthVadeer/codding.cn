@@ -35,7 +35,7 @@
           <div class="gray-title lmr">
             <div class="fr btn-box">
               <button class="btn btn-primary btn-xs"
-                @click="$root.updateRouter({isShowHotWord: !r.isShowHotWord}, 'push')"
+                @click="r.isShowHotWord = !r.isShowHotWord"
               >
                 <i class="glyphicon glyphicon-info-sign"></i>
                 <span>检索关键词</span>
@@ -112,27 +112,14 @@
 
             <loading :is-show="$root.is.loading"></loading>
 
-            <div class="auto-scroll panel-hot-word"
+            <div class="auto-scroll space video-wrapper panel-hot-word"
               v-show="r.isShowHotWord"
             >
-              <div class="space" style="padding-top: 0;">
-                <!-- <div class="hot-word-title">
-                  <strong>检索关键词</strong>
-                </div> -->
-                <div>
-                  <canvas class="canvasHotWord" ref="canvasHotWord"
-                    @click="renderHotWord"
-                  ></canvas>
-                </div>
-                <!-- <ul class="video-list"
-                  @click="deligateHotWord"
-                >
-                  <li class="ellipsis"
-                    v-for="(item, idx) in hotWord.list"
-                    :title="item"
-                  >{{item}}</li>
-                </ul> -->
-              </div>
+              <ul class="video-list"
+                @click="deligateLi"
+              >
+                <li v-for="(item, idx) in hotWord.list" class="ellipsis">{{item}}</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -189,67 +176,14 @@ export default {
     }
   },
   methods: {
-    renderHotWord(e = {}) {
+    deligateLi(e) {
       const me = this
-      const vm = me.$root
-      const r = vm.router
-      
-      if (!r.isShowHotWord) return
 
-      me.$nextTick(() => {
-        const c = this.$refs.canvasHotWord
-        const gd = c.getContext('2d')
-        const col = Math.ceil(c.offsetWidth / 200)
-        const colSize = c.offsetWidth / col
-        const space = 10
-        const list = me.hotWord.list
-        let floor = -1
-
-        c.width = c.offsetWidth
-        c.height = Math.ceil(list.length / col) * 26
-        gd.clearRect(0, 0, c.offsetWidth, c.offsetHeight)
-        gd.fillStyle = '#333'
-
-        for (let i = 0; i < list.length; i++) {
-          const text = list[i]
-          let _i = i % col
-
-          if (_i === 0) floor++
-
-          const x = _i * colSize
-          const y = floor * 28
-
-          gd.save()
-          gd.beginPath()
-          gd.rect(x, y, colSize - space, 24)
-          // gd.fillStyle = 'rgba(255,0,0,.5)'
-          // gd.fill()
-          gd.clip()
-
-          if (gd.isPointInPath(e.offsetX, e.offsetY)) {
-            vm.updateRouter({
-              searchText: text,
-              isShowHotWord: false,
-            }, 'push')
-          }
-
-          gd.font = '14px Arial'
-          gd.textBaseline = 'top'
-          gd.fillStyle = '#333'
-          gd.fillText(text, x, y + 5)
-          gd.restore()
-        }
-      })
+      if (e.target.tagName.toLowerCase() === 'li') {
+        me.sugg.text = e.target.innerText.trim()
+        me.chooseSugg()
+      }
     },
-    /*deligateHotWord(e) {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      
-      vm.isRouterPush = true
-      r.searchText = me.sugg.text = e.target.innerText.trim()
-      me.chooseSugg()
-    },*/
     chooseSugg(suggText) {
       const me = this
       const vm = me.$root
@@ -602,7 +536,6 @@ export default {
       me.hotWord.isLoaded = true
       vm.get('./static/data/hotWord.json', {}, (list) => {
         me.hotWord.list = list
-        me.renderHotWord()
       })
     },
   },
@@ -685,7 +618,6 @@ export default {
       r.searchText ? me.justFetchAlbum() : me.fetchVideoList()
     })
     r.isShowHotWord && me.fetchHotWord()
-    window.onresize = me.renderHotWord.bind(me)
   },
   destroyed() {
     window.onresize = null
@@ -742,20 +674,14 @@ export default {
       position: absolute; left: 0; top: 0; z-index: 1;
     }
     .panel-hot-word {
-      background: #fff;
-      /* .hot-word-title {
-        margin-bottom: 10px;
-      } */
-      .canvasHotWord {
-        width: 100%; cursor: pointer;
+      background: #fff; overflow-y: scroll;
+      .video-list {
+        line-height: 1.8em;
+        li {display: inline-block; cursor: pointer;}
       }
-      /* .video-list {
-        li {
-          line-height: 1.8em; cursor: pointer;
-          display: inline-block; border-right: 15px solid transparent;
-          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-      } */
+      .img-list-box {
+        img {vertical-align: top;}
+      }
     }
     .video-wrapper {
       padding-top: 0; padding-bottom: 100px;
