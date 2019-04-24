@@ -25,6 +25,16 @@ Number.prototype.isInRange = function(a, b) {
   return this >= a && this <= b
 }
 
+Set.prototype.toArray = function() {
+  const arr = []
+
+  this.forEach((item) => {
+    arr.push(item)
+  })
+
+  return arr
+}
+
 Date.prototype.format = function(format) {
   const o = {
     y: this.getFullYear(),

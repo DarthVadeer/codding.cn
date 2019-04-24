@@ -31,7 +31,9 @@ export default {
     r.idxChannel = r.idxChannel || 0
     r.idxAlbum = r.idxAlbum || 0
     r.idxAux9 = r.idxAux9 || 0
-    r.isShowHotWord = r.isShowHotWord || false
+    r.hotWord = r.hotWord || {}
+    r.hotWord.cur = r.hotWord.cur || 0
+    r.hotWord.isShow = r.hotWord.isShow || false
     r.playDirection = r.playDirection === undefined ? 1 : r.playDirection
     r.searchText = r.searchText || ''
 

@@ -3,7 +3,7 @@
     <div class="flex-layout flex-row flex-respond">
       <div class="box-list box-list-channel">
         <ul>
-          <li
+          <li tabindex="1" 
             v-for="(item, idx) in channel.list"
             :class="['gray-title', {on: idx === r.idxChannel}]"
             @click="clickNav({idxChannel: idx, idxAlbum: 0, idxAux9: 0})"
@@ -12,7 +12,7 @@
       </div>
       <div class="box-list box-list-album">
         <ul>
-          <li
+          <li tabindex="1" 
             v-for="(item, idx) in listAlbum"
             :class="['gray-title', {on: idx === r.idxAlbum}]"
             @click="clickNav({idxAlbum: idx, idxAux9: 0})"
@@ -23,7 +23,7 @@
         v-if="r.idxChannel === 8 && listAux9.length > 0"
       >
         <ul>
-          <li
+          <li tabindex="1" 
             v-for="(item, idx) in listAux9"
             :class="['gray-title ellipsis', {on: idx === r.idxAux9}]"
             @click="clickNav({idxAux9: idx})"
@@ -34,12 +34,19 @@
         <div class="flex-layout">
           <div class="gray-title lmr">
             <div class="fr btn-box">
-              <button class="btn btn-primary btn-xs"
-                @click="r.isShowHotWord = !r.isShowHotWord"
-              >
-                <i class="glyphicon glyphicon-info-sign"></i>
-                <span>检索关键词</span>
-              </button>
+              <button class="btn btn-warning btn-xs"
+                v-if="r.hotWord.isShow"
+                @click="r.hotWord.isShow = false"
+              >关闭关键词</button>
+              <template v-else>
+                <button class="btn btn-primary btn-xs" style="margin-left: 4px;" 
+                  v-for="(item, idx) in hotWord.texts"
+                  @click="r.hotWord.isShow = true; r.hotWord.cur = idx"
+                >
+                  <i class="glyphicon glyphicon-info-sign"></i>
+                  <span>{{item}}</span>
+                </button>
+              </template>
             </div>
             <div class="mid">
               <span v-if="r.searchText.trim()">搜索：{{r.searchText + (r.page.total > 0 ? ' (' + (r.page.total) + ')' : '')}}</span>
@@ -113,12 +120,14 @@
             <loading :is-show="$root.is.loading"></loading>
 
             <div class="auto-scroll space video-wrapper panel-hot-word"
-              v-show="r.isShowHotWord"
+              v-show="r.hotWord.isShow"
             >
               <ul class="video-list"
                 @click="deligateLi"
               >
-                <li v-for="(item, idx) in hotWord.list" class="ellipsis">{{item}}</li>
+                <li class="ellipsis" tabindex="1" 
+                  v-for="(item, idx) in hotWord.list"
+                  >{{item}}</li>
               </ul>
             </div>
           </div>
@@ -130,9 +139,9 @@
         >
           <div class="gray-title lmr">
             <div class="btn-box fr">
-              <span class="btn btn-success btn-xs"
-                @click="clickAndPlayInCCTV()"
-              >央视播放</span>
+              <a class="btn btn-success btn-xs"
+                :href="r.videoInfo.site"
+              >央视播放</a>
               <span class="btn btn-warning btn-xs"
                 @click="$root.updateRouter({videoInfo: {}}, 'push')"
               >关闭视频</span>
@@ -172,6 +181,7 @@ export default {
       hotWord: {
         isLoaded: false,
         list: [],
+        texts: ['今日关键词', '历史关键词'],
       },
     }
   },
@@ -195,8 +205,8 @@ export default {
       
       vm.updateRouter({
         searchText,
-        isShowHotWord: false,
       }, 'push')
+      r.hotWord.isShow = false
       me.justFetchAlbum()
     },
     handleKeydownToCtrlSugg(e) {
@@ -237,9 +247,6 @@ export default {
         })
       }, e.type === 'click' ? 0 : 200)
     },
-    clickAndPlayInCCTV() {
-      location.href = this.r.videoInfo.site
-    },
     clickNav(o) {
       const me = this
       const vm = me.$root
@@ -247,7 +254,6 @@ export default {
 
       vm.updateRouter({
         ...o,
-        isShowHotWord: false,
         searchText: '',
         page: {
           cur: 0,
@@ -256,6 +262,7 @@ export default {
         },
         videoInfo: {},
       }, 'push')
+      r.hotWord.isShow = false
 
       me.fetchVideoList()
     },
@@ -531,12 +538,25 @@ export default {
       const vm = me.$root
       const r = vm.router
       
-      if (me.hotWord.isLoaded) return
+      me.hotWord.list = []
 
-      me.hotWord.isLoaded = true
-      vm.get('./static/data/hotWord.json', {}, (list) => {
-        me.hotWord.list = list
-      })
+      switch (me.hotWord.texts[r.hotWord.cur]) {
+        case '今日关键词':
+          vm.get('./api/pub.php', {
+            a: 'get',
+            url: 'http://tv.cctv.com',
+          }, (sHtml) => {
+            me.hotWord.list = new Set(sHtml.match(/<a href="http:\/\/tv\.cctv\.com\/\d{4}\/\d{2}\/\d{2}\/\w+\.shtml" target="_blank" >([^<>]+)<\/a>/gmi).map((item) => {
+              return item.match(/>([^<>]+)</)[1]
+            })).toArray()
+          })
+          break
+        case '历史关键词':
+          vm.get('./static/data/hotWord.json', {}, (list) => {
+            me.hotWord.list = list
+          })
+          break
+      }
     },
   },
   computed: {
@@ -601,7 +621,7 @@ export default {
     }
   },
   watch: {
-    'r.isShowHotWord'(newVal) {
+    'r.hotWord.isShow'(newVal) {
       this.fetchHotWord()
     },
   },
@@ -617,7 +637,7 @@ export default {
     me.fetchChannel(() => {
       r.searchText ? me.justFetchAlbum() : me.fetchVideoList()
     })
-    r.isShowHotWord && me.fetchHotWord()
+    r.hotWord.isShow && me.fetchHotWord()
   },
   destroyed() {
     window.onresize = null
