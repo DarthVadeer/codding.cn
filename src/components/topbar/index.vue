@@ -19,13 +19,22 @@
 export default {
   name: 'topbar',
   data() {
+    const me = this
+    const vm = me.$root
+    const r = vm.router
+    const list = [
+      {name: 'CCTV', com: 'cctv'},
+      // {name: 'webFtp', com: 'webFtp'},
+      // {name: 'dbAdmin', com: 'dbAdmin'},
+    ]
+    vm.is.local && list.push({
+      name: 'webFtp',
+      com: 'webFtp'
+    })
+
     return {
       nav: {
-        list: [
-          {name: 'CCTV', com: 'cctv'},
-          // {name: 'webFtp', com: 'webFtp'},
-          // {name: 'dbAdmin', com: 'dbAdmin'},
-        ]
+        list
       }
     }
   },

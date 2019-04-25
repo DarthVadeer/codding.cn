@@ -53,7 +53,7 @@ export default {
       if (xhr.status === 200) {
         // 正常
       } else if (xhr.status === 0) {
-        vm.alert('请保持网络畅通')
+        vm.alert('后台未开启？')
       } else if (xhr.status === 404) {
         vm.alert('404 找不到')
       } else if (xhr.status >= 500 && xhr.status < 600) {

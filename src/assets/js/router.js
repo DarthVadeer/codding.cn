@@ -5,10 +5,13 @@ export default {
 
     location.search.substring(1).split('&').forEach((str) => {
       if (!str) return
+        
       const t = str.split('=')
+
       try {
         t[1] = decodeURIComponent(t[1])
       } catch (e) {}
+
       r[t[0]] = t[1]
     })
 

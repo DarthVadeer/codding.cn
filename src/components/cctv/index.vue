@@ -36,12 +36,12 @@
             <div class="fr btn-box">
               <button class="btn btn-warning btn-xs"
                 v-if="r.hotWord.isShow"
-                @click="r.hotWord.isShow = false"
+                @click="$root.isRouterPush = true; r.hotWord.isShow = false"
               >关闭关键词</button>
               <template v-else>
                 <button class="btn btn-primary btn-xs" style="margin-left: 4px;" 
                   v-for="(item, idx) in hotWord.texts"
-                  @click="r.hotWord.isShow = true; r.hotWord.cur = idx"
+                  @click="$root.isRouterPush = true; r.hotWord.isShow = true; r.hotWord.cur = idx"
                 >
                   <i class="glyphicon glyphicon-info-sign"></i>
                   <span>{{item}}</span>
@@ -117,8 +117,6 @@
               <video-group :group-list="video.group"></video-group>
             </div>
 
-            <loading :is-show="$root.is.loading"></loading>
-
             <div class="auto-scroll space video-wrapper panel-hot-word"
               v-show="r.hotWord.isShow"
             >
@@ -130,6 +128,8 @@
                   >{{item}}</li>
               </ul>
             </div>
+
+            <loading :is-show="$root.is.loading"></loading>
           </div>
         </div>
 
@@ -276,7 +276,7 @@ export default {
         cb && cb()
       })
     },
-    justFetchAlbum() {
+    justFetchAlbum(cb) {
       const me = this
       const vm = me.$root
       const r = vm.router
@@ -336,7 +336,7 @@ export default {
             })
           }
 
-          me.fetchVideoList()
+          me.fetchVideoList(cb)
         })
       }, 100)
     },
@@ -390,6 +390,8 @@ export default {
       const curAlbum = me.curAlbum
       const sugg = me.sugg
       const searchText = r.searchText.trim()
+
+      me.cbFetchVideoList = cb || me.cbFetchVideoList
 
       if (!curAlbum.id) return
 
@@ -466,13 +468,17 @@ export default {
               })
             })
           }
+
+          console.log(me.cbFetchVideoList)
+          me.cbFetchVideoList && me.cbFetchVideoList()
+          delete me.cbFetchVideoList
         }
 
         function fetchByDef() {
           function defFinish() {
             vm.is.loading = false
             vm.lazyLoad()
-            me.$refs.videoWrapper.scrollTop = 0
+            me.$refs.videoWrapper && (me.$refs.videoWrapper.scrollTop = 0)
             me.playVideoByChangeCurPage && me.playVideoByChangeCurPage()
             delete me.playVideoByChangeCurPage
 
@@ -483,6 +489,9 @@ export default {
                 list,
               }]
             }
+
+            me.cbFetchVideoList && me.cbFetchVideoList()
+            delete me.cbFetchVideoList
           }
 
           if (r.idxChannel === 8) {
@@ -538,25 +547,31 @@ export default {
       const vm = me.$root
       const r = vm.router
       
+      vm.is.loading = true
       me.hotWord.list = []
 
-      switch (me.hotWord.texts[r.hotWord.cur]) {
-        case '今日关键词':
-          vm.get('./api/pub.php', {
-            a: 'get',
-            url: 'http://tv.cctv.com',
-          }, (sHtml) => {
-            me.hotWord.list = new Set(sHtml.match(/<a href="http:\/\/tv\.cctv\.com\/\d{4}\/\d{2}\/\d{2}\/\w+\.shtml" target="_blank" >([^<>]+)<\/a>/gmi).map((item) => {
-              return item.match(/>([^<>]+)</)[1]
-            })).toArray()
-          })
-          break
-        case '历史关键词':
-          vm.get('./static/data/hotWord.json', {}, (list) => {
-            me.hotWord.list = list
-          })
-          break
-      }
+      clearTimeout(me.timerFetchHotWord)
+      me.timerFetchHotWord = setTimeout(() => {
+        switch (me.hotWord.texts[r.hotWord.cur]) {
+          case '今日关键词':
+            vm.get('./api/pub.php', {
+              a: 'get',
+              url: 'http://tv.cctv.com',
+            }, (sHtml) => {
+              vm.is.loading = false
+              me.hotWord.list = new Set(sHtml.match(/<a href="http:\/\/tv\.cctv\.com\/\d{4}\/\d{2}\/\d{2}\/\w+\.shtml" target="_blank" >([^<>]+)<\/a>/gmi).map((item) => {
+                return item.match(/>([^<>]+)</)[1]
+              })).toArray()
+            })
+            break
+          case '历史关键词':
+            vm.is.loading = false
+            vm.get('./static/data/hotWord.json', {}, (list) => {
+              me.hotWord.list = list
+            })
+            break
+        }
+      }, 50)
     },
   },
   computed: {
@@ -591,7 +606,7 @@ export default {
               <strong>{{item.title}}</strong>
             </div>
             <ul class="video-list">
-              <li
+              <li tabindex="1"
                 v-for="(item, idx) in item.list"
                 :key="item.desc + idx"
               >
@@ -622,6 +637,7 @@ export default {
   },
   watch: {
     'r.hotWord.isShow'(newVal) {
+      if (!newVal) return
       this.fetchHotWord()
     },
   },
@@ -635,9 +651,10 @@ export default {
 
     me.sugg.text = r.searchText
     me.fetchChannel(() => {
-      r.searchText ? me.justFetchAlbum() : me.fetchVideoList()
+      r.searchText ? 
+        me.justFetchAlbum(me.fetchHotWord.bind(me)) : 
+        me.fetchVideoList(me.fetchHotWord.bind(me))
     })
-    r.hotWord.isShow && me.fetchHotWord()
   },
   destroyed() {
     window.onresize = null
@@ -697,7 +714,7 @@ export default {
       background: #fff; overflow-y: scroll;
       .video-list {
         line-height: 1.8em;
-        li {display: inline-block; cursor: pointer;}
+        li {display: inline-block; cursor: pointer; border-right: 10px solid transparent;}
       }
       .img-list-box {
         img {vertical-align: top;}

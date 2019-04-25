@@ -23,7 +23,7 @@ Vue.component('player', {
       const vm = me.$root
       const r = vm.router
       
-      vm.confirm('视频播放失败，点击确定进入央视播放', () => {
+      vm.confirm('视频源有毛病，点击确定进入央视播放', () => {
         location.href = r.videoInfo.site
       })
     },

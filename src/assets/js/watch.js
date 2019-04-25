@@ -33,6 +33,9 @@ export default {
     // console.warn('changed router.searchText')
     const vm = this.$root
     vm.cctv.sugg.text = newVal
+
+    const node = document.querySelector('.cctv .video-wrapper')
+    node && (node.scrollTop = 0)
     newVal ? vm.cctv.justFetchAlbum() : vm.cctv.fetchVideoList()
   },
   'router.page.cur'() {
