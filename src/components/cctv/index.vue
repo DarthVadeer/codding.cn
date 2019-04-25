@@ -651,9 +651,11 @@ export default {
 
     me.sugg.text = r.searchText
     me.fetchChannel(() => {
+      const cb = r.hotWord.isShow && me.fetchHotWord.bind(me)
+
       r.searchText ? 
-        me.justFetchAlbum(me.fetchHotWord.bind(me)) : 
-        me.fetchVideoList(me.fetchHotWord.bind(me))
+        me.justFetchAlbum(cb) : 
+        me.fetchVideoList(cb)
     })
   },
   destroyed() {
