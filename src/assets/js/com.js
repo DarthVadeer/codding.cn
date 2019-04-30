@@ -13,7 +13,6 @@ Vue.component('player', {
         x-webkit-airplay="allow"
         @timeupdate="handleTimeupdate"
         @ended="playNext"
-        @error="playOnCCTV"
       ></video>
     </div>
   `,
@@ -41,46 +40,9 @@ Vue.component('player', {
       const vm = me.$root
       const r = vm.router
       let arr = []
-      
-      switch (vm.com) {
-        case 'cctv':
-          let targetIndex = -1
 
-          vm.cctv.video.group2.concat(vm.cctv.video.group).forEach((item) => {
-            arr = arr.concat(item.list)
-          })
-
-          for (let i = 0; i < arr.length; i++) {
-            if (arr[i].id === r.videoInfo.id) {
-              targetIndex = i
-              break
-            }
-          }
-
-          r.playDirection == 1 ? targetIndex++ : targetIndex--
-          vm.$delete(vm.mapPlayTime, r.videoInfo.m3u8)
-
-          if (targetIndex.isInRange(0, arr.length - 1)) {
-            vm.cctv.fetchVideoUrl(arr[targetIndex])
-          } else {
-            let curPage = r.page.cur
-            const asc = r.playDirection === 1
-
-            asc ? curPage++ : curPage--
-
-            if (curPage.isInRange(1, Math.ceil(r.page.total / r.page.size))) {
-              vm.cctv.playVideoByChangeCurPage = () => {
-                const list = vm.cctv.video.group[0].list
-                targetIndex = asc ? 0 : list.length - 1
-                vm.cctv.fetchVideoUrl(list[targetIndex])
-              }
-              r.page.cur = curPage
-            } else {
-              console.warn('page.cur out of range. do not fetchVideoList')
-            }
-          }
-          break
-      }
+      vm.$delete(vm.mapPlayTime, r.videoInfo.m3u8)
+      vm.cctv.playVideo()
     },
   },
 })

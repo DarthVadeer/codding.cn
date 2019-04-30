@@ -20,7 +20,7 @@
         </ul>
       </div>
       <div class="box-list box-list-aux9"
-        v-if="r.idxChannel === 8 && listAux9.length > 0"
+        v-if="r.idxChannel === 9 && listAux9.length > 0"
       >
         <ul>
           <li tabindex="1" 
@@ -139,6 +139,16 @@
         >
           <div class="gray-title lmr">
             <div class="btn-box fr">
+              <button class="btn btn-success btn-xs"
+                @click="playVideo(true)"
+              >
+                <span class="glyphicon glyphicon-arrow-left"></span>
+              </button>
+              <button class="btn btn-success btn-xs"
+                @click="playVideo(false)"
+              >
+                <span class="glyphicon glyphicon-arrow-right"></span>
+              </button>
               <a class="btn btn-success btn-xs"
                 :href="r.videoInfo.site"
               >央视播放</a>
@@ -186,6 +196,55 @@ export default {
     }
   },
   methods: {
+    playVideo(minus) {
+      const me = this
+      const vm = me.$root
+      const r = vm.router
+      let arr = []
+      let targetIndex = -1
+
+      vm.cctv.video.group2.concat(vm.cctv.video.group).forEach((item) => {
+        arr = arr.concat(item.list)
+      })
+
+      for (let i = 0; i < arr.length; i++) {
+        if (arr[i].id === r.videoInfo.id) {
+          targetIndex = i
+          break
+        }
+      }
+
+      minus === undefined ?
+        (r.playDirection == 1 ? targetIndex++ : targetIndex--) :
+        (!minus ? targetIndex++ : targetIndex--)
+
+      if (targetIndex.isInRange(0, arr.length - 1)) {
+        vm.cctv.fetchM3u8(arr[targetIndex])
+      } else {
+        let curPage = r.page.cur
+        let asc
+
+        if (minus === undefined) {
+          asc = r.playDirection === 1
+        } else {
+          asc = !minus
+        }
+
+        asc ? curPage++ : curPage--
+
+        if (curPage.isInRange(0, Math.ceil(r.page.total / r.page.size) - 1)) {
+          vm.cctv.playVideoByChangeCurPage = () => {
+            const list = vm.cctv.video.group[0].list
+            targetIndex = asc ? 0 : list.length - 1
+            vm.cctv.fetchM3u8(list[targetIndex])
+          }
+          r.page.cur = curPage
+        } else {
+          console.warn('page.cur out of range. do not fetchVideoList')
+          vm.alert('没有可以播放的视频了')
+        }
+      }
+    },
     deligateLi(e) {
       const me = this
 
@@ -266,6 +325,59 @@ export default {
 
       me.fetchVideoList()
     },
+    getChannel() {
+      let page = 0
+      let listResult = []
+
+      loopGet()
+      function loopGet() {
+        vm.jsonp('http://api.cntv.cn/lanmu/columnSearch', {
+          'p': ++page,
+          'n': '100',
+          'serviceId': 'tvcctv',
+          't': 'jsonp',
+          '?': 'cb',
+        }, (dataOrigin) => {
+          const mapResult = {}
+          const data = dataOrigin.response.docs
+
+          listResult = listResult.concat(data.map((v) => {
+            return {
+              id: v.column_topicid.trim(),
+              name: v.column_name.trim(),
+              _name: v.channel_name.trim(),
+              // img: v.column_logo,
+            }
+          }))
+
+          if (data.length > 0) {
+            loopGet()
+          } else {
+            listResult.forEach((v) => {
+              mapResult[v._name] = mapResult[v._name] || {children: []}
+              mapResult[v._name].children.push(v)
+            })
+
+            const arrResult = []
+            Object.keys(mapResult).forEach((key) => {
+              arrResult.push({
+                name: key,
+                children: mapResult[key].children
+              })
+            })
+
+            arrResult.sort((a, b) => {
+              return a.name.match(/\d+/)[0] - b.name.match(/\d+/)[0]
+            })
+
+            console.log(JSON.stringify(listResult))
+            console.log(listResult)
+            console.log(JSON.stringify(arrResult))
+            console.log(arrResult)
+          }
+        })
+      }
+    },
     fetchChannel(cb) {
       const me = this
       const vm = me.$root
@@ -305,6 +417,7 @@ export default {
             await new Promise((next) => {
               const src = urls[i]
               window.playlistArray = {}
+              
               vm.loadScript(src, () => {
                 if (signJustFetchAlbum !== me.signJustFetchAlbum) {
                   console.log('fetchBySearch 时过境迁')
@@ -340,7 +453,7 @@ export default {
         })
       }, 100)
     },
-    fetchVideoUrl(elItemOrigin) {
+    fetchM3u8(elItemOrigin) {
       const vm = this.$root
       const r = vm.router
       const elItem = vm.clone(elItemOrigin)
@@ -482,7 +595,7 @@ export default {
             me.playVideoByChangeCurPage && me.playVideoByChangeCurPage()
             delete me.playVideoByChangeCurPage
 
-            if (r.idxChannel === 8) {
+            if (r.idxChannel === 9) {
               const list = (me.video.aux9[me.curAlbum.name] || {})[me.listAux9[r.idxAux9]] || []
               me.video.group = [{
                 title: '全部视频共' + list.length + '条',
@@ -494,7 +607,7 @@ export default {
             delete me.cbFetchVideoList
           }
 
-          if (r.idxChannel === 8) {
+          if (r.idxChannel === 9) {
             if (Object.keys(me.video.aux9).length > 0) {
               defFinish()
             } else {
@@ -533,7 +646,7 @@ export default {
                     desc: v.videoBrief || '',
                     site: v.videoUrl,
                   }
-                })
+                }).filter(v => v.id.length === 32)
               }]
 
               defFinish()
@@ -615,7 +728,7 @@ export default {
                   :lazy-load="item.img"
                   :title="item.desc"
                   :key="item.title"
-                  @click="$parent.fetchVideoUrl(item)"
+                  @click="$parent.fetchM3u8(item)"
                   tabindex="1"
                 >
                   <div class="text-box">
@@ -649,6 +762,7 @@ export default {
     const vm = me.$root
     const r = vm.router
 
+    // me.getChannel()
     me.sugg.text = r.searchText
     me.fetchChannel(() => {
       const cb = r.hotWord.isShow && me.fetchHotWord.bind(me)
