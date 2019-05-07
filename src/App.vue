@@ -3,6 +3,7 @@
     <div class="flex-layout">
       <topbar></topbar>
       <div class="auto-flex container-wrapper">
+        <!-- <transition-group :name="'ani-com-' + ($root.router.countAni % $root.lenAni)"> -->
         <transition-group name="fade">
           <div
             v-for="(item, idx) in $root.router.coms"
@@ -94,15 +95,6 @@ export default {
     const vm = me.$root
     const r = vm.router
     
-    vm.cctv = {
-      fetchVideoList() {},
-      justFetchAlbum() {},
-      sugg: {
-        text: '',
-        cur: 0,
-        list: [],
-      }
-    }
     vm.initSearch()
     vm.initRouter()
     this.initEvents()
@@ -118,6 +110,9 @@ export default {
     & > span,
     & > span > div {
       width: 100%; height: 100%; position: absolute; left: 0; top: 0;
+    }
+    & > span {
+      transform-style: preserve-3d; transform: perspective(800px);
     }
     & > span > div {
       background: #fff;

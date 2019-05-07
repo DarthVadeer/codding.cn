@@ -125,7 +125,7 @@
               >
                 <li class="ellipsis" tabindex="1" 
                   v-for="(item, idx) in hotWord.list"
-                  >{{item}}</li>
+                >{{item}}</li>
               </ul>
             </div>
 
@@ -218,21 +218,19 @@ export default {
         (r.playDirection == 1 ? targetIndex++ : targetIndex--) :
         (!minus ? targetIndex++ : targetIndex--)
 
-      if (targetIndex.isInRange(0, arr.length - 1)) {
+      if (targetIndex.inRange(0, arr.length - 1)) {
         vm.cctv.fetchM3u8(arr[targetIndex])
       } else {
         let curPage = r.page.cur
         let asc
 
-        if (minus === undefined) {
-          asc = r.playDirection === 1
-        } else {
-          asc = !minus
-        }
+        minus === undefined ?
+          (asc = r.playDirection === 1) :
+          (asc = !minus)
 
         asc ? curPage++ : curPage--
 
-        if (curPage.isInRange(0, Math.ceil(r.page.total / r.page.size) - 1)) {
+        if (curPage.inRange(0, Math.ceil(r.page.total / r.page.size) - 1)) {
           vm.cctv.playVideoByChangeCurPage = () => {
             const list = vm.cctv.video.group[0].list
             targetIndex = asc ? 0 : list.length - 1
@@ -293,6 +291,7 @@ export default {
       const r = vm.router
       const sugg = me.sugg
       const searchText = sugg.text.trim()
+      const signFetchSugg = me.signFetchSugg = Math.random()
 
       if (!searchText) return
 
@@ -300,11 +299,16 @@ export default {
       clearTimeout(vm.timerFetchSugg)
       vm.timerFetchSugg = setTimeout(() => {
         vm.loadScript('https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText), () => {
+          if (signFetchSugg !== me.signFetchSugg) {
+            console.warn('signFetchSugg 时过境迁')
+            return
+          }
+
           const data = window.suggestJSON || []
           sugg.list = data.map(v => v.name)
           sugg.cur = sugg.list.length
         })
-      }, e.type === 'click' ? 0 : 200)
+      }, e.type === 'click' ? 0 : 300)
     },
     clickNav(o) {
       const me = this
@@ -401,6 +405,7 @@ export default {
 
       if (!searchText) {
         console.log('justFetchAlbum ... no searchText')
+        cb && cb()
         return
       }
 
@@ -463,6 +468,7 @@ export default {
       delete elItem.desc
 
       window.getHtml5VideoData = function(data) {
+        window.getHtml5VideoData = null
         vm.is.loading = false
         data = JSON.parse(data)
 
@@ -485,7 +491,7 @@ export default {
           a: 'get',
           url: elItem.site
         }, (sHtml) => {
-          r.videoInfo.id = elItemOrigin.id = elItem.id = 
+          elItemOrigin.id = elItem.id = 
           (sHtml.match(/"videoCenterId","([^"]*)"/m) || [])[1] || 
           (sHtml.match(/(?:guid = ")(\w{32})(?:")/) || [])[1] || ''
           loadScript()
@@ -493,7 +499,11 @@ export default {
       }
 
       function loadScript() {
-        vm.loadScript('http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?pid=' + elItem.id + '&tai=ipad&from=html5&tsp=1553074558&vn=2049&vc=8AB31F7208274D1C0FD8874764B5EBE3&uid=2C5D032B73247D87E67C414F62BA2E7B&wlan=')
+        vm.loadScript('http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?pid=' + elItem.id + '&tai=ipad&from=html5&tsp=1553074558&vn=2049&vc=8AB31F7208274D1C0FD8874764B5EBE3&uid=2C5D032B73247D87E67C414F62BA2E7B&wlan=', () => {
+          
+        }, () => {
+          vm.alert('视频地址获取失败')
+        })
       }
     },
     fetchVideoList(cb) {
@@ -582,7 +592,6 @@ export default {
             })
           }
 
-          console.log(me.cbFetchVideoList)
           me.cbFetchVideoList && me.cbFetchVideoList()
           delete me.cbFetchVideoList
         }
@@ -640,13 +649,13 @@ export default {
                 title: '全部视频共' + r.page.total + '条',
                 list: data.map((v) => {
                   return {
-                    id: v.videoSharedCode,
+                    id: v.videoSharedCode.length === 32 ? v.videoSharedCode : '',
                     img: v.videoKeyFrameUrl || v.videoKeyFrameUrl2 || v.videoKeyFrameUrl3,
                     title: v.videoTitle || '',
                     desc: v.videoBrief || '',
                     site: v.videoUrl,
                   }
-                }).filter(v => v.id.length === 32)
+                })
               }]
 
               defFinish()
@@ -754,15 +763,11 @@ export default {
       this.fetchHotWord()
     },
   },
-  beforeCreate() {
-    this.$root.cctv = this
-  },
   mounted() {
     const me = this
     const vm = me.$root
     const r = vm.router
 
-    // me.getChannel()
     me.sugg.text = r.searchText
     me.fetchChannel(() => {
       const cb = r.hotWord.isShow && me.fetchHotWord.bind(me)
@@ -772,8 +777,12 @@ export default {
         me.fetchVideoList(cb)
     })
   },
-  destroyed() {
+  beforeCreate() {
+    this.$root.cctv = this
+  },
+  beforeDestroy() {
     window.onresize = null
+    delete this.$root.cctv
   },
 }
 
@@ -822,10 +831,7 @@ export default {
     }
   }
   .box-main {
-    & > div {
-      width: 100%; height: 100%;
-      position: absolute; left: 0; top: 0; z-index: 1;
-    }
+    & > div {width: 100%; height: 100%; position: absolute; left: 0; top: 0; z-index: 1;}
     .panel-hot-word {
       background: #fff; overflow-y: scroll;
       .video-list {

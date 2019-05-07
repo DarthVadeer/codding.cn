@@ -17,6 +17,7 @@ export default {
       localUrl: 'http://10.0.1.9/codding/',
       dw: window.innerWidth,
       dh: window.innerHeight,
+      lenAni: 30,
       mapPlayTime,
       is: {
         local: isLocal,
@@ -26,6 +27,12 @@ export default {
         win: isWin,
         supportM3u8: !!document.createElement('video').canPlayType('application/vnd.apple.mpegurl'),
         supportHls: Hls.isSupported(),
+      },
+      mapIcon: {
+        'jpg': 'img',
+        'jpeg': 'img',
+        'png': 'img',
+        'gif': 'img',
       },
       searchData: {},
       router: {
@@ -77,12 +84,15 @@ export default {
       return JSON.parse(JSON.stringify(o))
     },
     getFileName(path) {
-      path = path.split('/').last()
-      return path.substr(0, path.lastIndexOf('.')) || ''
+      return (path.split(/\\|\//) || []).last()
+    },
+    getFilePureName(path) {
+      const fileName = this.getFileName(path)
+      return fileName.indexOf('.') > -1 ? fileName.slice(0, fileName.lastIndexOf('.')) : ''
     },
     getFileType(path) {
-      path = path.split('/').last()
-      return path.substr(path.lastIndexOf('.') + 1) || ''
+      const fileName = this.getFileName(path)
+      return fileName.indexOf('.') > -1 ? fileName.slice(fileName.lastIndexOf('.') + 1) : ''
     },
     alert(msg) {
       const vm = this
@@ -94,6 +104,35 @@ export default {
       vm.confirmData.isShow = true
       vm.confirmData.msg = msg
       vm.cbConfirm = cb
+    },
+
+    getFileFromDataTransfer(dataTransfer, cb) {
+      if (dataTransfer.files.length === 0) {
+        return []
+      }
+      let timerRead = 0
+      let files = []
+      function singleRead(entry) {
+        if (entry.isFile) {
+          entry.file(function(file) {
+            file.fullPath = entry.fullPath
+            files.push(file)
+            timerRead && clearTimeout(timerRead)
+            timerRead = setTimeout(function() {
+              cb && cb(files)
+            }, 100)
+          })
+        } else if (entry.isDirectory) {
+          entry.createReader().readEntries(function(entries) {
+            Array.prototype.slice.call(entries).forEach(singleRead)
+          })
+        }
+      }
+      Array.prototype.slice.call(dataTransfer.items).forEach(function(item) {
+        if (item.kind === 'file') {
+          singleRead(item.webkitGetAsEntry())
+        }
+      })
     },
   }
 }

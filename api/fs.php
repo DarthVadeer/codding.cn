@@ -60,7 +60,7 @@ function cp($dirFrom, $dirTo) {
   }
 }
 
-function getFileName($path) {
+function getFilePureName($path) {
   $path = end(explode('/', $path));
   return strpos($path, '.') > -1 ? substr($path, 0, strrpos($path, '.')) : 'no getFileName';
 }

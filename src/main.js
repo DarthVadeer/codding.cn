@@ -36,7 +36,7 @@ window.vm = new Vue({
     const vm = me.$root
     const r = vm.router
     
-    vm.get('./api/pub.php', {
+    vm.is.local && vm.get('./api/pub.php', {
       a: 'test'
     }, (data) => {}, (e) => {
       console.log(e)
@@ -44,3 +44,45 @@ window.vm = new Vue({
     })
   }
 })
+
+
+{
+  const nodeStyle = document.createElement('style')
+  nodeStyle.innerHTML = new Array(vm.lenAni).fill().map((_, idx) => {
+    const dw = window.innerWidth
+    const dh = window.innerHeight
+    // const rand = vm.rand
+    const arr = [
+      'translateX',
+      'translateY',
+      'translateZ',
+      'rotateX',
+      'rotateY',
+      // 'rotate',
+    ]
+    const json = {
+      translateX: 'translateX(' + rand(-dw, dw) + 'px)',
+      translateY: 'translateY(' + rand(-dh, dh) + 'px)',
+      translateZ: 'translateZ(' + rand(-dw, 0) + 'px)',
+      rotateX: 'rotateX(' + rand(-180, 180) + 'deg)',
+      rotateY: 'rotateY(' + rand(-180, 180) + 'deg)',
+      // rotate: 'rotate(' + rand(-180, 180) + 'deg)',
+    }
+    let map = {}
+    new Array(rand(2, 5)).fill().forEach((_, idx) => {
+      const k = arr[rand(0, arr.length - 1)]
+      map[k] = json[k]
+    })
+
+    return `
+      .ani-com-${idx}-enter-active, .ani-com-${idx}-leave-active {
+        transition: all 1s;
+      }
+      .ani-com-${idx}-enter, .ani-com-${idx}-leave-to {
+        opacity: 0;
+        transform: ${Object.keys(map).map(v => map[v]).join(" ")};
+      }
+    `
+  }).join('')
+  document.body.appendChild(nodeStyle)
+}

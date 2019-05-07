@@ -102,7 +102,7 @@ switch ($_REQUEST['a']) {
         $_pathTo = toGBK($dirTo.'/'.$newName);
         $fn($_pathFrom, $_pathTo);
       } else {
-        $pureName = getFileName($newName);
+        $pureName = getFilePureName($newName);
         $pureType = getFileType($newName);
 
         foreach ($names as $key => $value) {
@@ -134,6 +134,8 @@ switch ($_REQUEST['a']) {
     $pathArr = explode('/', $_REQUEST['path']);
     $fileName = array_pop($pathArr);
     $path = join($pathArr, '/');
+
+    if (strpos($_path, './test') !== 0) err(2, '只能上传到 ./test');
 
     mkPath(toGBK($path));
     move_uploaded_file($_FILES['file']['tmp_name'], toGBK($_REQUEST['path'])) or die(whyFsOperateError());

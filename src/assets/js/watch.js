@@ -14,15 +14,15 @@ export default {
   },
   'router.idxChannel'(newVal) {
     // console.warn('changed router.idxChannel')
-    vm.cctv.fetchVideoList()
+    vm.cctv && vm.cctv.fetchVideoList()
   },
   'router.idxAlbum'(newVal) {
     // console.warn('changed router.idxAlbum')
-    vm.cctv.fetchVideoList()
+    vm.cctv && vm.cctv.fetchVideoList()
   },
   'router.idxAux9'(newVal) {
     // console.warn('changed router.idxAux9')
-    vm.cctv.fetchVideoList()
+    vm.cctv && vm.cctv.fetchVideoList()
   },
   'router.videoInfo.m3u8'(newVal) {
     // console.warn('changed router.videoInfo.m3u8')
@@ -32,11 +32,10 @@ export default {
   'router.searchText'(newVal) {
     // console.warn('changed router.searchText')
     const vm = this.$root
-    vm.cctv.sugg.text = newVal
-
-    const node = document.querySelector('.cctv .video-wrapper')
-    node && (node.scrollTop = 0)
-    newVal ? vm.cctv.justFetchAlbum() : vm.cctv.fetchVideoList()
+    if (vm.cctv) {
+      vm.cctv.sugg.text = newVal
+      newVal ? vm.cctv.justFetchAlbum() : vm.cctv.fetchVideoList()
+    }
   },
   'router.page.cur'() {
     const me = this
@@ -45,7 +44,7 @@ export default {
     
     switch (vm.com) {
       case 'cctv':
-        vm.cctv.fetchVideoList()
+        vm.cctv && vm.cctv.fetchVideoList()
         break
     }
   },
@@ -55,5 +54,11 @@ export default {
       // console.warn('changed mapPlayTime')
       localStorage.mapPlayTime = JSON.stringify(newVal)
     }
+  },
+  'router.dir.list': {
+    deep: true,
+    handler(newVal) {
+      this.webFtp && this.webFtp.loopOpenDir()
+    },
   },
 }

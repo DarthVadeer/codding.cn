@@ -21,7 +21,7 @@ Array.prototype.last = function() {
   return this[this.length - 1]
 };
 
-Number.prototype.isInRange = function(a, b) {
+Number.prototype.inRange = function(a, b) {
   return this >= a && this <= b
 }
 
@@ -52,30 +52,26 @@ Date.prototype.format = function(format) {
 }
 
 String.prototype.toSize = function() {
-  const map = {
-    b: 1,
-    k: 1024,
-    m: 1048576,
-    g: 1073741824,
-    t: 1099511627776,
-    p: 1125899906842624,
-  }
-
-  return eval(this.toLowerCase().replace('b', '').replace(/k|m|g|t|p/, (str) => {
+  const map = {}
+  ;['b', 'k', 'm', 'g', 't', 'p'].forEach((k, idx) => {
+    map[k] = Math.pow(1024, idx)
+  })
+  
+  return eval(this.toLowerCase().replace(/b/i, '').replace(/k|m|g|t|p/, (str) => {
     return '*' + map[str]
   }))
 }
 
 Number.prototype.toSize = function() {
-  const arr = ['b', 'k', 'm', 'g', 't', 'p']
+  const arr = ['', 'K', 'M', 'G', 'T', 'P']
 
-  if (this <= 1) return this + 'b'
+  if (this <= 1) return this + 'B'
 
   for (let i = arr.length - 1; i > -1; i--) {
     const size = Math.pow(1024, i)
 
-    if (this > size) {
-      return parseFloat((this / size).toFixed(2)) + arr[i]
+    if (this >= size) {
+      return parseFloat((this / size).toFixed(2)) + arr[i] + 'B'
     }
   }
 }

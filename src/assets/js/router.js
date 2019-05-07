@@ -34,9 +34,8 @@ export default {
     r.idxChannel = r.idxChannel || 0
     r.idxAlbum = r.idxAlbum || 0
     r.idxAux9 = r.idxAux9 || 0
-    r.hotWord = r.hotWord || {}
-    r.hotWord.cur = r.hotWord.cur || 0
-    r.hotWord.isShow = r.hotWord.isShow || false
+    r.countAni = r.countAni || 0
+
     r.playDirection = r.playDirection === undefined ? 1 : r.playDirection
     r.searchText = r.searchText || ''
 
@@ -45,10 +44,16 @@ export default {
     r.page.size = r.page.size || 100
     r.page.total = r.page.total || 0
 
+    r.hotWord = r.hotWord || {}
+    r.hotWord.cur = r.hotWord.cur || 0
+    r.hotWord.isShow = r.hotWord.isShow || false
     r.videoInfo = r.videoInfo || {}
-    r.videoInfo.id = r.videoInfo.id || ''
-    r.videoInfo.title = r.videoInfo.title || ''
-    r.videoInfo.m3u8 = r.videoInfo.m3u8 || ''
+
+    r.dir = r.dir || {}
+    r.dir.cur = r.dir.cur || 0
+    r.dir.zIndex = r.dir.zIndex || 0
+    r.dir.list = r.dir.list || []
+    r.dir.isReplaceCharacter = r.dir.isReplaceCharacter || r.dir.isReplaceCharacter === undefined
 
     Object.keys(r).forEach((k) => {
       vm.$set(vm.router, k, r[k])
