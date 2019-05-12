@@ -1,5 +1,5 @@
 export default {
-  err(dataOrigin, succ, fail) {
+  err(dataOrigin, success, fail) {
     let data = dataOrigin || ''
 
     try {
@@ -23,7 +23,7 @@ export default {
 
       fail && fail(data)
     } else {
-      succ && succ(data, dataOrigin)
+      success && success(data, dataOrigin)
     }
   },
   json2url(o) {
@@ -53,7 +53,7 @@ export default {
       if (xhr.status === 200) {
         // 正常
       } else if (xhr.status === 0) {
-        vm.alert('后台未开启？')
+        vm.alert('后台服务找不到')
       } else if (xhr.status === 404) {
         vm.alert('404 找不到')
       } else if (xhr.status >= 500 && xhr.status < 600) {
@@ -69,7 +69,7 @@ export default {
     xhr.upload.onprogress = o.onprogress
     xhr.onload = xhr.onerror = (e) => {
       if (xhr.status === 200) {
-        vm.err(xhr.responseText, o.succ, fail)
+        vm.err(xhr.responseText, o.success, fail)
       } else {
         fail()
       }
@@ -95,19 +95,19 @@ export default {
 
     return xhr
   },
-  get(url, data, succ, fail) {
+  get(url, data, success, fail) {
     return this.ajax({
-      url, data, succ, fail,
+      url, data, success, fail,
       method: 'GET',
     })
   },
-  post(url, data, succ, fail) {
+  post(url, data, success, fail) {
     return this.ajax({
-      url, data, succ, fail,
+      url, data, success, fail,
       method: 'POST',
     })
   },
-  jsonp(url, data, succ, fail) {
+  jsonp(url, data, success, fail) {
     const vm = this
     const cbName = data['?']
     const script = document.createElement('script')
@@ -118,18 +118,18 @@ export default {
     window[fnName] = script.onerror = (data = {}) => {
       document.body.removeChild(script)
       delete window[fnName]
-      const cb = data.type === 'error' ? fail : succ
+      const cb = data.type === 'error' ? fail : success
       cb && cb(data)
     }
 
     script.src = url + '?' + vm.json2url(data)
     document.body.appendChild(script)
   },
-  loadScript(url, succ, error) {
+  loadScript(url, success, error) {
     const script = document.createElement('script')
     script.src = url
     script.onload = script.onerror = (e) => {
-      const cb = e.type === 'load' ? succ : error
+      const cb = e.type === 'load' ? success : error
       e.type === 'error' && (vm.is.loading = false)
       cb && cb()
       document.body.removeChild(script)

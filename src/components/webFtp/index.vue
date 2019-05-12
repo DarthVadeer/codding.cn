@@ -142,6 +142,64 @@
       </div>
     </transition>
 
+    <transition name="fade">
+      <div class="panel-upload"
+        v-if="dUpload.isShow"
+        @click="dUpload.isFinish && (dUpload.isShow = false)"
+      >
+        <div class="inner" @click.stop>
+          <div style="padding: 15px;">
+            <h4 class="page-header" style="margin-top: 0;">
+              <i class="glyphicon glyphicon-info-sign"></i>
+              <span>上传</span>
+            </h4>
+            <div class="progress">
+              <div class="progress-bar progress-bar-info progress-bar-striped"
+                :style="{'width': uploadProcess}"
+              >
+                <span class="sr-only">40% Complete (success)</span>
+              </div>
+            </div>
+
+            <div style="max-height: calc(100vh - 270px); overflow: auto;">
+              <div class="alert alert-warning"
+                :style="{'margin-bottom': dUpload.listSucc.length > 0 ? '' : '0'}" 
+                v-if="dUpload.listDie.length > 0"
+              >
+                <ul style="margin-bottom: 0;">
+                  <li style="margin-bottom: 10px;">
+                    <strong>{{'单文件最大不得超过：' + ini.uploadMaxFilesize.toSize()}}</strong>
+                  </li>
+                  <li
+                    v-for="(item, idx) in dUpload.listDie"
+                    v-html="item.msg"
+                  ></li>
+                </ul>
+              </div>
+              
+              <div class="alert alert-info" style="margin-bottom: 0;"
+                v-if="dUpload.listSucc.length > 0"
+              >
+                <ul style="margin-bottom: 0;">
+                  <li
+                    v-for="(item, idx) in dUpload.listSucc"
+                    v-html="item.msg"
+                  ></li>
+                </ul>
+              </div>
+            </div>
+
+            <div style="margin: 20px 0 5px 0;">
+              <button class="btn btn-success btn-block"
+                @click="dUpload.isBreak = true"
+              >取消上传</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </transition>
+
   </div>
 </template>
 
@@ -162,13 +220,17 @@ export default {
         list: []
       },
       dUpload: {
-        isShow: 0,
+        isShow: false,
+        isBreak: false,
+        isFinish: false,
         sizeTotal: 0,
         sizeUploaded: 0,
         sizeCur: 0,
         countTotal: 0,
         countUpload: 0,
         curName: '',
+        listDie: [],
+        listSucc: [],
       },
       dir: {
         open: {
@@ -204,26 +266,35 @@ export default {
       const vm = me.$root
       const r = vm.router
       const dUpload = me.dUpload
-      const filesNotUpload = []
-      
+
+      dUpload.sizeCur = 0
+      dUpload.sizeUploaded = 0
+      dUpload.sizeTotal = 0
+      dUpload.listSucc = []
+      dUpload.listDie = []
+      dUpload.isShow = true
+      dUpload.isFinish = false
+      dUpload.isBreak = false
+
       files = files.filter((file) => {
         const isSizeAllow = file.size <= me.ini.uploadMaxFilesize
         if (!isSizeAllow) {
-          filesNotUpload.push(file)
+          dUpload.listDie.push({
+            name: file.name,
+            size: file.size,
+            msg: '上传失败：' + file.name + ' &nbsp;' + file.size.toSize(),
+          })
         }
         return isSizeAllow
-      })
-
-      if (filesNotUpload.length > 0) {
-        vm.alert('单文件上传最大不得超过：' + me.ini.uploadMaxFilesize.toSize() + '<br />' + filesNotUpload.map(f => '上传失败： ' + f.name).join('<br />'))
-      }
+      }).sort((a, b) => a.size - b.size)
 
       if (files.length === 0) {
         console.warn('没有可以上传的文件')
-        return
       }
 
       for (let i = 0; i < files.length; i++) {
+        if (dUpload.isBreak) break
+
         await new Promise((next) => {
           const file = files[i]
 
@@ -239,25 +310,37 @@ export default {
             },
             onprogress(e) {
               dUpload.sizeCur = e.loaded
-              console.log(dUpload.sizeCur + dUpload.sizeUploaded, dUpload.sizeTotal, (dUpload.sizeCur + dUpload.sizeUploaded) / dUpload.sizeTotal)
             },
-            succ(data) {
-              console.log('upload succ: ' + file.name)
+            success(data) {
               dUpload.sizeCur = 0
+              dUpload.listSucc.push({
+                name: file.name,
+                size: file.size,
+                msg: '上传成功：' + file.fullPath,
+              })
               doNext()
             },
             fail(e) {
-              console.log('upload err : ' + file.name, e)
+              dUpload.listDie.push({
+                name: file.name,
+                size: file.size,
+                msg: '上传失败：' + file.fullPath,
+              })
               doNext()
             }
           })
 
           function doNext() {
             dUpload.sizeUploaded += file.size
-            next()
+            setTimeout(() => {
+              next()
+            }, 400)
           }
         })
       }
+
+      dUpload.isBreak = false
+      dUpload.isFinish = true
     },
     exec(e, action) {
       const me = this
@@ -1022,6 +1105,12 @@ export default {
     curPath() {
       return this.curDir.path || ''
     },
+    uploadProcess() {
+      const dUpload = this.dUpload
+      let per = (dUpload.sizeCur + dUpload.sizeUploaded) / dUpload.sizeTotal
+      per = per > 1 ? 1 : per
+      return per * 100 + '%'
+    },
   },
   watch: {
     'dir.open.isShow'(newVal) {
@@ -1055,7 +1144,7 @@ export default {
 <style lang="scss" scoped>
 .web-ftp {
   .web-ftp-body {
-    background: #d3d6d9; user-select: none;
+    background: #d3d6d9; user-select: none; z-index: 1;
     .dir-list {
       font-size: 12px;
       .glyphicon {cursor: inherit;}
@@ -1165,6 +1254,18 @@ export default {
           background: #337ab7; color: #fff;
         }
       }
+    }
+  }
+
+  .panel-upload {
+    width: 100%; height: 100%; overflow: auto; padding-top: 20px;
+    background: rgba(0,0,0,.5);
+    display: flex; justify-content: center; align-items: flex-start;
+    position: fixed; left: 0; top: 0; z-index: 100;
+    & > .inner {
+      width: 500px; max-width: 90%;
+      border-radius: 4px; overflow: hidden;
+      background: #fff;
     }
   }
 }
