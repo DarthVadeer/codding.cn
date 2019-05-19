@@ -392,6 +392,61 @@ export default {
         cb && cb()
       })
     },
+    async fetchChannel_() {
+      const me = this
+      const vm = me.$root
+      const r = vm.router
+      let page = 0
+      let result = []
+      let isBreak = false
+      let mapGroup = {}
+      
+      while (!isBreak) {
+        await new Promise((next) => {
+          vm.jsonp('http://api.cntv.cn/lanmu/columnSearch', {
+            'p': ++page,
+            'n': '100',
+            'serviceId': 'tvcctv',
+            't': 'jsonp',
+            '?': 'cb',
+          }, (data) => {
+            data = (((data || {}).response || {}).docs || []).map((v) => {
+              return {
+                id: v.column_topicid,
+                cName: v.channel_name,
+                name: v.column_name,
+              }
+            })
+
+            result = result.concat(data)
+            isBreak = data.length < 100
+            next()
+          })
+        })
+      }
+
+      result.forEach((item, idx, arr) => {
+        mapGroup[item.cName] = mapGroup[item.cName] || []
+        mapGroup[item.cName].push({
+          name: item.name,
+          id: item.id,
+        })
+      })
+
+      let arrResult = Object.keys(mapGroup).sort((a, b) => {
+        return a.match(/\d+/)[0] - b.match(/\d+/)[0]
+      })
+      console.log(arrResult)
+      arrResult = arrResult.map((item, idx, arr) => {
+        return {
+          name: item,
+          children: mapGroup[item]
+        }
+      })
+      console.log(arrResult)
+      console.log(JSON.stringify(arrResult))
+      console.log(JSON.stringify(arrResult).length)
+    },
     justFetchAlbum(cb) {
       const me = this
       const vm = me.$root
@@ -776,6 +831,8 @@ export default {
         me.justFetchAlbum(cb) : 
         me.fetchVideoList(cb)
     })
+
+    // me.fetchChannel_()
   },
   beforeCreate() {
     this.$root.cctv = this
@@ -792,7 +849,7 @@ export default {
   nodeStyle.id = 'cctv-media'
   let sHtml = new Array(50).fill().map((_, idx) => {
     return `
-      @media (min-width: ${idx * 200 + 720}px) {
+      @media (min-width: ${idx * 240 + 720}px) {
         .cctv .box-main .video-list li {
           width: ${1 / (idx + 2) * 100}%;
         }
