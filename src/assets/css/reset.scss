@@ -172,7 +172,8 @@ a.btn-default {color: #333;}
 }
 
 .player {
-  height: 100%; background: #000;
+  width: 100%; height: 100%; background: #000; 
+  position: absolute; left: 0; top: 0;
   video {
     width: 100%; height: 100%; vertical-align: top;
   }
