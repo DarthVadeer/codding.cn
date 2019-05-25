@@ -7,6 +7,7 @@
             v-for="(item, idx) in channel.list"
             :class="['gray-title', {on: idx === r.idxChannel}]"
             @click="clickNav({idxChannel: idx, idxAlbum: 0, idxAux9: 0})"
+            :title="item.name"
           >{{item.name}}</li>
         </ul>
       </div>
@@ -16,6 +17,7 @@
             v-for="(item, idx) in listAlbum"
             :class="['gray-title', {on: idx === r.idxAlbum}]"
             @click="clickNav({idxAlbum: idx, idxAux9: 0})"
+            :title="item.name"
           >{{item.name}}</li>
         </ul>
       </div>
@@ -27,6 +29,7 @@
             v-for="(item, idx) in listAux9"
             :class="['gray-title ellipsis', {on: idx === r.idxAux9}]"
             @click="clickNav({idxAux9: idx})"
+            :title="item"
           >{{item}}</li>
         </ul>
       </div>
@@ -849,7 +852,7 @@ export default {
   nodeStyle.id = 'cctv-media'
   let sHtml = new Array(50).fill().map((_, idx) => {
     return `
-      @media (min-width: ${idx * 240 + 720}px) {
+      @media (min-width: ${idx * 200 + 720}px) {
         .cctv .box-main .video-list li {
           width: ${1 / (idx + 2) * 100}%;
         }
@@ -883,7 +886,7 @@ export default {
     ul {
       margin-bottom: 100px;
       li {
-        cursor: pointer;
+        cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
     }
   }

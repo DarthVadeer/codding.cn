@@ -26,6 +26,7 @@ const coms = [
   'components/cctv',
   'components/webFtp',
   'components/dbAdmin',
+  'components/algo',
 ].map((path) => {
   return require('@/' + path).default
 })

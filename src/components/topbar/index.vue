@@ -26,6 +26,7 @@ export default {
       {name: 'CCTV', com: 'cctv'},
       // {name: 'webFtp', com: 'webFtp'},
       // {name: 'dbAdmin', com: 'dbAdmin'},
+      {name: '算法与数据结构', com: 'algo'},
     ]
     vm.is.local && list.push({
       name: 'webFtp',
