@@ -1,6 +1,6 @@
 <template>
   <div class="box-algo">
-    <iframe class="iframe-algo" scrolling="yes" src="http://codding.cn/algo/" frameborder="0"></iframe>
+    <iframe class="iframe-algo" scrolling="yes" src="http://codding.cn/algo2/" frameborder="0"></iframe>
   </div>
 </template>
 
