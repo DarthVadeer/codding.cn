@@ -14,7 +14,7 @@ export default {
     } catch (e) {}
 
     return {
-      localUrl: 'http://10.0.1.2/codding/',
+      localUrl: 'http://10.0.1.4/codding/',
       dw: window.innerWidth,
       dh: window.innerHeight,
       lenAni: 30,
