@@ -1,167 +1,97 @@
-Array.prototype.clone= function() {
-  return clone(this)
-}
-
-Array.prototype.swap = function(a, b) {
-  const t = this[a]
-  this[a] = this[b]
-  this[b] = t
-}
-
-Array.prototype.first = function() {
-  return this[0]
-}
-
-Array.prototype.last = function() {
-  return this[this.length - 1]
-}
-
-Array.prototype.rnd = function(len, rangeL, rangeR) {
-  rangeL = rangeL === undefined ? 0 : rangeL
-  rangeR = rangeR === undefined ? len : rangeR
-  return new Array(len).fill().map(_ => rand(rangeL, rangeR))
-}
-
-async function sleep(time) {
-  return new Promise((next) => {
-    time > 0 ? setTimeout(next, time) : next()
-  })
-}
-
-function clone(o) {
-  return JSON.parse(JSON.stringify(o))
-}
-
-function rand(m, n) {
-  return Math.floor(Math.random() * (n - m + 1) + m)
-}
-
-function randColor(a) {
-  const o = {
-    r: rand(0, 255),
-    g: rand(0, 255),
-    b: rand(0, 255),
-    a: a === undefined ? 1 : a,
-  }
-
-  return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
-}
-
 class Node {
   constructor(n) {
-    const color = Common.prototype.color
-
     this.n = n
     this.x = 0
     this.y = 0
     this.tx = 0
     this.ty = 0
-    this.fillStyle = '#333'
-    this.strokeStyle = '#333'
+    this.fillStyle = Node.color.black
+    this.strokeStyle = Node.color.black
   }
+}
+
+Node.color = {
+  red: '#f23',
+  green: 'green',
+  blue: '#09f',
+  orange: '#f80',
+  purple: 'purple',
+  white: 'white',
+  black: 'black',
 }
 
 class Common {
   constructor(d = {}) {
-    const me = this
-
-    me.d = d
+    this.d = d
 
     d.arr.forEach((node, idx, arr) => {
-      node.x = idx * d.conf.itemWidth + d.conf.sceneSpace
-      node.y = d.conf.sceneSpace
+      node.x = idx * d.conf.itemWidth
+      node.y = 0
     })
-    d.canvas.width = (d.arr.length * me.getItemWidth() + d.conf.sceneSpace * 2) * devicePixelRatio
+    d.canvas.width = (d.arr.length * d.conf.itemWidth + d.conf.paddingH * 2) * devicePixelRatio
     d.canvas.style.width = d.canvas.width / devicePixelRatio + 'px'
   }
   getItemWidth() {
-    const d = this.d
-    return d.itemWidth || d.conf.itemWidth
+    return this.d.itemWidth || this.d.conf.itemWidth
   }
   getItemHeight() {
-    const d = this.d
-    return d.itemHeight || d.conf.itemHeight
+    return this.d.itemHeight || this.d.conf.itemHeight
   }
   getLevelHeight() {
-    const d = this.d
-    return d.levelHeight || d.conf.levelHeight
-  }
-  updatePos(node) {
-    let vx = (node.tx - node.x) / 15
-    let vy = (node.ty - node.y) / 15
-
-    /*if (node.x.toString().indexOf('.') > -1 || node.y.toString().indexOf('.') > -1) {
-      console.log(this.constructor.name, node)
-    }*/
-
-    vx = Math[vx > 0 ? 'ceil' : 'floor'](vx)
-    vy = Math[vy > 0 ? 'ceil' : 'floor'](vy)
-
-    node.x += vx
-    node.y += vy
+    return this.d.levelHeight || this.d.conf.levelHeight
   }
   renderArr() {
-    const me = this
-    const d = me.d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
+    const d = this.d
+    const {canvas, gd} = d
 
     if (d.arrRendered) return
 
-    d.arrRendered = true
     d.arr.forEach((node, idx, arr) => {
-      me.renderNode(node)
+      gd.save()
+      gd.globalAlpha = .75
+      gd.beginPath()
+      gd.rect(node.x + 1, node.y, d.conf.itemWidth - 1, d.conf.itemHeight)
+      gd.fillStyle = node.fillStyle
+      gd.fill()
+      gd.restore()
+
+      gd.textAlign = 'center'
+      gd.textBaseline = 'middle'
+      gd.font = d.conf.font
+      gd.fillStyle = Node.color.white
+      gd.fillText(node.n, node.x + d.conf.itemWidth / 2, node.y + d.conf.itemHeight / 2)
     })
   }
-  renderNode(node, idx) {
-    const me = this
-    const d = me.d
-
+  renderNode(node) {
     if (!node) return
 
-    const {gd, conf} = this.d
+    const d = this.d
+    const {canvas, gd} = d
     const itemWidth = this.getItemWidth()
     const itemHeight = this.getItemHeight()
+    const levelHeight = this.getLevelHeight()
 
     gd.save()
-    gd.globalAlpha = .7
+    gd.globalAlpha = .75
     gd.beginPath()
-    gd.rect(node.x + 1, node.y, itemWidth - 2, itemHeight)
+    gd.rect(node.x + 1, node.y, itemWidth - 1, itemHeight)
     gd.fillStyle = node.fillStyle
     gd.fill()
     gd.restore()
 
-    gd.font = conf.font
-    gd.fillStyle = '#fff'
     gd.textAlign = 'center'
     gd.textBaseline = 'middle'
+    gd.font = d.conf.font
+    gd.fillStyle = Node.color.white
     gd.fillText(node.n, node.x + itemWidth / 2, node.y + itemHeight / 2)
-
-    if (idx !== undefined) {
-      gd.fillStyle = d.color.def
-      gd.font = d.conf.fontSm
-      gd.textAlign = 'center'
-      gd.textBaseline = 'bottom'
-      gd.fillText(idx, node.x + itemWidth / 2, node.y)
-    }
 
     if (node.balanceFactor !== undefined) {
       ;['高度=' + node.h, '平衡=' + node.balanceFactor].forEach((str, idx, arr) => {
-        gd.fillStyle = d.color.def
-        gd.font = d.conf.fontSm
-        gd.textAlign = 'center'
+        gd.fillStyle = Node.color.black
         gd.textBaseline = 'bottom'
         gd.fillText(str, node.x + itemWidth / 2, node.y - (arr.length - idx - 1) * 16 - 2)
       })
     }
-  }
-  render() {
-    const me = this
-    const d = me.d
-    const {canvas, gd} = d
-
-    gd.fillStyle = d.color.white
-    gd.fillRect(0, 0, canvas.width, canvas.height)
   }
 }
 
@@ -169,8 +99,7 @@ class Sort extends Common {
   constructor() {
     super(...arguments)
 
-    const me = this
-    const d = me.d
+    const d = this.d
 
     d.arr.forEach((node, idx, arr) => {
       node.strokeStyle = randColor()
@@ -178,32 +107,29 @@ class Sort extends Common {
     d.steps = [d.arr.clone()]
   }
   setPos() {
-    const me = this
-    const d = me.d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
-
-    d.canvas.height = ((d.steps.length - 1) * levelHeight + itemHeight + d.conf.sceneSpace * 2) * devicePixelRatio
+    const d = this.d
 
     d.steps.forEach((step, stair, arr) => {
       step.forEach((node, idx, arr) => {
         if (!node) return
-        node.x = idx * itemWidth + d.conf.sceneSpace
-        node.y = stair * levelHeight + d.conf.sceneSpace
+
+        node.x = idx * d.conf.itemWidth
+        node.y = stair * d.conf.levelHeight
       })
     })
+
+    d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * devicePixelRatio
   }
   render() {
-    const me = this
-    const d = me.d
-    const {gd} = d
+    const d = this.d
+    const {canvas, gd} = d
     const itemWidth = this.getItemWidth()
     const itemHeight = this.getItemHeight()
+    const levelHeight = this.getLevelHeight()
 
-    super.render()
     gd.save()
     gd.scale(devicePixelRatio, devicePixelRatio)
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
     d.steps.forEach((step, stair, arr) => {
       stair > 0 && step.forEach((from, idx, arr) => {
         if (!from) return
@@ -214,8 +140,8 @@ class Sort extends Common {
         while (!to) to = d.steps[--_stair][from.fromIndex]
 
         gd.beginPath()
-        gd.lineTo(from.x + itemWidth / 2 + .5, from.y + itemHeight / 2)
-        gd.lineTo(to.x + itemWidth / 2 + .5, to.y + itemHeight / 2)
+        gd.lineTo(from.x + .5 + itemWidth / 2, from.y + itemHeight / 2)
+        gd.lineTo(to.x + .5 + itemWidth / 2, to.y + itemHeight / 2)
         gd.strokeStyle = from.strokeStyle
         gd.stroke()
       })
@@ -223,7 +149,7 @@ class Sort extends Common {
 
     d.steps.forEach((step, stair, arr) => {
       step.forEach((node, idx, arr) => {
-        me.renderNode(node)
+        this.renderNode(node)
       })
     })
     gd.restore()
@@ -233,18 +159,9 @@ class Sort extends Common {
 class Heap extends Common {
   constructor() {
     super(...arguments)
-
-    const me = this
-    const d = me.d
-    
-    d.sceneTopSpace = 10
-    d.arr.forEach((node, idx, arr) => {
-      node.fillStyle = d.color.blue
-    })
   }
   setPos() {
-    const me = this
-    const d = me.d
+    const d = this.d
     const itemWidth = this.getItemWidth()
     const itemHeight = this.getItemHeight()
     const levelHeight = this.getLevelHeight()
@@ -258,37 +175,38 @@ class Heap extends Common {
         const index = count + j
         const node = d.arr[index]
 
-        node.x = perW * j + perW / 2 - itemWidth / 2 + d.conf.sceneSpace
-        node.y = i * levelHeight + d.conf.sceneSpace + d.sceneTopSpace
+        node.x = j * perW + perW / 2 - itemWidth / 2
+        node.y = i * levelHeight
       }
 
       count += n
     }
   }
   render() {
-    const me = this
-    const d = me.d
-    const {gd} = d
+    const d = this.d
+    const {canvas, gd} = d
     const itemWidth = this.getItemWidth()
     const itemHeight = this.getItemHeight()
 
-    super.render()
     gd.save()
     gd.scale(devicePixelRatio, devicePixelRatio)
-    d.arr.forEach((node, idx, arr) => {
-      const nodeL = arr[idx * 2 + 1]
-      const nodeR = arr[idx * 2 + 2]
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
+    
+    for (let i = d.branchIndex; i > -1; i--) {
+      const node = d.arr[i]
+      const nodeL = d.arr[i * 2 + 1]
+      const nodeR = d.arr[i * 2 + 2]
 
       gd.beginPath()
       nodeL && gd.lineTo(nodeL.x + itemWidth / 2, nodeL.y + itemHeight / 2)
       gd.lineTo(node.x + itemWidth / 2, node.y + itemHeight / 2)
       nodeR && gd.lineTo(nodeR.x + itemWidth / 2, nodeR.y + itemHeight / 2)
-      gd.strokeStyle = d.color.def
+      gd.strokeStyle = node.strokeStyle
       gd.stroke()
-    })
+    }
 
     d.arr.forEach((node, idx, arr) => {
-      me.renderNode(node, idx)
+      this.renderNode(node)
     })
     gd.restore()
   }
@@ -297,73 +215,69 @@ class Heap extends Common {
 class Tree extends Common {
   constructor() {
     super(...arguments)
-    
-    const me = this
-    const d = me.d
 
-    d.sceneTopSpace = 50
+    const d = this.d
+
+    d.paddingTop = 40
   }
   setPos() {
-    const me = this
-    const d = me.d
-    const {canvas, gd, conf} = d
+    const d = this.d
     const itemWidth = this.getItemWidth()
     const itemHeight = this.getItemHeight()
     const levelHeight = this.getLevelHeight()
+    let translateX = 0
+    let translateY = 0
 
-    d.level = -1
     d.iLeft = 0
+    d.level = -1
     d.iHeight = 0
-    
+
     function setPos(node) {
       if (!node) return
 
       d.level++
       setPos(node.l)
       node.x = d.iLeft
+      node.y = d.level * levelHeight + d.paddingTop + d.conf.paddingV
       d.iLeft += itemWidth / 2
-      node.y = d.level * levelHeight
       setPos(node.r)
       d.level--
 
       if (node.l && node.r) {
         node.x = (node.l.x + node.r.x) / 2
       }
-    }
 
-    function translateCoord(node) {
-      if (!node) return
-
-      translateCoord(node.l)
-      translateCoord(node.r)
-
-      node.x += (canvas.width / devicePixelRatio - d.iLeft) / 2
-      node.y += d.sceneTopSpace + conf.sceneSpace
       d.iHeight = Math.max(d.iHeight, node.y)
     }
 
-    ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
-      if (!rootNode) return
+    function updateCoord(node) {
+      if (!node) return
 
+      updateCoord(node.l)
+      updateCoord(node.r)
+
+      node.x += translateX
+    }
+
+    ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
       setPos(rootNode)
       d.iLeft += idx === arr.length - 1 ? itemWidth / 2 : itemWidth
     })
-    
-    ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
-      if (!rootNode) return
 
-      translateCoord(rootNode)
+    translateX = (d.canvas.width / devicePixelRatio - d.iLeft) / 2 - d.conf.paddingH
+
+    ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
+      updateCoord(rootNode)
     })
-    
-    canvas.height = (d.iHeight + itemHeight + d.conf.sceneSpace) * devicePixelRatio
+
+    d.canvas.height = (d.iHeight + itemHeight + d.conf.paddingV * 2) * devicePixelRatio
   }
   render() {
     const me = this
     const d = me.d
-    const {gd} = d
+    const {canvas, gd} = d
     const itemWidth = this.getItemWidth()
     const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
 
     function renderLine(node) {
       if (!node) return
@@ -375,7 +289,7 @@ class Tree extends Common {
       node.l && gd.lineTo(node.l.x + itemWidth / 2, node.l.y + itemHeight / 2)
       gd.lineTo(node.x + itemWidth / 2, node.y + itemHeight / 2)
       node.r && gd.lineTo(node.r.x + itemWidth / 2, node.r.y + itemHeight / 2)
-      gd.strokeStyle = d.color.def
+      gd.strokeStyle = node.strokeStyle
       gd.stroke()
     }
 
@@ -388,13 +302,11 @@ class Tree extends Common {
       me.renderNode(node)
     }
 
-    super.render()
     gd.save()
     gd.scale(devicePixelRatio, devicePixelRatio)
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
     me.renderArr()
     ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
-      if (!rootNode) return
-
       renderLine(rootNode)
       renderNode(rootNode)
     })

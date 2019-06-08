@@ -2,34 +2,23 @@ class AVLTree extends Tree {
   constructor() {
     super(...arguments)
 
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    d.itemWidth = 40
     d.levelHeight = 60
-    d.sceneTopSpace = 80
-    d.canvas.width = (d.arr.length * me.getItemWidth() + d.conf.sceneSpace * 2) * devicePixelRatio
-    d.canvas.style.width = d.canvas.width / devicePixelRatio + 'px'
-
-    d.arr.forEach((node, idx, arr) => {
-      node.x = idx * d.itemWidth + d.conf.sceneSpace
-      node.y = d.conf.sceneSpace
-    })
+    d.paddingTop = 60
+    d.itemWidth = 44
   }
   create() {
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    d.arr.clone().forEach((item, idx, arr) => {
-      item.fillStyle = d.color.blue
-      item.h = 1
-      item.balanceFactor = 0
-      d.root = me.add(d.root, item)
+    d.arr.clone().forEach((node, idx, arr) => {
+      node.fillStyle = Node.color.blue
+      node.h = 1
+      node.balanceFactor = 0
+      d.root = this.add(d.root, node)
     })
   }
   add(node, item) {
-    const me = this
-
     if (!node) return item
 
     if (item.n < node.n) {
@@ -40,28 +29,34 @@ class AVLTree extends Tree {
       // ===
     }
 
-    const balanceFactor = me.getBalanceFactor(node)
+    const balanceFactor = this.getBalanceFactor(node)
 
     if (Math.abs(balanceFactor) > 1) {
       if (balanceFactor > 0) {
         // 左边高
-        if (me.getBalanceFactor(node.l) < 0) {
-          node.l = me.leftRotate(node.l)
+        if (this.getBalanceFactor(node.l) < 0) {
+          node.l = this.leftRotate(node.l)
         }
-        node = me.rightRotate(node)
+        node = this.rightRotate(node)
       } else {
         // 右边高
-        if (me.getBalanceFactor(node.r) > 0) {
-          node.r = me.rightRotate(node.r)
+        if (this.getBalanceFactor(node.r) > 0) {
+          node.r = this.rightRotate(node.r)
         }
-        node = me.leftRotate(node)
+        node = this.leftRotate(node)
       }
     }
 
-    node.h = Math.max(me.getHeight(node.l), me.getHeight(node.r)) + 1
-    node.balanceFactor = me.getBalanceFactor(node)
+    node.h = Math.max(this.getHeight(node.l), this.getHeight(node.r)) + 1
+    node.balanceFactor = this.getBalanceFactor(node)
 
     return node
+  }
+  getHeight(node) {
+    return node ? node.h : 0
+  }
+  getBalanceFactor(node) {
+    return this.getHeight(node.l) - this.getHeight(node.r)
   }
   leftRotate(x) {
     const y = x.r
@@ -73,7 +68,6 @@ class AVLTree extends Tree {
     y.h = Math.max(this.getHeight(y.l), this.getHeight(y.r)) + 1
 
     x.balanceFactor = this.getBalanceFactor(x)
-    // y.balanceFactor = this.getBalanceFactor(y)
 
     return y
   }
@@ -87,14 +81,7 @@ class AVLTree extends Tree {
     y.h = Math.max(this.getHeight(y.l), this.getHeight(y.r)) + 1
 
     x.balanceFactor = this.getBalanceFactor(x)
-    // y.balanceFactor = this.getBalanceFactor(y)
 
     return y
-  }
-  getHeight(node) {
-    return node ? node.h : 0
-  }
-  getBalanceFactor(node) {
-    return node ? this.getHeight(node.l) - this.getHeight(node.r) : 0
   }
 }
