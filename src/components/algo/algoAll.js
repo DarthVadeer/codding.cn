@@ -17,7 +17,7 @@ Node.color = {
   orange: '#f80',
   purple: 'purple',
   white: 'white',
-  black: 'black',
+  black: '#333',
 }
 
 class Common {
@@ -28,8 +28,8 @@ class Common {
       node.x = idx * d.conf.itemWidth
       node.y = 0
     })
-    d.canvas.width = (d.arr.length * d.conf.itemWidth + d.conf.paddingH * 2) * devicePixelRatio
-    d.canvas.style.width = d.canvas.width / devicePixelRatio + 'px'
+    d.canvas.width = (d.arr.length * d.conf.itemWidth + d.conf.paddingH * 2) * d.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
   }
   getItemWidth() {
     return this.d.itemWidth || this.d.conf.itemWidth
@@ -118,7 +118,7 @@ class Sort extends Common {
       })
     })
 
-    d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * devicePixelRatio
+    d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
   }
   render() {
     const d = this.d
@@ -128,7 +128,7 @@ class Sort extends Common {
     const levelHeight = this.getLevelHeight()
 
     gd.save()
-    gd.scale(devicePixelRatio, devicePixelRatio)
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
     d.steps.forEach((step, stair, arr) => {
       stair > 0 && step.forEach((from, idx, arr) => {
@@ -189,7 +189,7 @@ class Heap extends Common {
     const itemHeight = this.getItemHeight()
 
     gd.save()
-    gd.scale(devicePixelRatio, devicePixelRatio)
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
     
     for (let i = d.branchIndex; i > -1; i--) {
@@ -264,13 +264,13 @@ class Tree extends Common {
       d.iLeft += idx === arr.length - 1 ? itemWidth / 2 : itemWidth
     })
 
-    translateX = (d.canvas.width / devicePixelRatio - d.iLeft) / 2 - d.conf.paddingH
+    translateX = (d.canvas.width / d.devicePixelRatio - d.iLeft) / 2 - d.conf.paddingH
 
     ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
       updateCoord(rootNode)
     })
 
-    d.canvas.height = (d.iHeight + itemHeight + d.conf.paddingV * 2) * devicePixelRatio
+    d.canvas.height = (d.iHeight + itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
   }
   render() {
     const me = this
@@ -303,7 +303,7 @@ class Tree extends Common {
     }
 
     gd.save()
-    gd.scale(devicePixelRatio, devicePixelRatio)
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
     me.renderArr()
     ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
@@ -312,7 +312,9 @@ class Tree extends Common {
     })
     gd.restore()
   }
-}class MergeSort extends Sort {
+}
+
+class MergeSort extends Sort {
   startSort() {
     const d = this.d
 
@@ -363,7 +365,9 @@ class Tree extends Common {
 
     mergeSort(0, d.arr.length - 1)
   }
-}class QuickSort extends Sort {
+}
+
+class QuickSort extends Sort {
   startSort() {
     const d = this.d
 
@@ -410,7 +414,9 @@ class Tree extends Common {
       return node
     }))
   }
-}class QuickSort2 extends Sort {
+}
+
+class QuickSort2 extends Sort {
   startSort() {
     const d = this.d
 
@@ -465,7 +471,9 @@ class Tree extends Common {
       return node
     }))
   }
-}class QuickSort3 extends Sort {
+}
+
+class QuickSort3 extends Sort {
   startSort() {
     const d = this.d
 
@@ -520,16 +528,18 @@ class Tree extends Common {
       return node
     }))
   }
-}class MaxHeap extends Heap {
+}
+
+class MaxHeap extends Heap {
   constructor() {
     super(...arguments)
 
     const d = this.d
 
     d.level = Math.ceil(Math.log(d.arr.length + 1) / Math.log(2))
-    d.canvas.width = (Math.pow(2, d.level - 1) * d.conf.itemWidth + d.conf.paddingH * 2) * devicePixelRatio
-    d.canvas.style.width = d.canvas.width / devicePixelRatio + 'px'
-    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * devicePixelRatio
+    d.canvas.width = (Math.pow(2, d.level - 1) * d.conf.itemWidth + d.conf.paddingH * 2) * d.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
+    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
 
     d.arr.forEach((node, idx, arr) => {
@@ -576,7 +586,9 @@ class Tree extends Common {
       k = j
     }
   }
-}class SegmentTree extends Heap {
+}
+
+class SegmentTree extends Heap {
   constructor() {
     super(...arguments)
 
@@ -586,9 +598,9 @@ class Tree extends Common {
     d.level = Math.ceil(Math.log(d.len) / Math.log(2)) + 1
     d.itemWidth = 40
     d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
-    d.canvas.width = (Math.pow(2, d.level - 1) * this.getItemWidth() + d.conf.paddingH * 2) * devicePixelRatio
-    d.canvas.style.width = d.canvas.width / devicePixelRatio + 'px'
-    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * devicePixelRatio
+    d.canvas.width = (Math.pow(2, d.level - 1) * this.getItemWidth() + d.conf.paddingH * 2) * d.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
+    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
   }
   createL() {
@@ -635,7 +647,9 @@ class Tree extends Common {
 
     createR(0, 0, d.len)
   }
-}class BinarySearch extends Tree {
+}
+
+class BinarySearch extends Tree {
   create() {
     const d = this.d
 
@@ -670,7 +684,9 @@ class Tree extends Common {
     node.l = node.r
     node.r = t
   }
-}class AVLTree extends Tree {
+}
+
+class AVLTree extends Tree {
   constructor() {
     super(...arguments)
 
@@ -756,7 +772,9 @@ class Tree extends Common {
 
     return y
   }
-}class RBTree extends Tree {
+}
+
+class RBTree extends Tree {
   create() {
     const d = this.d
 
@@ -852,12 +870,184 @@ class Tree extends Common {
     node.l.fillStyle = Node.color.black
     node.r.fillStyle = Node.color.black
   }
-}class Algo {
+}
+
+class Trie extends Common {
+  constructor() {
+    super(...arguments)
+
+    const d = this.d
+
+    // d.str = 'cat dog deer panda pan'
+    d.str = `SwiftUI provides views, controls, and layout structures for declaring your app's user interface. The framework provides event handlers for delivering taps, gestures, and other types of input to your app, and tools to manage the flow of data from your app's models down to the views and controls that users will see and interact with.`
+    // d.str = `Create your own custom views that conform to the View protocol, and compose them with SwiftUI views for displaying text, images, and custom shapes using stacks, lists, and more. Apply powerful modifiers to built-in views and your own views to customize their rendering and interactivity. Share code between apps on multiple platforms with views and controls that adapt to their context and presentation.`
+    d.arr = d.str.toLowerCase().match(/\w+/g) || []
+    d.root = {
+      x: 0,
+      y: 0,
+      isWord: false,
+      map: {}
+    }
+  }
+  create() {
+    const d = this.d
+
+    d.arr.forEach((str, idx, arr) => {
+      let curNode = d.root
+
+      for (let i = 0, len = str.length; i < len; i++) {
+        const k = str[i]
+
+        if (!curNode.map[k]) {
+          curNode.map[k] = {
+            x: 0,
+            y: 0,
+            isWord: false,
+            map: {}
+          }
+        }
+
+        curNode = curNode.map[k]
+      }
+
+      curNode.isWord = true
+    })
+  }
+  setPos() {
+    const me = this
+    const d = me.d
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
+
+    {
+      d.textArr = []
+      const arr = d.str.split(/\s+/g) || []
+      let textLevel = 3
+      let textLen = Math.ceil(arr.length / textLevel)
+
+      for (let i = 0; i < textLevel; i++) {
+        d.textArr.push(arr.slice(i * textLen, (i + 1) * textLen))
+      }
+    }
+
+    d.level = -1
+    d.iLeft = 0
+    d.iHeight = 0
+
+    function setPos(node) {
+      if (!node) return
+
+      const keys = Object.keys(node.map)
+      // .sort((a, b) => a.localeCompare(b))
+
+      d.level++
+      keys.forEach((key, idx, arr) => {
+        setPos(node.map[key], key)
+      })
+
+      node.x = keys.length > 0 ? (node.map[keys.first()].x + node.map[keys.last()].x) / 2 : d.iLeft
+      node.y = d.level * levelHeight + d.textArr.length * 18 + 20
+      d.iHeight = Math.max(d.iHeight, node.y)
+
+      keys.length === 0 && (d.iLeft += itemWidth * 1)
+      d.level--
+    }
+
+    setPos(d.root, 'root')
+
+    d.canvas.width = (d.iLeft + d.conf.paddingH * 2) * d.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
+    d.canvas.height = (d.iHeight + itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
+  }
+  render() {
+    const me = this
+    const d = me.d
+    const {canvas, gd} = d
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+
+    d.level = 0
+    d.iLeft = 0
+
+    function renderLine(node) {
+      if (!node) return
+
+      const keys = Object.keys(node.map)
+
+      keys.forEach((key, idx, arr) => {
+        const to = node.map[key]
+        renderLine(to, key)
+
+        gd.beginPath()
+        gd.lineTo(node.x + itemWidth / 2 + .5, node.y + itemHeight / 2)
+        gd.lineTo(to.x + itemWidth / 2 + .5, to.y + itemHeight / 2)
+        gd.strokeStyle = Node.color.black
+        gd.stroke()
+      })
+    }
+
+    function renderNode(node, nodeName) {
+      if (!node) return
+
+      const keys = Object.keys(node.map)
+
+      keys.forEach((key, idx, arr) => {
+        renderNode(node.map[key], key)
+      })
+
+      gd.save()
+      gd.globalAlpha = .75
+      gd.beginPath()
+      gd.rect(node.x + 1, node.y, itemWidth - 2, itemHeight)
+      gd.fillStyle = Node.color[node.isWord ? 'blue' : 'black']
+      gd.fill()
+      gd.restore()
+
+      gd.fillStyle = Node.color.white
+      gd.textAlign = 'center'
+      gd.textBaseline = 'middle'
+      gd.font = d.conf.font
+      gd.fillText(nodeName, node.x + itemWidth / 2, node.y + itemHeight / 2)
+    }
+
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+
+    gd.save()
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
+    
+    {
+      gd.fillStyle = Node.color.black
+      gd.font = d.conf.fontLg
+      gd.textAlign = 'left'
+      gd.textBaseline = 'top'
+      
+      let translateX = ((canvas.offsetWidth - d.conf.paddingH * 2) - gd.measureText(d.textArr[0]).width) / 2
+
+      d.textArr.forEach((arr, idx) => {
+        const str = arr.join(' ')
+        gd.fillText(str, translateX, idx * 18)
+      })
+    }
+
+    renderLine(d.root, 'root')
+    renderNode(d.root, 'root')
+    gd.restore()
+  }
+}
+
+
+class Algo {
   constructor(d = {}) {
     this.d = d
 
+    d.devicePixelRatio = devicePixelRatio
+    // d.devicePixelRatio = devicePixelRatio === 1 ? 2 : devicePixelRatio
     d.type = {
       list: [
+        {name: 'Trie', cons: Trie, opt: {startFn: 'create'}},
         {name: '红黑树 (左倾 & 右倾)', cons: RBTree, opt: {startFn: 'create'}},
         {name: 'AVL树', cons: AVLTree, opt: {startFn: 'create'}},
         {name: '二分搜索树 - 镜像反转', cons: BinarySearch, opt: {startFn: 'create'}},
@@ -872,7 +1062,7 @@ class Tree extends Common {
       ]
     }
 
-    if (location.origin.indexOf('codding.cn') > -1) d.type.list.reverse()
+    // if (location.origin.indexOf('codding.cn') > -1) d.type.list.reverse()
 
     d.cons = {
       list: []
@@ -884,8 +1074,9 @@ class Tree extends Common {
       levelHeight: 40,
       paddingH: 15,
       paddingV: 15,
+      fontLg: '16px Arial',
       font: '14px Arial',
-      font: '12px Arial',
+      fontSm: '12px Arial',
     }
 
     const nodeList = document.querySelector('#box-algo > .list')
@@ -894,7 +1085,7 @@ class Tree extends Common {
       return `
         <section>
           <div class="box-btn">
-            <button>${v.name}</button>
+            <button class="btn btn-primary">${v.name}</button>
           </div>
           <div class="box-canvas">
             <canvas></canvas>
@@ -903,7 +1094,7 @@ class Tree extends Common {
       `
     }).join('')
 
-    const len = 18
+    const len = 20
     let randArr = [].rnd(len, 1)
     // randArr = new Array(len).fill().map((_, idx) => idx)
 
@@ -925,5 +1116,7 @@ class Tree extends Common {
     })
   }
 }
+
+
 
 export default Algo

@@ -17,7 +17,7 @@ Node.color = {
   orange: '#f80',
   purple: 'purple',
   white: 'white',
-  black: 'black',
+  black: '#333',
 }
 
 class Common {
@@ -28,8 +28,8 @@ class Common {
       node.x = idx * d.conf.itemWidth
       node.y = 0
     })
-    d.canvas.width = (d.arr.length * d.conf.itemWidth + d.conf.paddingH * 2) * devicePixelRatio
-    d.canvas.style.width = d.canvas.width / devicePixelRatio + 'px'
+    d.canvas.width = (d.arr.length * d.conf.itemWidth + d.conf.paddingH * 2) * d.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
   }
   getItemWidth() {
     return this.d.itemWidth || this.d.conf.itemWidth
@@ -118,7 +118,7 @@ class Sort extends Common {
       })
     })
 
-    d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * devicePixelRatio
+    d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
   }
   render() {
     const d = this.d
@@ -128,7 +128,7 @@ class Sort extends Common {
     const levelHeight = this.getLevelHeight()
 
     gd.save()
-    gd.scale(devicePixelRatio, devicePixelRatio)
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
     d.steps.forEach((step, stair, arr) => {
       stair > 0 && step.forEach((from, idx, arr) => {
@@ -189,7 +189,7 @@ class Heap extends Common {
     const itemHeight = this.getItemHeight()
 
     gd.save()
-    gd.scale(devicePixelRatio, devicePixelRatio)
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
     
     for (let i = d.branchIndex; i > -1; i--) {
@@ -264,13 +264,13 @@ class Tree extends Common {
       d.iLeft += idx === arr.length - 1 ? itemWidth / 2 : itemWidth
     })
 
-    translateX = (d.canvas.width / devicePixelRatio - d.iLeft) / 2 - d.conf.paddingH
+    translateX = (d.canvas.width / d.devicePixelRatio - d.iLeft) / 2 - d.conf.paddingH
 
     ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
       updateCoord(rootNode)
     })
 
-    d.canvas.height = (d.iHeight + itemHeight + d.conf.paddingV * 2) * devicePixelRatio
+    d.canvas.height = (d.iHeight + itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
   }
   render() {
     const me = this
@@ -303,7 +303,7 @@ class Tree extends Common {
     }
 
     gd.save()
-    gd.scale(devicePixelRatio, devicePixelRatio)
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
     me.renderArr()
     ;[d.root, d.root2].forEach((rootNode, idx, arr) => {

@@ -10,12 +10,13 @@ const pathArr = [
   './BinarySearch.js',
   './AVLTree.js',
   './RBTree.js',
+  './Trie.js',
   './Algo.js',
 ]
 
 let result = ''
 pathArr.forEach((path, idx, arr) => {
-  result += fs.readFileSync(path, 'utf-8')
+  result += fs.readFileSync(path, 'utf-8') + '\n\n'
 })
 
 result = result + `

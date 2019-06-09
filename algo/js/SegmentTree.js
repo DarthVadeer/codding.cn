@@ -8,9 +8,9 @@ class SegmentTree extends Heap {
     d.level = Math.ceil(Math.log(d.len) / Math.log(2)) + 1
     d.itemWidth = 40
     d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
-    d.canvas.width = (Math.pow(2, d.level - 1) * this.getItemWidth() + d.conf.paddingH * 2) * devicePixelRatio
-    d.canvas.style.width = d.canvas.width / devicePixelRatio + 'px'
-    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * devicePixelRatio
+    d.canvas.width = (Math.pow(2, d.level - 1) * this.getItemWidth() + d.conf.paddingH * 2) * d.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
+    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
   }
   createL() {

@@ -2,8 +2,11 @@ class Algo {
   constructor(d = {}) {
     this.d = d
 
+    d.devicePixelRatio = devicePixelRatio
+    // d.devicePixelRatio = devicePixelRatio === 1 ? 2 : devicePixelRatio
     d.type = {
       list: [
+        {name: 'Trie', cons: Trie, opt: {startFn: 'create'}},
         {name: '红黑树 (左倾 & 右倾)', cons: RBTree, opt: {startFn: 'create'}},
         {name: 'AVL树', cons: AVLTree, opt: {startFn: 'create'}},
         {name: '二分搜索树 - 镜像反转', cons: BinarySearch, opt: {startFn: 'create'}},
@@ -18,7 +21,7 @@ class Algo {
       ]
     }
 
-    if (location.origin.indexOf('codding.cn') > -1) d.type.list.reverse()
+    // if (location.origin.indexOf('codding.cn') > -1) d.type.list.reverse()
 
     d.cons = {
       list: []
@@ -30,8 +33,9 @@ class Algo {
       levelHeight: 40,
       paddingH: 15,
       paddingV: 15,
+      fontLg: '16px Arial',
       font: '14px Arial',
-      font: '12px Arial',
+      fontSm: '12px Arial',
     }
 
     const nodeList = document.querySelector('#box-algo > .list')
@@ -40,7 +44,7 @@ class Algo {
       return `
         <section>
           <div class="box-btn">
-            <button>${v.name}</button>
+            <button class="btn btn-primary">${v.name}</button>
           </div>
           <div class="box-canvas">
             <canvas></canvas>
@@ -49,7 +53,7 @@ class Algo {
       `
     }).join('')
 
-    const len = 18
+    const len = 20
     let randArr = [].rnd(len, 1)
     // randArr = new Array(len).fill().map((_, idx) => idx)
 

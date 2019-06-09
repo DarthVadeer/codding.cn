@@ -29,6 +29,7 @@ export default {
   },
   mounted() {
     window.algo = new Algo()
+    // 
   },
   beforeDestroy() {
     delete this.$root.algo
