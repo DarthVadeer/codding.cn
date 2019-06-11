@@ -1,12 +1,19 @@
 class Node {
   constructor(n) {
-    this.n = n
-    this.x = 0
-    this.y = 0
-    this.tx = 0
-    this.ty = 0
-    this.fillStyle = Node.color.black
-    this.strokeStyle = Node.color.black
+    const d = {
+      n,
+      x: 0,
+      y: 0,
+      tx: 0,
+      ty: 0,
+      fillStyle: Node.color.black,
+      strokeStyle: Node.color.black,
+      ...arguments[1],
+    }
+
+    for (let key in d) {
+      this[key] = d[key]
+    }
   }
 }
 
@@ -16,13 +23,16 @@ Node.color = {
   blue: '#09f',
   orange: '#f80',
   purple: 'purple',
+  yellow: '#ff0',
   white: 'white',
   black: '#333',
 }
 
 class Common {
   constructor(d = {}) {
-    this.d = d
+    const me = this
+
+    me.d = d
 
     d.arr.forEach((node, idx, arr) => {
       node.x = idx * d.conf.itemWidth
@@ -32,16 +42,20 @@ class Common {
     d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
   }
   getItemWidth() {
-    return this.d.itemWidth || this.d.conf.itemWidth
+    const me = this
+    return me.d.itemWidth || me.d.conf.itemWidth
   }
   getItemHeight() {
-    return this.d.itemHeight || this.d.conf.itemHeight
+    const me = this
+    return me.d.itemHeight || me.d.conf.itemHeight
   }
   getLevelHeight() {
-    return this.d.levelHeight || this.d.conf.levelHeight
+    const me = this
+    return me.d.levelHeight || me.d.conf.levelHeight
   }
   renderArr() {
-    const d = this.d
+    const me = this
+    const d = me.d
     const {canvas, gd} = d
 
     if (d.arrRendered) return
@@ -65,11 +79,12 @@ class Common {
   renderNode(node) {
     if (!node) return
 
-    const d = this.d
+    const me = this
+    const d = me.d
     const {canvas, gd} = d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
 
     gd.save()
     gd.globalAlpha = .75
@@ -99,7 +114,8 @@ class Sort extends Common {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.arr.forEach((node, idx, arr) => {
       node.strokeStyle = randColor()
@@ -107,7 +123,8 @@ class Sort extends Common {
     d.steps = [d.arr.clone()]
   }
   setPos() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.steps.forEach((step, stair, arr) => {
       step.forEach((node, idx, arr) => {
@@ -121,11 +138,12 @@ class Sort extends Common {
     d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
   }
   render() {
-    const d = this.d
+    const me = this
+    const d = me.d
     const {canvas, gd} = d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
 
     gd.save()
     gd.scale(d.devicePixelRatio, d.devicePixelRatio)
@@ -149,7 +167,7 @@ class Sort extends Common {
 
     d.steps.forEach((step, stair, arr) => {
       step.forEach((node, idx, arr) => {
-        this.renderNode(node)
+        me.renderNode(node)
       })
     })
     gd.restore()
@@ -161,10 +179,11 @@ class Heap extends Common {
     super(...arguments)
   }
   setPos() {
-    const d = this.d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
+    const me = this
+    const d = me.d
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
     let count = 0
 
     for (let i = 0; i < d.level; i++) {
@@ -183,10 +202,11 @@ class Heap extends Common {
     }
   }
   render() {
-    const d = this.d
+    const me = this
+    const d = me.d
     const {canvas, gd} = d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
 
     gd.save()
     gd.scale(d.devicePixelRatio, d.devicePixelRatio)
@@ -206,7 +226,7 @@ class Heap extends Common {
     }
 
     d.arr.forEach((node, idx, arr) => {
-      this.renderNode(node)
+      me.renderNode(node)
     })
     gd.restore()
   }
@@ -216,15 +236,17 @@ class Tree extends Common {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.paddingTop = 40
   }
   setPos() {
-    const d = this.d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
+    const me = this
+    const d = me.d
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
     let translateX = 0
     let translateY = 0
 
@@ -260,6 +282,7 @@ class Tree extends Common {
     }
 
     ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
+      if (!rootNode) return
       setPos(rootNode)
       d.iLeft += idx === arr.length - 1 ? itemWidth / 2 : itemWidth
     })
@@ -276,8 +299,8 @@ class Tree extends Common {
     const me = this
     const d = me.d
     const {canvas, gd} = d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
 
     function renderLine(node) {
       if (!node) return

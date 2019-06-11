@@ -1,12 +1,19 @@
 class Node {
   constructor(n) {
-    this.n = n
-    this.x = 0
-    this.y = 0
-    this.tx = 0
-    this.ty = 0
-    this.fillStyle = Node.color.black
-    this.strokeStyle = Node.color.black
+    const d = {
+      n,
+      x: 0,
+      y: 0,
+      tx: 0,
+      ty: 0,
+      fillStyle: Node.color.black,
+      strokeStyle: Node.color.black,
+      ...arguments[1],
+    }
+
+    for (let key in d) {
+      this[key] = d[key]
+    }
   }
 }
 
@@ -16,13 +23,16 @@ Node.color = {
   blue: '#09f',
   orange: '#f80',
   purple: 'purple',
+  yellow: '#ff0',
   white: 'white',
   black: '#333',
 }
 
 class Common {
   constructor(d = {}) {
-    this.d = d
+    const me = this
+
+    me.d = d
 
     d.arr.forEach((node, idx, arr) => {
       node.x = idx * d.conf.itemWidth
@@ -32,16 +42,20 @@ class Common {
     d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
   }
   getItemWidth() {
-    return this.d.itemWidth || this.d.conf.itemWidth
+    const me = this
+    return me.d.itemWidth || me.d.conf.itemWidth
   }
   getItemHeight() {
-    return this.d.itemHeight || this.d.conf.itemHeight
+    const me = this
+    return me.d.itemHeight || me.d.conf.itemHeight
   }
   getLevelHeight() {
-    return this.d.levelHeight || this.d.conf.levelHeight
+    const me = this
+    return me.d.levelHeight || me.d.conf.levelHeight
   }
   renderArr() {
-    const d = this.d
+    const me = this
+    const d = me.d
     const {canvas, gd} = d
 
     if (d.arrRendered) return
@@ -65,11 +79,12 @@ class Common {
   renderNode(node) {
     if (!node) return
 
-    const d = this.d
+    const me = this
+    const d = me.d
     const {canvas, gd} = d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
 
     gd.save()
     gd.globalAlpha = .75
@@ -99,7 +114,8 @@ class Sort extends Common {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.arr.forEach((node, idx, arr) => {
       node.strokeStyle = randColor()
@@ -107,7 +123,8 @@ class Sort extends Common {
     d.steps = [d.arr.clone()]
   }
   setPos() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.steps.forEach((step, stair, arr) => {
       step.forEach((node, idx, arr) => {
@@ -121,11 +138,12 @@ class Sort extends Common {
     d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
   }
   render() {
-    const d = this.d
+    const me = this
+    const d = me.d
     const {canvas, gd} = d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
 
     gd.save()
     gd.scale(d.devicePixelRatio, d.devicePixelRatio)
@@ -149,7 +167,7 @@ class Sort extends Common {
 
     d.steps.forEach((step, stair, arr) => {
       step.forEach((node, idx, arr) => {
-        this.renderNode(node)
+        me.renderNode(node)
       })
     })
     gd.restore()
@@ -161,10 +179,11 @@ class Heap extends Common {
     super(...arguments)
   }
   setPos() {
-    const d = this.d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
+    const me = this
+    const d = me.d
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
     let count = 0
 
     for (let i = 0; i < d.level; i++) {
@@ -183,10 +202,11 @@ class Heap extends Common {
     }
   }
   render() {
-    const d = this.d
+    const me = this
+    const d = me.d
     const {canvas, gd} = d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
 
     gd.save()
     gd.scale(d.devicePixelRatio, d.devicePixelRatio)
@@ -206,7 +226,7 @@ class Heap extends Common {
     }
 
     d.arr.forEach((node, idx, arr) => {
-      this.renderNode(node)
+      me.renderNode(node)
     })
     gd.restore()
   }
@@ -216,15 +236,17 @@ class Tree extends Common {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.paddingTop = 40
   }
   setPos() {
-    const d = this.d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
-    const levelHeight = this.getLevelHeight()
+    const me = this
+    const d = me.d
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
+    const levelHeight = me.getLevelHeight()
     let translateX = 0
     let translateY = 0
 
@@ -260,6 +282,7 @@ class Tree extends Common {
     }
 
     ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
+      if (!rootNode) return
       setPos(rootNode)
       d.iLeft += idx === arr.length - 1 ? itemWidth / 2 : itemWidth
     })
@@ -276,8 +299,8 @@ class Tree extends Common {
     const me = this
     const d = me.d
     const {canvas, gd} = d
-    const itemWidth = this.getItemWidth()
-    const itemHeight = this.getItemHeight()
+    const itemWidth = me.getItemWidth()
+    const itemHeight = me.getItemHeight()
 
     function renderLine(node) {
       if (!node) return
@@ -316,7 +339,8 @@ class Tree extends Common {
 
 class MergeSort extends Sort {
   startSort() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function mergeSort(l, r) {
       if (l >= r) return
@@ -369,7 +393,8 @@ class MergeSort extends Sort {
 
 class QuickSort extends Sort {
   startSort() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function quickSort(l, r) {
       if (l >= r) return
@@ -418,7 +443,8 @@ class QuickSort extends Sort {
 
 class QuickSort2 extends Sort {
   startSort() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function quickSort(l, r) {
       if (l >= r) return
@@ -475,7 +501,8 @@ class QuickSort2 extends Sort {
 
 class QuickSort3 extends Sort {
   startSort() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function quickSort(l, r) {
       if (l >= r) return
@@ -534,7 +561,8 @@ class MaxHeap extends Heap {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.level = Math.ceil(Math.log(d.arr.length + 1) / Math.log(2))
     d.canvas.width = (Math.pow(2, d.level - 1) * d.conf.itemWidth + d.conf.paddingH * 2) * d.devicePixelRatio
@@ -547,21 +575,24 @@ class MaxHeap extends Heap {
     })
   }
   heapify() {
-    const d = this.d
+    const me = this
+    const d = me.d
     
     for (let i = d.branchIndex; i > -1; i--) {
-      this.shiftDown(i)
+      me.shiftDown(i)
     }
   }
   createByShiftUp(l) {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     for (let i = 1; i < d.arr.length; i++) {
-      this.shiftUp(i)
+      me.shiftUp(i)
     }
   }
   shiftUp(k) {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     while (k > 0) {
       let j = parseInt((k - 1) / 2)
@@ -573,7 +604,8 @@ class MaxHeap extends Heap {
     }
   }
   shiftDown(k) {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     while (k * 2 + 1 < d.arr.length) {
       let j = k * 2 + 1
@@ -592,19 +624,21 @@ class SegmentTree extends Heap {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
-    d.len = 6
+    d.len = 10
     d.level = Math.ceil(Math.log(d.len) / Math.log(2)) + 1
     d.itemWidth = 40
     d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
-    d.canvas.width = (Math.pow(2, d.level - 1) * this.getItemWidth() + d.conf.paddingH * 2) * d.devicePixelRatio
+    d.canvas.width = (Math.pow(2, d.level - 1) * me.getItemWidth() + d.conf.paddingH * 2) * d.devicePixelRatio
     d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
     d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
   }
   createL() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function createL(treeIndex, l, r) {
       if (l > r) return
@@ -626,7 +660,8 @@ class SegmentTree extends Heap {
     createL(0, 0, d.len)
   }
   createR() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function createR(treeIndex, l, r) {
       if (l > r) return
@@ -651,23 +686,26 @@ class SegmentTree extends Heap {
 
 class BinarySearch extends Tree {
   create() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.arr.clone().forEach((node, idx, arr) => {
       node.fillStyle = Node.color.blue
-      d.root = this.add(d.root, node)
+      d.root = me.add(d.root, node)
     })
 
     d.root2 = clone(d.root)
-    this.flip(d.root2)
+    me.flip(d.root2)
   }
   add(node, item) {
+    const me = this
+    
     if (!node) return item
 
     if (item.n < node.n) {
-      node.l = this.add(node.l, item)
+      node.l = me.add(node.l, item)
     } else if (item.n > node.n) {
-      node.r = this.add(node.r, item)
+      node.r = me.add(node.r, item)
     } else {
       // ===
     }
@@ -675,10 +713,12 @@ class BinarySearch extends Tree {
     return node
   }
   flip(node) {
+    const me = this
+    
     if (!node) return
 
-    this.flip(node.l)
-    this.flip(node.r)
+    me.flip(node.l)
+    me.flip(node.r)
 
     const t = node.l
     node.l = node.r
@@ -690,53 +730,58 @@ class AVLTree extends Tree {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.levelHeight = 60
     d.paddingTop = 60
-    d.itemWidth = 44
+    d.itemWidth = 50
   }
   create() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.arr.clone().forEach((node, idx, arr) => {
       node.fillStyle = Node.color.blue
       node.h = 1
       node.balanceFactor = 0
-      d.root = this.add(d.root, node)
+      d.root = me.add(d.root, node)
     })
   }
   add(node, item) {
+    const me = this
+    const d = me.d
+
     if (!node) return item
 
     if (item.n < node.n) {
-      node.l = this.add(node.l, item)
+      node.l = me.add(node.l, item)
     } else if (item.n > node.n) {
-      node.r = this.add(node.r, item)
+      node.r = me.add(node.r, item)
     } else {
       // ===
     }
 
-    const balanceFactor = this.getBalanceFactor(node)
+    const balanceFactor = me.getBalanceFactor(node)
 
     if (Math.abs(balanceFactor) > 1) {
       if (balanceFactor > 0) {
         // 左边高
-        if (this.getBalanceFactor(node.l) < 0) {
-          node.l = this.leftRotate(node.l)
+        if (me.getBalanceFactor(node.l) < 0) {
+          node.l = me.leftRotate(node.l)
         }
-        node = this.rightRotate(node)
+        node = me.rightRotate(node)
       } else {
         // 右边高
-        if (this.getBalanceFactor(node.r) > 0) {
-          node.r = this.rightRotate(node.r)
+        if (me.getBalanceFactor(node.r) > 0) {
+          node.r = me.rightRotate(node.r)
         }
-        node = this.leftRotate(node)
+        node = me.leftRotate(node)
       }
     }
 
-    node.h = Math.max(this.getHeight(node.l), this.getHeight(node.r)) + 1
-    node.balanceFactor = this.getBalanceFactor(node)
+    node.h = Math.max(me.getHeight(node.l), me.getHeight(node.r)) + 1
+    node.balanceFactor = me.getBalanceFactor(node)
 
     return node
   }
@@ -744,31 +789,34 @@ class AVLTree extends Tree {
     return node ? node.h : 0
   }
   getBalanceFactor(node) {
-    return this.getHeight(node.l) - this.getHeight(node.r)
+    const me = this
+    return me.getHeight(node.l) - me.getHeight(node.r)
   }
   leftRotate(x) {
+    const me = this
     const y = x.r
 
     x.r = y.l
     y.l = x
 
-    x.h = Math.max(this.getHeight(x.l), this.getHeight(x.r)) + 1
-    y.h = Math.max(this.getHeight(y.l), this.getHeight(y.r)) + 1
+    x.h = Math.max(me.getHeight(x.l), me.getHeight(x.r)) + 1
+    y.h = Math.max(me.getHeight(y.l), me.getHeight(y.r)) + 1
 
-    x.balanceFactor = this.getBalanceFactor(x)
+    x.balanceFactor = me.getBalanceFactor(x)
 
     return y
   }
   rightRotate(x) {
+    const me = this
     const y = x.l
 
     x.l = y.r
     y.r = x
 
-    x.h = Math.max(this.getHeight(x.l), this.getHeight(x.r)) + 1
-    y.h = Math.max(this.getHeight(y.l), this.getHeight(y.r)) + 1
+    x.h = Math.max(me.getHeight(x.l), me.getHeight(x.r)) + 1
+    y.h = Math.max(me.getHeight(y.l), me.getHeight(y.r)) + 1
 
-    x.balanceFactor = this.getBalanceFactor(x)
+    x.balanceFactor = me.getBalanceFactor(x)
 
     return y
   }
@@ -776,66 +824,73 @@ class AVLTree extends Tree {
 
 class RBTree extends Tree {
   create() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.arr.clone().forEach((node, idx, arr) => {
       node.fillStyle = Node.color.red
-      d.root = this.addL(d.root, node)
+      d.root = me.addL(d.root, node)
       d.root.fillStyle = Node.color.black
     })
 
     d.arr.clone().forEach((node, idx, arr) => {
       node.fillStyle = Node.color.red
-      d.root2 = this.addR(d.root2, node)
+      d.root2 = me.addR(d.root2, node)
       d.root2.fillStyle = Node.color.black
     })
   }
   addL(node, item) {
+    const me = this
+    const d = me.d
+
     if (!node) return item
 
     if (item.n < node.n) {
-      node.l = this.addL(node.l, item)
+      node.l = me.addL(node.l, item)
     } else if (item.n > node.n) {
-      node.r = this.addL(node.r, item)
+      node.r = me.addL(node.r, item)
     } else {
       // ===
     }
 
-    if (!this.isRed(node.l) && this.isRed(node.r)) {
-      node = this.leftRotate(node)
+    if (!me.isRed(node.l) && me.isRed(node.r)) {
+      node = me.leftRotate(node)
     }
 
-    if (this.isRed(node.l) && this.isRed(node.l.l)) {
-      node = this.rightRotate(node)
+    if (me.isRed(node.l) && me.isRed(node.l.l)) {
+      node = me.rightRotate(node)
     }
 
-    if (this.isRed(node.l) && this.isRed(node.r)) {
-      this.flipColors(node)
+    if (me.isRed(node.l) && me.isRed(node.r)) {
+      me.flipColors(node)
     }
 
     return node
   }
   addR(node, item) {
+    const me = this
+    const d = me.d
+    
     if (!node) return item
 
     if (item.n < node.n) {
-      node.l = this.addR(node.l, item)
+      node.l = me.addR(node.l, item)
     } else if (item.n > node.n) {
-      node.r = this.addR(node.r, item)
+      node.r = me.addR(node.r, item)
     } else {
       // ===
     }
 
-    if (this.isRed(node.l) && !this.isRed(node.r)) {
-      node = this.rightRotate(node)
+    if (me.isRed(node.l) && !me.isRed(node.r)) {
+      node = me.rightRotate(node)
     }
 
-    if (this.isRed(node.r) && this.isRed(node.r.r)) {
-      node = this.leftRotate(node)
+    if (me.isRed(node.r) && me.isRed(node.r.r)) {
+      node = me.leftRotate(node)
     }
 
-    if (this.isRed(node.l) && this.isRed(node.r)) {
-      this.flipColors(node)
+    if (me.isRed(node.l) && me.isRed(node.r)) {
+      me.flipColors(node)
     }
 
     return node
@@ -876,10 +931,11 @@ class Trie extends Common {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
     // d.str = 'cat dog deer panda pan'
-    d.str = `SwiftUI provides views, controls, and layout structures for declaring your app's user interface. The framework provides event handlers for delivering taps, gestures, and other types of input to your app, and tools to manage the flow of data from your app's models down to the views and controls that users will see and interact with.`
+    d.str = `SwiftUI provides views, controls, and layout structures for declaring your app's user interface. The framework, gestures cat dog deer pan panda`
     // d.str = `Create your own custom views that conform to the View protocol, and compose them with SwiftUI views for displaying text, images, and custom shapes using stacks, lists, and more. Apply powerful modifiers to built-in views and your own views to customize their rendering and interactivity. Share code between apps on multiple platforms with views and controls that adapt to their context and presentation.`
     d.arr = d.str.toLowerCase().match(/\w+/g) || []
     d.root = {
@@ -890,7 +946,8 @@ class Trie extends Common {
     }
   }
   create() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.arr.forEach((str, idx, arr) => {
       let curNode = d.root
@@ -1038,15 +1095,288 @@ class Trie extends Common {
   }
 }
 
+const mazeData = `#####################################################################################################
+                                    #     #     #   #     # # #               # # # # #   #   #   # #
+# # # ### # ############# ### # ##### ##### ##### ### ##### # # ####### ####### # # # # ### ### ### #
+# # #   # #       #   # #   # # #       # #   # #         #           # # #               # # # # # #
+### # # ### ####### ### ######### ####### # ### # ######### ### ######### # ############### # # # # #
+#   # # #           # #   #   # #                   # #   # # # # # # # #     # # #     #           #
+### ####### # # # ### # ### ### # ### ##### ######### # ### # ### # # # # ##### # # ##### ###########
+#         # # # #       #   # #     #     #         # #         # #   #       # # # # # #     # #   #
+# # # ####### ### ### ### ### # ##### ############### # ##### ### # ### ####### # # # # # ##### # ###
+# # #   # #   #     #   #   #       #   #   # # # # #     # #             # # # # #   # #     #   # #
+### # ### ### ### ### ### ### ########### ### # # # # ##### ### ### # # ### # # # # ### # ####### # #
+#   # # #       # #       #                             # #   # # # # #               # #     #   # #
+# # ### ### # ### ### # ### ##### # # ####### # # # ##### # ##### ######### # # # # ### # ####### # #
+# #       # #   # #   #         # # #       # # # # # # #                 # # # # #         # # #   #
+# # # ### # # ####### # # # ##### ### # # ####### ### # # ### ### ##### # ######### # # # ### # # ###
+# # #   # # #   #     # # #     #   # # #     # #           #   #     # #     #     # # #           #
+# ### ####### ##### # # # # ######### ### # ### ####### # ######### ##### ####### # # # # ### # # # #
+# #       #       # # # # #       #     # #           # #         #     #   #     # # # #   # # # # #
+# # # # # # # # # ### ##### # ####### ##### # ### # ##### # ####### ########### # ##### # ######### #
+# # # # # # # # #   #     # #     # #     # #   # #   # # #     #           #   #     # #       #   #
+# # ### # # ### # ### # ### # # ### ######### # # # ### ######### # ############# # # ### ######### #
+# #   # # # #   # #   #   # # #             # # # #             # # # # # #   # # # #   #         # #
+# # # # # ##### # # # ##### # ### # # ### # # ##### # ### # ######### # # ### # ##### # # # # # ### #
+# # # # # #     # # #     # #   # # #   # # #     # #   # #       # # # #   #       # # # # # # # # #
+# # # # ##### # # # # # ### # # # ### ####### # ### # ### # # # ### # # # ### ####### # ### ##### ###
+# # # # #     # # # # #   # # # #   #       # #   # # # # # # #                     # #   # # # # # #
+# ##### ### # # ##### # ### ### # ########### ######### ### ####### # # # # ##### ##### ##### # # # #
+#   # # #   # #     # #   # # # #       # # #             # # #   # # # # #     #     #   #         #
+# ### ##### ### ##### # ##### ### # # ### # ####### # # ##### # ##### # ### # ### ##### ### ### # # #
+# #         #       # #         # # #             # # #     #       # #   # #   # #   #       # # # #
+### ####### ### # ################### ### ####### ####### ### ### # # # # # # ##### ##### # #########
+#   #         # #                   #   #       #       #       # # # # # # #           # #   #     #
+# # ####### ##### # # ### # # # # ### ### ### ##### # ##### # ############### # ### # ### # ### #####
+# #   #         # # #   # # # # # #     #   #     # #     # #   # # # #   # # #   # # #   #         #
+# # ####### ######### ##### # ### # # ### # # # ##### # ### # ### # # # ### ### # ##### # # # # # # #
+# # # #         #         # #   # # #   # # # #     # #   # #                 # #     # # # # # # # #
+##### ##### # ##### # # # # # # ##### ##### ### ##### # ##### # # # # ################# ### ####### #
+#           #   #   # # # # # #     #     #   #     # #     # # # # #           #     #   #       # #
+### ### # # # ### # ####### ##### ### # ##### # # ##### # # # # # ### ##### ##### ##### ### # ### ###
+# # #   # # #   # #       #     # #   #     # # #   #   # # # # # #       #           #   # #   #   #
+# ##### ##### ### # # ##### # ##### # # # ##### # ##### # # ######### # ##### # ####### ### # ##### #
+#         #     # # #     # #     # # # #     # #     # # #     #     #     # #       #   # #     # #
+# ### # ##### ####### ####### ################# # ####### # ######### # # ##### # ############# #####
+# #   # #       #           # # # #         # # #       # #     #     # #     # #       #     # # # #
+# ### ### # # # # # # ##### ### # # ### # ### ### # # ##### ##### ### ### ############### ####### # #
+# #     # # # # # # #     #           # #       # # #   # #   # # #     #         #     #     # #   #
+# ### ####### ### # ####### ### # ####### # ######### ### ##### ##### ############# ##### ##### # ###
+# #   # # #     # #       #   # #     # # #         #             #             #           # #     #
+# ##### # ### ##### ### ### ##### # ### ### ##### # # # # # # # ##### # # # # ### ########### # #####
+# #               #   # #       # #   # # #     # # # # # # # #     # # # # #         #             #
+# ##### # # # # # # ####### # ##### ### # ##################### # # ########### # ##### ### ### # ###
+# # #   # # # # # #     #   #   #               # # # # # #   # # #           # #     #   #   # #   #
+### ### ### ### # # # ### # # # ### # # # ####### # # # # # ########### # # # ### # ### ### ##### # #
+#       #     # # # #   # # # # #   # # #         #   # #       #     # # # #   # #       #   #   # #
+####### ### # ### ####### ##### # # # ### # # ##### ### # ####### ####### # # ### # # # ########### #
+#         # # #     #   #     # # # # #   # #         #     # #     #   # # #   # # # #     #   # # #
+####### ### # ### ### ### # ####### # # # # # # ### ### ##### # ##### ####### ### # # # ####### # ###
+#   #     # # #         # # #   #   # # # # # #   # #               # # #   #   # # # #   # # #     #
+### ### ######### # # ####### ##### # # # ##### ##### ### # # # ##### # # ### ######### ### # # #####
+#             #   # #     # #   #   # # # #             # # # #   #         #   # # # #       #     #
+##### # # # # ### # # ##### # ##### ##### ### # ### # ####### ##### ### # ####### # # ### ##### #####
+#     # # # #   # # #     # # #   # #       # #   # #       #         # #     #   #     # # # #     #
+##### ####### # ### # ##### # # ####### # # ### ### # ### ### ### # ####### ##### # ####### # # ### #
+#         #   #   # #                 # # # #     # #   #   #   # # # # # #   # # #   # # #       # #
+# # # # ##### ####### ### # # # ### ### # # # # # ################### # # ##### # # ### # # #########
+# # # #     #     #     # # # #   #   # # # # # #     # #           # # # # # # #             # #   #
+# ##### ##### ##### # ##### ### ########### # # # # ### # ### # ##### # # # # # # ####### ##### # ###
+# #         #     # #     #   #     #     # # # # #         # #           #             #           #
+# ##### # ########### # # # # # ##### ### # ### # # # # ######### # # # ### ### # ### ### ### # #####
+# # #   #           # # # # # #         # # #   # # # #         # # # #       # #   # #     # #     #
+### ### # ### # ############# # # # ########### # ### # # ### ##### # # # # ##### ### ### ##### #####
+#       #   # #             # # # #   # #     # # #   # #   #     # # # # #     #   # # # # # #   # #
+### # # # # ### # # # ##### ### ### ### # ##### ##### # # # ############### # ######### ### # ##### #
+#   # # # #   # # # #     #   #   #           # #     # # #           #     # # # # # #             #
+# # ### ########### # # ########### # # # # # ##### # # ### ##### ####### # ### # # # ### ### ##### #
+# # #         # # # # #           # # # # # #   #   # #   #     #     #   #           # #   # #   # #
+# # ### ### ### # ##### # # # ##### # ### ### ### # # # ##### # # # ##### # ### # ##### # ##### #####
+# # #     # #       #   # # #     # #   #   # #   # # #     # # # #     # #   # #                 # #
+# ##### ##### ### ##### ##### ##### ##### # # ### ### # # ####### # ##### # # ##### ### # # # ##### #
+# #             #     #   #       #     # # # #     # # #     #   #     # # #     #   # # # #       #
+# # # # # # # ### # ##### # # # ### ####### # # # # # ### ####### # ######### # # # ### ##### # # # #
+# # # # # # #   # #     # # # #   #       # # # # # # #       #   #     # #   # # #   #     # # # # #
+##### # # # ####### # ######### ### ####### # # ######### # # ### ####### ### # ######### ###########
+#     # # #       # # # # # #     #     # # # #       #   # # #             # #         #     # #   #
+# # ### ### # ##### ### # # ### ######### ##### # # ##### ####### # ### # ##### # ### ### # ### # ###
+# # #   #   #     #         #       #         # # #   #       #   #   # #   #   #   #   # #         #
+# ######### # ##### # # # ##### # ### ####### # # # ##### # ####### ##### ### # # ### ### # # # # ###
+# #         #     # # # #     # #   #       # # # #   #   # #           #   # # # # #   # # # # #   #
+### # ### # # ####### # # # ######### ############# ##### # ####### ##### # ### ### ######### # # # #
+#   # #   # #     # # # # #                   # #       # #   #         # # #             #   # # # #
+### ######### ##### ### ### # # ### # ######### ### # # ### # ### # # ### # ### # # ######### #######
+#   #                 # #   # #   # #       #     # # #   # # #   # #   # # #   # #         #       #
+############# ### # # # ### # # # ### ### ##### ################### ##### # ### ### ### # ### # # # #
+#               # # # #   # # # #   #   #   # #   #   # # # #           # # #     #   # #   # # # # #
+### # ##### # # # ##### ### # # # # # ####### # ### ### # # ### # # # ##### # # ### # # # # ### # # #
+#   # #     # # # # # # #   # # # # #                         # # # #     # # #   # # # # #   # # # #
+### ##### # # ##### # ##### # ### # # # # # # # ### # # # # ##### # # # ####### # ##### ### # ##### #
+#   #     # #             # #   # # # # # # # #   # # # # #     # # # #     #   #     # #   #     # #
+### # # # ### ####### ### # # ##### ##### # ### ####### # # # # ### # # # ##### # # ### ### # # # # #
+#   # # # #         #   # # #     #     # # #         # # # # #   # # # #   #   # #   # #   # # # #  
+#####################################################################################################`
+
+class SolveMaze extends Common {
+  create() {
+    const me = this
+    const d = me.d
+
+    d.itemWidth = 6
+    d.itemHeight = 6
+    d.wall = '#'
+    d.road = ' '
+    d.mazeData = mazeData.split('\n')
+    d.mazeData.forEach((item, idx, arr) => {
+      d.mazeData[idx] = item.split('').map((wall) => {
+        return new Node(wall, {
+          isPath: false,
+          visited: false,
+        })
+      })
+    })
+
+    d.enter = {
+      x: 1,
+      y: 0,
+    }
+    d.exit = {
+      x: d.mazeData[0].length - 2,
+      y: d.mazeData.length - 1,
+    }
+
+    d.canvas.style.border = 'none'
+    d.canvas.style.width = ''
+    d.canvas.width = d.mazeData[0].length * d.itemWidth
+    d.canvas.height = d.mazeData.length * d.itemWidth
+
+    me.preset()
+    d.btn.onclick = function() {
+      d.btn.onclick = null
+      me.findSolution()
+    }
+  }
+  getMaze(x, y) {
+    const me = this
+    return me.d.mazeData[x][y]
+  }
+  async findSolution() {
+    const me = this
+    const d = me.d
+    const dir = [
+      [-1, 0],
+      [0, 1],
+      [1, 0],
+      [0, -1],
+    ]
+    let count = 0
+
+    async function findSolution(x, y) {
+      const node = me.getMaze(x, y)
+
+      node.visited = true
+      node.isPath = true
+
+      ++count
+      if (count > 0) {
+        me.render()
+        await sleep(1)
+      }
+
+      if (x === d.exit.x && y === d.exit.y) {
+        // alert('找到了出口')
+        d.btn.innerHTML = d.btn.title + '（找到了出口）'
+        return new Promise(next => next(true))
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const newX = x + dir[i][0]
+        const newY = y + dir[i][1]
+
+        if (
+          me.inArea(newX, newY) && 
+          !d.mazeData[newX][newY].visited && 
+          d.mazeData[newX][newY].n === d.road
+        ) {
+          if (await findSolution(newX, newY)) {
+            return new Promise(next => next(true))
+          }
+        }
+      }
+
+      node.isPath = false
+      if (count > 0) {
+        me.render()
+        await sleep(1)
+      }
+      return new Promise(next => next(false))
+    }
+
+    await findSolution(d.enter.x, d.enter.y)
+    me.render()
+  }
+  setPos() {
+    const me = this
+    const d = me.d
+
+    /*d.mazeData.forEach((arr, n) => {
+      arr.forEach((node, idx, arr) => {
+        node.x = idx * d.itemWidth
+        node.y = n * d.itemHeight
+      })
+    })*/
+  }
+  inArea(y, x) {
+    const me = this
+    const maze = me.d.mazeData
+
+    return (
+      y >= 0 && y < maze.length && 
+      x >= 0 && x < maze[0].length
+    )
+  }
+  preset(cb) {
+    const me = this
+    const d = me.d
+    const {canvas, gd} = d
+
+    d.mazeData.forEach((arr, n) => {
+      arr.forEach((node, idx, arr) => {
+        node.x = idx * d.itemWidth
+        node.y = n * d.itemHeight
+        gd.beginPath()
+        gd.rect(node.x, node.y, d.itemWidth, d.itemWidth)
+        gd.fillStyle = Node.color[node.isPath ? 'orange' : (node.n === d.wall ? 'blue' : 'white')]
+        gd.fill()
+      })
+    })
+
+    canvas.toBlob((blob) => {
+      d.presetImg = new Image()
+      d.presetImg.src = URL.createObjectURL(blob)
+      d.presetImg.onload = cb
+    })
+  }
+  render() {
+    const me = this
+    const d = me.d
+    const {canvas, gd} = d
+
+    if (!d.presetImg) return
+
+    gd.drawImage(
+      d.presetImg,
+      0, 0, d.presetImg.width, d.presetImg.height
+    )
+
+    function renderScene() {
+      d.mazeData.forEach((arr, n) => {
+        arr.forEach((node, idx, arr) => {
+          if (node.n === d.wall) return
+
+          gd.beginPath()
+          gd.rect(node.x, node.y, d.itemWidth, d.itemWidth)
+          gd.fillStyle = Node.color[node.isPath ? 'orange' : (node.visited ? 'yellow' : 'white')]
+          gd.fill()
+        })
+      })
+    }
+
+    renderScene()
+  }
+}
+
 
 class Algo {
   constructor(d = {}) {
-    this.d = d
+    const me = this
+    me.d = d
 
     d.devicePixelRatio = devicePixelRatio
     // d.devicePixelRatio = devicePixelRatio === 1 ? 2 : devicePixelRatio
     d.type = {
       list: [
+        {name: '迷宫问题', cons: SolveMaze, opt: {startFn: 'create'}},
         {name: 'Trie', cons: Trie, opt: {startFn: 'create'}},
         {name: '红黑树 (左倾 & 右倾)', cons: RBTree, opt: {startFn: 'create'}},
         {name: 'AVL树', cons: AVLTree, opt: {startFn: 'create'}},
@@ -1085,10 +1415,10 @@ class Algo {
       return `
         <section>
           <div class="box-btn">
-            <button class="btn btn-primary">${v.name}</button>
+            <button title="${v.name}" class="btn btn-primary">${v.name}</button>
           </div>
           <div class="box-canvas">
-            <canvas></canvas>
+            <canvas title="${v.name}"></canvas>
           </div>
         </section>
       `
@@ -1106,6 +1436,7 @@ class Algo {
         canvas,
         gd: canvas.getContext('2d'),
         arr: randArr.clone(),
+        btn: canvas.closest('section').querySelector('button'),
         ...d,
       })
 
@@ -1116,7 +1447,5 @@ class Algo {
     })
   }
 }
-
-
 
 export default Algo

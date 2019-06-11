@@ -2,19 +2,21 @@ class SegmentTree extends Heap {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
-    d.len = 6
+    d.len = 10
     d.level = Math.ceil(Math.log(d.len) / Math.log(2)) + 1
     d.itemWidth = 40
     d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
-    d.canvas.width = (Math.pow(2, d.level - 1) * this.getItemWidth() + d.conf.paddingH * 2) * d.devicePixelRatio
+    d.canvas.width = (Math.pow(2, d.level - 1) * me.getItemWidth() + d.conf.paddingH * 2) * d.devicePixelRatio
     d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
     d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
   }
   createL() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function createL(treeIndex, l, r) {
       if (l > r) return
@@ -36,7 +38,8 @@ class SegmentTree extends Heap {
     createL(0, 0, d.len)
   }
   createR() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function createR(treeIndex, l, r) {
       if (l > r) return

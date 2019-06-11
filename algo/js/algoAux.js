@@ -1,3 +1,11 @@
+window.sleep = async function(time) {
+  return new Promise((next) => {
+    time ? setTimeout(() => {
+      next()
+    }, time) : next()
+  })
+}
+
 window.rand = function(m, n) {
   return Math.floor(Math.random() * (n - m + 1) + m)
 }

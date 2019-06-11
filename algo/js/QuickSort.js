@@ -1,6 +1,7 @@
 class QuickSort extends Sort {
   startSort() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function quickSort(l, r) {
       if (l >= r) return

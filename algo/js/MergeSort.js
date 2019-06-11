@@ -1,6 +1,7 @@
 class MergeSort extends Sort {
   startSort() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     function mergeSort(l, r) {
       if (l >= r) return

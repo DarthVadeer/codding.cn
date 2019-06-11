@@ -1,65 +1,72 @@
 class RBTree extends Tree {
   create() {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.arr.clone().forEach((node, idx, arr) => {
       node.fillStyle = Node.color.red
-      d.root = this.addL(d.root, node)
+      d.root = me.addL(d.root, node)
       d.root.fillStyle = Node.color.black
     })
 
     d.arr.clone().forEach((node, idx, arr) => {
       node.fillStyle = Node.color.red
-      d.root2 = this.addR(d.root2, node)
+      d.root2 = me.addR(d.root2, node)
       d.root2.fillStyle = Node.color.black
     })
   }
   addL(node, item) {
+    const me = this
+    const d = me.d
+
     if (!node) return item
 
     if (item.n < node.n) {
-      node.l = this.addL(node.l, item)
+      node.l = me.addL(node.l, item)
     } else if (item.n > node.n) {
-      node.r = this.addL(node.r, item)
+      node.r = me.addL(node.r, item)
     } else {
       // ===
     }
 
-    if (!this.isRed(node.l) && this.isRed(node.r)) {
-      node = this.leftRotate(node)
+    if (!me.isRed(node.l) && me.isRed(node.r)) {
+      node = me.leftRotate(node)
     }
 
-    if (this.isRed(node.l) && this.isRed(node.l.l)) {
-      node = this.rightRotate(node)
+    if (me.isRed(node.l) && me.isRed(node.l.l)) {
+      node = me.rightRotate(node)
     }
 
-    if (this.isRed(node.l) && this.isRed(node.r)) {
-      this.flipColors(node)
+    if (me.isRed(node.l) && me.isRed(node.r)) {
+      me.flipColors(node)
     }
 
     return node
   }
   addR(node, item) {
+    const me = this
+    const d = me.d
+    
     if (!node) return item
 
     if (item.n < node.n) {
-      node.l = this.addR(node.l, item)
+      node.l = me.addR(node.l, item)
     } else if (item.n > node.n) {
-      node.r = this.addR(node.r, item)
+      node.r = me.addR(node.r, item)
     } else {
       // ===
     }
 
-    if (this.isRed(node.l) && !this.isRed(node.r)) {
-      node = this.rightRotate(node)
+    if (me.isRed(node.l) && !me.isRed(node.r)) {
+      node = me.rightRotate(node)
     }
 
-    if (this.isRed(node.r) && this.isRed(node.r.r)) {
-      node = this.leftRotate(node)
+    if (me.isRed(node.r) && me.isRed(node.r.r)) {
+      node = me.leftRotate(node)
     }
 
-    if (this.isRed(node.l) && this.isRed(node.r)) {
-      this.flipColors(node)
+    if (me.isRed(node.l) && me.isRed(node.r)) {
+      me.flipColors(node)
     }
 
     return node

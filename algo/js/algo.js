@@ -1,11 +1,13 @@
 class Algo {
   constructor(d = {}) {
-    this.d = d
+    const me = this
+    me.d = d
 
     d.devicePixelRatio = devicePixelRatio
     // d.devicePixelRatio = devicePixelRatio === 1 ? 2 : devicePixelRatio
     d.type = {
       list: [
+        {name: '迷宫问题', cons: SolveMaze, opt: {startFn: 'create'}},
         {name: 'Trie', cons: Trie, opt: {startFn: 'create'}},
         {name: '红黑树 (左倾 & 右倾)', cons: RBTree, opt: {startFn: 'create'}},
         {name: 'AVL树', cons: AVLTree, opt: {startFn: 'create'}},
@@ -44,10 +46,10 @@ class Algo {
       return `
         <section>
           <div class="box-btn">
-            <button class="btn btn-primary">${v.name}</button>
+            <button title="${v.name}" class="btn btn-primary">${v.name}</button>
           </div>
           <div class="box-canvas">
-            <canvas></canvas>
+            <canvas title="${v.name}"></canvas>
           </div>
         </section>
       `
@@ -65,6 +67,7 @@ class Algo {
         canvas,
         gd: canvas.getContext('2d'),
         arr: randArr.clone(),
+        btn: canvas.closest('section').querySelector('button'),
         ...d,
       })
 

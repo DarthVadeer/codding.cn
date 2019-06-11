@@ -2,7 +2,7 @@
 <html lang="zh-cn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, user-scalable=no">
+  <!-- <meta name="viewport" content="width=device-width, user-scalable=no"> -->
   <title>算法与数据结构 | By 摘星fy</title>
   <link rel="shortcut icon" type="image/x-icon" href="http://codding.cn/static/img/favicon.ico">
   <style>
@@ -45,9 +45,58 @@
 <script src="./js/AVLTree.js"></script>
 <script src="./js/RBTree.js"></script>
 <script src="./js/Trie.js"></script>
+<script src="./js/mazeData.js"></script>
+<script src="./js/SolveMaze.js"></script>
 <script src="./js/Algo.js"></script>
 <script>
 const algo = new Algo()
+</script>
+
+<script>
+/*{
+  const c = document.createElement('canvas')
+  const gd = c.getContext('2d')
+  const cs = [].slice.call(document.querySelectorAll('canvas'))
+  let iWidth = 0
+
+  c.style.background = 'wheat'
+  document.body.insertBefore(c, document.body.children[0])
+
+  c.height = cs.reduce((total, canvas) => {
+    iWidth = Math.max(iWidth, canvas.width + 20)
+    return total += canvas.height + 80
+  }, 0)
+  c.width = iWidth
+
+  let downStair = 0
+  gd.fillStyle = '#fff'
+  gd.fillRect(0, 0, c.width, c.height)
+
+  cs.forEach((canvas, idx, arr) => {
+    downStair += 80
+    let x = (iWidth - canvas.width) / 2
+    let y = downStair
+
+    gd.beginPath()
+    gd.rect((iWidth - 200) / 2 + .5, y - 50 + .5, 200, 30)
+    gd.fillStyle = '#337ab7'
+    gd.fill()
+
+    gd.fillStyle = Node.color.white
+    gd.textAlign = 'center'
+    gd.font = '16px Arial'
+    gd.fillText(canvas.title, (iWidth - 200) / 2 + 100, y - 30)
+
+    gd.drawImage(
+      canvas,
+      x, y, canvas.width, canvas.height
+    )
+    gd.rect(x + .5, y + .5, canvas.width, canvas.height)
+    gd.strokeStyle = '#ccc'
+    gd.stroke()
+    downStair += canvas.height
+  })
+}*/
 </script>
 
 </body>

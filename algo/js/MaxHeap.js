@@ -2,7 +2,8 @@ class MaxHeap extends Heap {
   constructor() {
     super(...arguments)
 
-    const d = this.d
+    const me = this
+    const d = me.d
 
     d.level = Math.ceil(Math.log(d.arr.length + 1) / Math.log(2))
     d.canvas.width = (Math.pow(2, d.level - 1) * d.conf.itemWidth + d.conf.paddingH * 2) * d.devicePixelRatio
@@ -15,21 +16,24 @@ class MaxHeap extends Heap {
     })
   }
   heapify() {
-    const d = this.d
+    const me = this
+    const d = me.d
     
     for (let i = d.branchIndex; i > -1; i--) {
-      this.shiftDown(i)
+      me.shiftDown(i)
     }
   }
   createByShiftUp(l) {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     for (let i = 1; i < d.arr.length; i++) {
-      this.shiftUp(i)
+      me.shiftUp(i)
     }
   }
   shiftUp(k) {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     while (k > 0) {
       let j = parseInt((k - 1) / 2)
@@ -41,7 +45,8 @@ class MaxHeap extends Heap {
     }
   }
   shiftDown(k) {
-    const d = this.d
+    const me = this
+    const d = me.d
 
     while (k * 2 + 1 < d.arr.length) {
       let j = k * 2 + 1
