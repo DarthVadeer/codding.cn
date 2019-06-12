@@ -150,10 +150,6 @@
 
       translateX = parseInt(canvas.offsetWidth / 2 - d.root.tx - d.root.width / 2)
       updateCoord(d.root)
-
-      d.data.forEach((item, idx, arr) => {
-        console.log(item.tx, item.ty)
-      })
     }
     nextFrame() {
       const me = this
@@ -258,21 +254,21 @@
     canvas: c,
     gd: c.getContext('2d'),
     data: [
-      {"id": 1, "pid": 0, "name": "算法与数据结构"},
-      {"id": 2, "pid": 1, "name": "排序"},
-      {"id": 3, "pid": 1, "name": "树"},
-      {"id": 4, "pid": 2, "name": "选择排序"},
-      {"id": 5, "pid": 2, "name": "插入排序"},
-      {"id": 6, "pid": 2, "name": "归并排序"},
-      {"id": 7, "pid": 2, "name": "快速排序"},
-      {"id": 8, "pid": 3, "name": "二分搜索树"},
-      {"id": 9, "pid": 3, "name": "二叉堆"},
-      {"id": 10, "pid": 3, "name": "AVL树"},
-      {"id": 11, "pid": 3, "name": "红黑树"},
-      {"id": 12, "pid": 3, "name": "线段树"},
-      {"id": 12, "pid": 7, "name": "快速排序"},
-      {"id": 12, "pid": 7, "name": "双路快排"},
-      {"id": 12, "pid": 7, "name": "三路快排"},
+      {"id":1,"pid":0,"name":"算法与数据结构","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":2,"pid":1,"name":"排序","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":3,"pid":1,"name":"树","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":4,"pid":2,"name":"选择排序","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":5,"pid":2,"name":"插入排序","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":6,"pid":2,"name":"归并排序","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":7,"pid":2,"name":"快速排序","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":8,"pid":3,"name":"二分搜索树","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":9,"pid":3,"name":"二叉堆","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":10,"pid":3,"name":"AVL树","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":11,"pid":3,"name":"红黑树","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":12,"pid":3,"name":"线段树","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":13,"pid":7,"name":"快速排序","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":14,"pid":7,"name":"双路快排","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
+      {"id":15,"pid":7,"name":"三路快排","isShowChild":1,"fillStyle":"#fff","x":0,"y":0},
     ]
   })
 

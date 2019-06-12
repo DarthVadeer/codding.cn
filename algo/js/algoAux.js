@@ -1,9 +1,5 @@
 window.sleep = async function(time) {
-  return new Promise((next) => {
-    time ? setTimeout(() => {
-      next()
-    }, time) : next()
-  })
+  return new Promise(next => time ? setTimeout(next, time) : next())
 }
 
 window.rand = function(m, n) {

@@ -7,7 +7,8 @@ class Algo {
     // d.devicePixelRatio = devicePixelRatio === 1 ? 2 : devicePixelRatio
     d.type = {
       list: [
-        {name: '迷宫问题', cons: SolveMaze, opt: {startFn: 'create'}},
+        {name: '迷宫问题 - 非递归', cons: Maze, opt: {startFn: 'dfs2'}},
+        {name: '迷宫问题 - 递归', cons: Maze, opt: {startFn: 'dfs'}},
         {name: 'Trie', cons: Trie, opt: {startFn: 'create'}},
         {name: '红黑树 (左倾 & 右倾)', cons: RBTree, opt: {startFn: 'create'}},
         {name: 'AVL树', cons: AVLTree, opt: {startFn: 'create'}},

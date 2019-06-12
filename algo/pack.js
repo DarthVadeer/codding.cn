@@ -12,7 +12,7 @@ const pathArr = [
   './algo/js/RBTree.js',
   './algo/js/Trie.js',
   './algo/js/mazeData.js',
-  './algo/js/SolveMaze.js',
+  './algo/js/Maze.js',
   './algo/js/Algo.js',
 ]
 

@@ -1,5 +1,7 @@
-class SolveMaze extends Common {
-  create() {
+class Maze extends Common {
+  constructor() {
+    super(...arguments)
+
     const me = this
     const d = me.d
 
@@ -17,6 +19,13 @@ class SolveMaze extends Common {
       })
     })
 
+    d.dir = [
+      [-1, 0],
+      [0, 1],
+      [1, 0],
+      [0, -1],
+    ]
+    // d.dir.reverse()
     d.enter = {
       x: 1,
       y: 0,
@@ -31,69 +40,123 @@ class SolveMaze extends Common {
     d.canvas.width = d.mazeData[0].length * d.itemWidth
     d.canvas.height = d.mazeData.length * d.itemWidth
 
-    me.preset()
+    me.preset(() => {
+      if (me.ready) {
+        d.btn.onclick = null
+        me.ready()
+      }
+    })
+  }
+  dfs2() {
+    const me = this
+    const d = me.d
+
     d.btn.onclick = function() {
       d.btn.onclick = null
-      me.findSolution()
+      me.findSolution2()
+    }
+  }
+  dfs() {
+    const me = this
+    const d = me.d
+
+    d.btn.onclick = function() {
+      d.btn.onclick = null
+      me.findSolution1()
     }
   }
   getMaze(x, y) {
     const me = this
     return me.d.mazeData[x][y]
   }
-  async findSolution() {
+  async findSolution2() {
     const me = this
     const d = me.d
-    const dir = [
-      [-1, 0],
-      [0, 1],
-      [1, 0],
-      [0, -1],
-    ]
-    let count = 0
+    const stack = [d.enter]
+    let isSolved = false
 
-    async function findSolution(x, y) {
-      const node = me.getMaze(x, y)
+    while (stack.length > 0) {
+      const p = stack.pop()
+      const node = me.getMaze(p.x, p.y)
+
+      d.mazeData.forEach((row, idx, arr) => {
+        row.forEach((node, idx, arr) => {
+          node.isPath = false
+        })
+      })
 
       node.visited = true
-      node.isPath = true
-
-      ++count
-      if (count > 0) {
-        me.render()
-        await sleep(1)
+      let _p = p
+      while (_p) {
+        d.mazeData[_p.x][_p.y].isPath = true
+        _p = _p.prev
       }
+      me.render()
+      await sleep(1)
 
-      if (x === d.exit.x && y === d.exit.y) {
-        // alert('找到了出口')
-        d.btn.innerHTML = d.btn.title + '（找到了出口）'
-        return new Promise(next => next(true))
+      if (p.x === d.exit.x && p.y === d.exit.y) {
+        isSolved = true
+        console.log('找到了出口 dfs2')
+        break
       }
 
       for (let i = 0; i < 4; i++) {
-        const newX = x + dir[i][0]
-        const newY = y + dir[i][1]
+        const newX = p.x + d.dir[i][0]
+        const newY = p.y + d.dir[i][1]
 
         if (
           me.inArea(newX, newY) && 
           !d.mazeData[newX][newY].visited && 
           d.mazeData[newX][newY].n === d.road
         ) {
-          if (await findSolution(newX, newY)) {
+          stack.push({
+            x: newX,
+            y: newY,
+            prev: p,
+          })
+        }
+      }
+    }
+  }
+  async findSolution1() {
+    const me = this
+    const d = me.d
+
+    async function findSolution1(x, y) {
+      const node = me.getMaze(x, y)
+
+      node.visited = true
+      node.isPath = true
+      me.render()
+      await sleep(1)
+
+      if (x === d.exit.x && y === d.exit.y) {
+        console.log('找到了出口 dfs1')
+        return new Promise(next => next(true))
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const newX = x + d.dir[i][0]
+        const newY = y + d.dir[i][1]
+
+        if (
+          me.inArea(newX, newY) && 
+          !d.mazeData[newX][newY].visited && 
+          d.mazeData[newX][newY].n === d.road
+        ) {
+          if (await findSolution1(newX, newY)) {
             return new Promise(next => next(true))
           }
         }
       }
 
       node.isPath = false
-      if (count > 0) {
-        me.render()
-        await sleep(1)
-      }
+      me.render()
+      await sleep(1)
       return new Promise(next => next(false))
     }
 
-    await findSolution(d.enter.x, d.enter.y)
+    await findSolution1(d.enter.x, d.enter.y)
     me.render()
   }
   setPos() {
@@ -127,7 +190,7 @@ class SolveMaze extends Common {
         node.y = n * d.itemHeight
         gd.beginPath()
         gd.rect(node.x, node.y, d.itemWidth, d.itemWidth)
-        gd.fillStyle = Node.color[node.isPath ? 'orange' : (node.n === d.wall ? 'blue' : 'white')]
+        gd.fillStyle = Node.color[node.isPath ? 'red' : (node.n === d.wall ? 'blue' : 'white')]
         gd.fill()
       })
     })
@@ -157,7 +220,7 @@ class SolveMaze extends Common {
 
           gd.beginPath()
           gd.rect(node.x, node.y, d.itemWidth, d.itemWidth)
-          gd.fillStyle = Node.color[node.isPath ? 'orange' : (node.visited ? 'yellow' : 'white')]
+          gd.fillStyle = Node.color[node.isPath ? 'red' : (node.visited ? 'yellow' : 'white')]
           gd.fill()
         })
       })
