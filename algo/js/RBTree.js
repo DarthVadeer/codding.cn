@@ -1,4 +1,10 @@
 class RBTree extends Tree {
+  constructor() {
+    super(...arguments)
+
+    const me = this
+    const d = me.d
+  }
   create() {
     const me = this
     const d = me.d
@@ -8,7 +14,6 @@ class RBTree extends Tree {
       d.root = me.addL(d.root, node)
       d.root.fillStyle = Node.color.black
     })
-
     d.arr.clone().forEach((node, idx, arr) => {
       node.fillStyle = Node.color.red
       d.root2 = me.addR(d.root2, node)
@@ -17,7 +22,6 @@ class RBTree extends Tree {
   }
   addL(node, item) {
     const me = this
-    const d = me.d
 
     if (!node) return item
 
@@ -45,8 +49,7 @@ class RBTree extends Tree {
   }
   addR(node, item) {
     const me = this
-    const d = me.d
-    
+
     if (!node) return item
 
     if (item.n < node.n) {
@@ -75,6 +78,7 @@ class RBTree extends Tree {
     return node ? node.fillStyle === Node.color.red : false
   }
   leftRotate(x) {
+    const me = this
     const y = x.r
 
     x.r = y.l
@@ -86,6 +90,7 @@ class RBTree extends Tree {
     return y
   }
   rightRotate(x) {
+    const me = this
     const y = x.l
 
     x.l = y.r
@@ -98,7 +103,6 @@ class RBTree extends Tree {
   }
   flipColors(node) {
     node.fillStyle = Node.color.red
-    node.l.fillStyle = Node.color.black
-    node.r.fillStyle = Node.color.black
+    node.l.fillStyle = node.r.fillStyle = Node.color.black
   }
 }

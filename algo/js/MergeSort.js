@@ -14,7 +14,7 @@ class MergeSort extends Sort {
 
       for (let i = l; i <= r; i++) {
         aux[i - l] = d.arr[i]
-        d.arr[i].fromIndex = i
+        aux[i - l].fromIndex = i
       }
 
       let i = l
@@ -36,7 +36,7 @@ class MergeSort extends Sort {
         }
       }
 
-      const fillStyle = Node.color[l === 0 && r === d.arr.length - 1 ? 'blue' : 'orange']
+      const fillStyle = Node.color[l === 0 && r === d.arr.length - 1 ? 'blue' : 'green']
 
       d.steps.push(
         new Array(l).fill().concat(

@@ -5,23 +5,21 @@ class SegmentTree extends Heap {
     const me = this
     const d = me.d
 
+    d.itemWidth = 38
     d.len = 10
-    d.level = Math.ceil(Math.log(d.len) / Math.log(2)) + 1
-    d.itemWidth = 40
+    d.level = Math.ceil(Math.log(d.len + 1) / Math.log(2)) + 1
     d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
-    d.canvas.width = (Math.pow(2, d.level - 1) * me.getItemWidth() + d.conf.paddingH * 2) * d.devicePixelRatio
-    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
-    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.devicePixelRatio
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
+    d.canvas.width = (Math.pow(2, d.level - 1) * d.itemWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio
+    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
   }
   createL() {
     const me = this
     const d = me.d
 
     function createL(treeIndex, l, r) {
-      if (l > r) return
-
-      if (l === r) {
+      if (l >= r) {
         d.arr[treeIndex].n = '[' + l + ']'
         d.arr[treeIndex].fillStyle = Node.color.blue
         return
@@ -31,7 +29,7 @@ class SegmentTree extends Heap {
       createL(treeIndex * 2 + 1, l, mid)
       createL(treeIndex * 2 + 2, mid + 1, r)
 
-      d.arr[treeIndex].n = '[' + l + '..' + r + ']'
+      d.arr[treeIndex].n = '[' + l + ', ' + r + ']'
       d.arr[treeIndex].fillStyle = Node.color.blue
     }
 
@@ -42,9 +40,7 @@ class SegmentTree extends Heap {
     const d = me.d
 
     function createR(treeIndex, l, r) {
-      if (l > r) return
-
-      if (l === r) {
+      if (l >= r) {
         d.arr[treeIndex].n = '[' + l + ']'
         d.arr[treeIndex].fillStyle = Node.color.blue
         return

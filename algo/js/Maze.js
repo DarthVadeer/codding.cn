@@ -5,18 +5,13 @@ class Maze extends Common {
     const me = this
     const d = me.d
 
+    d.devicePixelRatio = 1
     d.itemWidth = 6
     d.itemHeight = 6
     d.wall = '#'
     d.road = ' '
-    d.mazeData = mazeData.split('\n')
-    d.mazeData.forEach((item, idx, arr) => {
-      d.mazeData[idx] = item.split('').map((wall) => {
-        return new Node(wall, {
-          isPath: false,
-          visited: false,
-        })
-      })
+    d.mazeData = mazeData.split('\n').map((line) => {
+      return line.split('').map((c) => new Node(c))
     })
 
     d.dir = [
@@ -25,115 +20,40 @@ class Maze extends Common {
       [1, 0],
       [0, -1],
     ]
-    // d.dir.reverse()
     d.enter = {
       x: 1,
       y: 0,
     }
     d.exit = {
-      x: d.mazeData[0].length - 2,
-      y: d.mazeData.length - 1,
+      x: d.mazeData.length - 2,
+      y: d.mazeData[0].length - 1,
     }
 
     d.canvas.style.border = 'none'
-    d.canvas.style.width = ''
-    d.canvas.width = d.mazeData[0].length * d.itemWidth
-    d.canvas.height = d.mazeData.length * d.itemWidth
+    d.canvas.width = (d.mazeData.length * d.itemWidth) * d.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
+    d.canvas.height = (d.mazeData[0].length * d.itemHeight) * d.devicePixelRatio
 
-    me.preset(() => {
-      if (me.ready) {
-        d.btn.onclick = null
-        me.ready()
-      }
-    })
-  }
-  dfs2() {
-    const me = this
-    const d = me.d
-
-    d.btn.onclick = function() {
+    me.preset()
+    d.btn.onclick = (e) => {
       d.btn.onclick = null
-      me.findSolution2()
+      me.ready()
     }
   }
-  dfs() {
+  dfs1() {
     const me = this
     const d = me.d
 
-    d.btn.onclick = function() {
-      d.btn.onclick = null
-      me.findSolution1()
-    }
-  }
-  getMaze(x, y) {
-    const me = this
-    return me.d.mazeData[x][y]
-  }
-  async findSolution2() {
-    const me = this
-    const d = me.d
-    const stack = [d.enter]
-    let isSolved = false
-
-    while (stack.length > 0) {
-      const p = stack.pop()
-      const node = me.getMaze(p.x, p.y)
-
-      d.mazeData.forEach((row, idx, arr) => {
-        row.forEach((node, idx, arr) => {
-          node.isPath = false
-        })
-      })
-
-      node.visited = true
-      let _p = p
-      while (_p) {
-        d.mazeData[_p.x][_p.y].isPath = true
-        _p = _p.prev
-      }
-      me.render()
-      await sleep(1)
-
-      if (p.x === d.exit.x && p.y === d.exit.y) {
-        isSolved = true
-        console.log('找到了出口 dfs2')
-        break
-      }
-
-      for (let i = 0; i < 4; i++) {
-        const newX = p.x + d.dir[i][0]
-        const newY = p.y + d.dir[i][1]
-
-        if (
-          me.inArea(newX, newY) && 
-          !d.mazeData[newX][newY].visited && 
-          d.mazeData[newX][newY].n === d.road
-        ) {
-          stack.push({
-            x: newX,
-            y: newY,
-            prev: p,
-          })
-        }
-      }
-    }
-  }
-  async findSolution1() {
-    const me = this
-    const d = me.d
-
-    async function findSolution1(x, y) {
-      const node = me.getMaze(x, y)
+    async function dfs(x, y) {
+      const node = d.mazeData[x][y]
 
       node.visited = true
       node.isPath = true
+
       me.render()
       await sleep(1)
 
-      if (x === d.exit.x && y === d.exit.y) {
-        console.log('找到了出口 dfs1')
-        return new Promise(next => next(true))
-      }
+      if (x === d.exit.x && y === d.exit.y) return new Promise(next => next(true))
 
       for (let i = 0; i < 4; i++) {
         const newX = x + d.dir[i][0]
@@ -144,62 +64,176 @@ class Maze extends Common {
           !d.mazeData[newX][newY].visited && 
           d.mazeData[newX][newY].n === d.road
         ) {
-          if (await findSolution1(newX, newY)) {
-            return new Promise(next => next(true))
-          }
+          if (await dfs(newX, newY)) return new Promise(next => next(true))
         }
       }
 
       node.isPath = false
-      me.render()
-      await sleep(1)
+
+      // me.render()
+      // await sleep(1)
+
       return new Promise(next => next(false))
     }
 
-    await findSolution1(d.enter.x, d.enter.y)
-    me.render()
+    me.ready = async () => {
+      console.log(await dfs(d.enter.x, d.enter.y) ? 'yes' : 'no')
+      me.render()
+    }
   }
-  setPos() {
+  dfs2() {
     const me = this
     const d = me.d
+    const stack = [d.enter]
 
-    /*d.mazeData.forEach((arr, n) => {
-      arr.forEach((node, idx, arr) => {
-        node.x = idx * d.itemWidth
-        node.y = n * d.itemHeight
-      })
-    })*/
+    me.ready = async () => {
+      let isFind = false
+
+      while (stack.length > 0) {
+        const p = stack.pop()
+        const node = d.mazeData[p.x][p.y]
+
+        d.mazeData.forEach((row, idx, arr) => {
+          row.forEach((node, idx, arr) => {
+            node.isPath = false
+          })
+        })
+
+        node.visited = true
+        let _p = p
+        while (_p) {
+          d.mazeData[_p.x][_p.y].isPath = true
+          _p = _p.prev
+        }
+
+        me.render()
+        await sleep(1)
+
+        if (p.x === d.exit.x && p.y === d.exit.y) {
+          isFind = true
+          break
+        }
+
+        for (let i = 0; i < 4; i++) {
+          const newX = p.x + d.dir[i][0]
+          const newY = p.y + d.dir[i][1]
+
+          if (
+            me.inArea(newX, newY) && 
+            !d.mazeData[newX][newY].visited && 
+            d.mazeData[newX][newY].n === d.road
+          ) {
+            stack.push({
+              x: newX,
+              y: newY,
+              prev: p,
+            })
+          }
+        }
+      }
+
+      me.render()
+    }
   }
-  inArea(y, x) {
+  nfs() {
     const me = this
-    const maze = me.d.mazeData
+    const d = me.d
+    const queue = [d.enter]
 
-    return (
-      y >= 0 && y < maze.length && 
-      x >= 0 && x < maze[0].length
-    )
+    me.ready = async () => {
+      let isFind = false
+
+      while (queue.length > 0) {
+        const p = queue.shift()
+        const node = d.mazeData[p.x][p.y]
+        let _p = p
+
+        node.visited = true
+        d.mazeData.forEach((row, idx, arr) => {
+          row.forEach((node, idx, arr) => {
+            node.isPath = false
+          })
+        })
+
+        while (_p) {
+          d.mazeData[_p.x][_p.y].isPath = true
+          _p = _p.prev
+        }
+
+        me.render()
+        await sleep(1)
+
+        if (p.x === d.exit.x && p.y === d.exit.y) {
+          isFind = true
+          break
+        }
+
+        for (let i = 0; i < 4; i++) {
+          const newX = p.x + d.dir[i][0]
+          const newY = p.y + d.dir[i][1]
+
+          if (
+            me.inArea(newX, newY) && 
+            !d.mazeData[newX][newY].visited && 
+            d.mazeData[newX][newY].n === d.road
+          ) {
+            queue.push({
+              x: newX,
+              y: newY,
+              prev: p,
+            })
+          }
+        }
+      }
+
+      me.render()
+    }
   }
   preset(cb) {
     const me = this
     const d = me.d
     const {canvas, gd} = d
 
-    d.mazeData.forEach((arr, n) => {
-      arr.forEach((node, idx, arr) => {
+    me.setPos()
+
+    gd.save()
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+
+    d.mazeData.forEach((row, stair, arr) => {
+      row.forEach((node, idx, arr) => {
         node.x = idx * d.itemWidth
-        node.y = n * d.itemHeight
+        node.y = stair * d.itemHeight
+
         gd.beginPath()
-        gd.rect(node.x, node.y, d.itemWidth, d.itemWidth)
-        gd.fillStyle = Node.color[node.isPath ? 'red' : (node.n === d.wall ? 'blue' : 'white')]
+        gd.rect(node.x, node.y, d.itemWidth, d.itemHeight)
+        gd.fillStyle = Node.color[node.n === d.wall ? 'blue' : 'white']
         gd.fill()
       })
     })
 
-    canvas.toBlob((blob) => {
+    d.canvas.toBlob((blob) => {
       d.presetImg = new Image()
+      d.presetImg.onload = (e) => {
+        cb && cb()
+      }
       d.presetImg.src = URL.createObjectURL(blob)
-      d.presetImg.onload = cb
     })
+    gd.restore()
+  }
+  inArea(x, y) {
+    const me = this
+    const d = me.d
+
+    return (
+      x >= 0 && x < d.mazeData.length &&
+      y >= 0 && y < d.mazeData[0].length
+    )
+  }
+  setPos() {
+    const me = this
+    const d = me.d
   }
   render() {
     const me = this
@@ -208,24 +242,23 @@ class Maze extends Common {
 
     if (!d.presetImg) return
 
+    gd.save()
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
     gd.drawImage(
       d.presetImg,
-      0, 0, d.presetImg.width, d.presetImg.height
+      0, 0, canvas.width, canvas.height
     )
 
-    function renderScene() {
-      d.mazeData.forEach((arr, n) => {
-        arr.forEach((node, idx, arr) => {
-          if (node.n === d.wall) return
+    d.mazeData.forEach((row, stair, arr) => {
+      row.forEach((node, idx, arr) => {
+        if (node.n === d.wall) return
 
-          gd.beginPath()
-          gd.rect(node.x, node.y, d.itemWidth, d.itemWidth)
-          gd.fillStyle = Node.color[node.isPath ? 'red' : (node.visited ? 'yellow' : 'white')]
-          gd.fill()
-        })
+        gd.beginPath()
+        gd.rect(node.x, node.y, d.itemWidth, d.itemHeight)
+        gd.fillStyle = Node.color[node.isPath ? 'red' : (node.visited ? 'yellow' : 'white')]
+        gd.fill()
       })
-    }
-
-    renderScene()
+    })
+    gd.restore()
   }
 }

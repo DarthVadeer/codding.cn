@@ -5,24 +5,23 @@ class AVLTree extends Tree {
     const me = this
     const d = me.d
 
-    d.levelHeight = 60
     d.paddingTop = 60
-    d.itemWidth = 50
+    d.itemWidth = 46
+    d.levelHeight = 60
   }
   create() {
     const me = this
     const d = me.d
 
     d.arr.clone().forEach((node, idx, arr) => {
-      node.fillStyle = Node.color.blue
       node.h = 1
       node.balanceFactor = 0
+      node.fillStyle = Node.color.blue
       d.root = me.add(d.root, node)
     })
   }
   add(node, item) {
     const me = this
-    const d = me.d
 
     if (!node) return item
 
@@ -61,8 +60,7 @@ class AVLTree extends Tree {
     return node ? node.h : 0
   }
   getBalanceFactor(node) {
-    const me = this
-    return me.getHeight(node.l) - me.getHeight(node.r)
+    return this.getHeight(node.l) - this.getHeight(node.r)
   }
   leftRotate(x) {
     const me = this
@@ -73,7 +71,6 @@ class AVLTree extends Tree {
 
     x.h = Math.max(me.getHeight(x.l), me.getHeight(x.r)) + 1
     y.h = Math.max(me.getHeight(y.l), me.getHeight(y.r)) + 1
-
     x.balanceFactor = me.getBalanceFactor(x)
 
     return y
@@ -87,7 +84,6 @@ class AVLTree extends Tree {
 
     x.h = Math.max(me.getHeight(x.l), me.getHeight(x.r)) + 1
     y.h = Math.max(me.getHeight(y.l), me.getHeight(y.r)) + 1
-
     x.balanceFactor = me.getBalanceFactor(x)
 
     return y

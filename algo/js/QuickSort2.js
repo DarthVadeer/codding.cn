@@ -18,7 +18,7 @@ class QuickSort2 extends Sort {
 
       while (true) {
         while (i <= r && d.arr[i].n < v) {
-          d.arr[i].fillStyle = Node.color.red
+          d.arr[i].fillStyle = Node.color.green
           i++
         }
         while (j > l && d.arr[j].n > v) {
@@ -27,7 +27,7 @@ class QuickSort2 extends Sort {
         }
         if (i > j) break
         d.arr.swap(i, j)
-        d.arr[i].fillStyle = Node.color.red
+        d.arr[i].fillStyle = Node.color.green
         d.arr[j].fillStyle = Node.color.orange
         i++
         j--
@@ -47,11 +47,13 @@ class QuickSort2 extends Sort {
     }
 
     quickSort(0, d.arr.length - 1)
-    
-    d.steps.push(d.arr.clone().map((node, idx) => {
-      node.fillStyle = Node.color.blue
-      node.fromIndex = idx
-      return node
-    }))
+
+    d.steps.push(
+      d.arr.clone().map((node, idx) => {
+        node.fromIndex = idx
+        node.fillStyle = Node.color.blue
+        return node
+      })
+    )
   }
 }

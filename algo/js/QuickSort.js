@@ -17,7 +17,7 @@ class QuickSort extends Sort {
 
       for (let i = l + 1; i <= r; i++) {
         if (d.arr[i].n < v) {
-          d.arr[i].fillStyle = Node.color.red
+          d.arr[i].fillStyle = Node.color.green
           d.arr.swap(i, j + 1)
           j++
         } else {
@@ -39,11 +39,13 @@ class QuickSort extends Sort {
     }
 
     quickSort(0, d.arr.length - 1)
-    
-    d.steps.push(d.arr.clone().map((node, idx) => {
-      node.fillStyle = Node.color.blue
-      node.fromIndex = idx
-      return node
-    }))
+
+    d.steps.push(
+      d.arr.clone().map((node, idx) => {
+        node.fromIndex = idx
+        node.fillStyle = Node.color.blue
+        return node
+      })
+    )
   }
 }

@@ -8,12 +8,11 @@ class BinarySearch extends Tree {
       d.root = me.add(d.root, node)
     })
 
-    d.root2 = clone(d.root)
-    me.flip(d.root2)
+    d.root2 = me.flip(clone(d.root))
   }
   add(node, item) {
     const me = this
-    
+
     if (!node) return item
 
     if (item.n < node.n) {
@@ -25,17 +24,5 @@ class BinarySearch extends Tree {
     }
 
     return node
-  }
-  flip(node) {
-    const me = this
-    
-    if (!node) return
-
-    me.flip(node.l)
-    me.flip(node.r)
-
-    const t = node.l
-    node.l = node.r
-    node.r = t
   }
 }

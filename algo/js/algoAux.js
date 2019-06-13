@@ -1,4 +1,4 @@
-window.sleep = async function(time) {
+window.sleep = function(time) {
   return new Promise(next => time ? setTimeout(next, time) : next())
 }
 
@@ -21,16 +21,16 @@ window.clone = function(o) {
   return JSON.parse(JSON.stringify(o))
 }
 
-Array.prototype.clone = function() {
-  return clone(this)
-}
-
 Array.prototype.first = function() {
   return this[0]
 }
 
 Array.prototype.last = function() {
   return this[this.length - 1]
+}
+
+Array.prototype.clone = function() {
+  return clone(this)
 }
 
 Array.prototype.swap = function(a, b) {
@@ -44,3 +44,10 @@ Array.prototype.rnd = function(len, rangeL, rangeR) {
   rangeR = rangeR === undefined ? len : rangeR
   return new Array(len).fill().map(_ => rand(rangeL, rangeR))
 }
+
+// !NodeList.prototype.forEach && (NodeList.prototype.forEach = function(fn) {
+//   console.log('a')
+//   for (let i = 0; i < this.length; i++) {
+//     fn(this[i], i, this)
+//   }
+// })
