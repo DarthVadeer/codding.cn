@@ -40,7 +40,7 @@ class Algo {
       fontSm: '12px Arial',
       fontLg: '16px Arial',
       devicePixelRatio: devicePixelRatio < 2 ? 2 : devicePixelRatio,
-      // devicePixelRatio: devicePixelRatio,
+      devicePixelRatio: devicePixelRatio,
     }
 
     const nodeList = document.querySelector('#box-algo > .list')

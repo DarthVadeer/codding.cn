@@ -34,7 +34,9 @@ class Maze extends Common {
     d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
     d.canvas.height = (d.mazeData[0].length * d.itemHeight) * d.devicePixelRatio
 
-    me.preset()
+    me.preset(() => {
+      d.btn.onclick()
+    })
     d.btn.onclick = (e) => {
       d.btn.onclick = null
       me.ready()
@@ -50,8 +52,8 @@ class Maze extends Common {
       node.visited = true
       node.isPath = true
 
-      me.render()
-      await sleep(1)
+      // me.render()
+      // await sleep(1)
 
       if (x === d.exit.x && y === d.exit.y) return new Promise(next => next(true))
 
@@ -106,8 +108,8 @@ class Maze extends Common {
           _p = _p.prev
         }
 
-        me.render()
-        await sleep(1)
+        // me.render()
+        // await sleep(1)
 
         if (p.x === d.exit.x && p.y === d.exit.y) {
           isFind = true
@@ -160,8 +162,8 @@ class Maze extends Common {
           _p = _p.prev
         }
 
-        me.render()
-        await sleep(1)
+        // me.render()
+        // await sleep(1)
 
         if (p.x === d.exit.x && p.y === d.exit.y) {
           isFind = true
