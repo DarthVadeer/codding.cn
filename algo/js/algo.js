@@ -59,7 +59,7 @@ class Algo {
     }).join('')
 
     const len = 20
-    let randArr = [].rnd(len, 1)
+    let randArr = [].rnd(len, 1, 4)
 
     // randArr = new Array(len).fill().map((_, idx) => len - idx)
     // randArr = new Array(len).fill().map((_, idx) => idx)

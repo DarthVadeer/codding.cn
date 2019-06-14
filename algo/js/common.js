@@ -174,6 +174,9 @@ class Sort extends Common {
       })
     }
 
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+
     gd.save()
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
@@ -365,6 +368,9 @@ class Tree extends Common {
 
       me.renderNode(node)
     }
+
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
 
     gd.save()
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
