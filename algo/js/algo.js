@@ -6,9 +6,9 @@ class Algo {
 
     d.type = {
       list: [
-        {name: '迷宫问题 - 广度优先', cons: Maze, startFn: 'nfs'},
-        {name: '迷宫问题 - 深度优先 - 非递归', cons: Maze, startFn: 'dfs2'},
-        {name: '迷宫问题 - 深度优先 - 递归', cons: Maze, startFn: 'dfs1'},
+        {name: '迷宫遍历 - 广度优先', cons: Maze, startFn: 'bfs', opt: {notRender: true}},
+        {name: '迷宫遍历 - 深度优先 - 非递归', cons: Maze, startFn: 'dfs2', opt: {notRender: true}},
+        {name: '迷宫遍历 - 深度优先 - 递归', cons: Maze, startFn: 'dfs1', opt: {notRender: true}},
         {name: 'Trie', cons: Trie, startFn: 'create'},
         {name: '红黑树 (左倾 & 右倾)', cons: RBTree, startFn: 'create'},
         {name: 'AVL树', cons: AVLTree, startFn: 'create'},
@@ -59,7 +59,7 @@ class Algo {
     }).join('')
 
     const len = 20
-    let randArr = [].rnd(len, 1, 4)
+    let randArr = [].rnd(len, 1)
 
     // randArr = new Array(len).fill().map((_, idx) => len - idx)
     // randArr = new Array(len).fill().map((_, idx) => idx)
@@ -69,6 +69,8 @@ class Algo {
     
     nodeList.querySelectorAll('canvas').forEach((canvas, idx, arr) => {
       const type = d.type.list[idx]
+      type.opt = type.opt || {}
+
       const o = new type.cons({
         canvas,
         gd: canvas.getContext('2d'),
@@ -76,12 +78,13 @@ class Algo {
         btn: canvas.closest('section').querySelector('.btn'),
         algo: this,
         ...d,
+        type,
       })
 
       d.cons.list.push(o)
       o[type.startFn]()
       o.setPos()
-      o.render()
+      !type.opt.notRender && o.render()
     })
   }
 }
