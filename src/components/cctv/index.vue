@@ -573,6 +573,7 @@ export default {
       const searchText = r.searchText.trim()
 
       me.cbFetchVideoList = cb || me.cbFetchVideoList
+      sugg.list = []
 
       if (!curAlbum.id) return
 
@@ -739,7 +740,7 @@ export default {
               url: 'http://tv.cctv.com',
             }, (sHtml) => {
               vm.is.loading = false
-              me.hotWord.list = new Set(sHtml.match(/<a href="http:\/\/tv\.cctv\.com\/\d{4}\/\d{2}\/\d{2}\/\w+\.shtml" target="_blank" >([^<>]+)<\/a>/gmi).map((item) => {
+              me.hotWord.list = new Set(sHtml.match(/="http:\/\/tv.cctv.com\/\d{4}\/[^<>]+>[^<>]+<\/a>/gmi).map((item) => {
                 return item.match(/>([^<>]+)</)[1]
               })).toArray()
             })
