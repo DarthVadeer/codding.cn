@@ -6,9 +6,9 @@ class Algo {
 
     d.type = {
       list: [
-        {name: '迷宫遍历 - 广度优先', cons: Maze, startFn: 'bfs', opt: {notRender: true}},
-        {name: '迷宫遍历 - 深度优先 - 非递归', cons: Maze, startFn: 'dfs2', opt: {notRender: true}},
-        {name: '迷宫遍历 - 深度优先 - 递归', cons: Maze, startFn: 'dfs1', opt: {notRender: true}},
+        {name: '迷宫遍历 - 广度优先', cons: Maze, startFn: 'bfs'},
+        {name: '迷宫遍历 - 深度优先 - 非递归', cons: Maze, startFn: 'dfs2'},
+        {name: '迷宫遍历 - 深度优先 - 递归', cons: Maze, startFn: 'dfs1'},
         {name: 'Trie', cons: Trie, startFn: 'create'},
         {name: '红黑树 (左倾 & 右倾)', cons: RBTree, startFn: 'create'},
         {name: 'AVL树', cons: AVLTree, startFn: 'create'},
@@ -58,7 +58,7 @@ class Algo {
       `
     }).join('')
 
-    const len = 20
+    const len = 24
     let randArr = [].rnd(len, 1)
 
     // randArr = new Array(len).fill().map((_, idx) => len - idx)
@@ -69,7 +69,6 @@ class Algo {
     
     nodeList.querySelectorAll('canvas').forEach((canvas, idx, arr) => {
       const type = d.type.list[idx]
-      type.opt = type.opt || {}
 
       const o = new type.cons({
         canvas,
@@ -84,7 +83,7 @@ class Algo {
       d.cons.list.push(o)
       o[type.startFn]()
       o.setPos()
-      !type.opt.notRender && o.render()
+      ;![Maze].some(cons => type.cons === cons) && o.render()
     })
   }
 }

@@ -11,7 +11,7 @@ class SegmentTree extends Heap {
     d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
     d.canvas.width = (Math.pow(2, d.level - 1) * d.itemWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
-    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
     d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
   }
   createL() {
