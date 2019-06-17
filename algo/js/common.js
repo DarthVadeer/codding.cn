@@ -22,7 +22,7 @@ Node.color = {
   green: 'green',
   blue: '#09f',
   orange: '#f80',
-  purple: 'purple',
+  purple: '#c0a',
   yellow: '#ff0',
   white: 'white',
   black: '#333',
@@ -52,6 +52,8 @@ class Common {
     const d = this.d
     return d.levelHeight || d.conf.levelHeight
   }
+  setPos() {}
+  render() {}
   renderArr() {
     const me = this
     const d = me.d
@@ -381,5 +383,34 @@ class Tree extends Common {
       renderNode(rootNode)
     })
     gd.restore()
+  }
+}
+
+class Fractal extends Common {
+  constructor() {
+    super(...arguments)
+
+    const me = this
+    const d = me.d
+
+    d.depth = 6
+    d.maxDepth = 6
+    d.canvas.style.boxShadow = 'none'
+    d.canvas.width =
+    d.canvas.height = 512 * d.conf.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
+
+    d.canvas.onclick = (e) => {
+      e.preventDefault()
+      d.depth++
+      d.depth > d.maxDepth && (d.depth = d.maxDepth)
+      me.render()
+    }
+    d.canvas.oncontextmenu = (e) => {
+      e.preventDefault()
+      d.depth--
+      d.depth < 1 && (d.depth = 1)
+      me.render()
+    }
   }
 }

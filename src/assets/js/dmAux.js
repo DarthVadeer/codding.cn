@@ -1,3 +1,11 @@
+window.d2a = function(deg) {
+  return deg / 180 * Math.PI
+}
+
+window.a2d = function(angle) {
+  return angle / Math.PI * 180
+}
+
 window.sleep = async function(time) {
   return new Promise((next) => {
     time ? setTimeout(() => {

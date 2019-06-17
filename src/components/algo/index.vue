@@ -28,8 +28,9 @@ export default {
     this.$root.algo = this
   },
   mounted() {
-    window.algo = new Algo()
-    // 
+    setTimeout(() => {
+      window.algo = new Algo()
+    }, 800)
   },
   beforeDestroy() {
     delete this.$root.algo

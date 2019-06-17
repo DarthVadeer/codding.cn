@@ -3,10 +3,10 @@
     <div class="flex-layout">
       <topbar></topbar>
       <div class="auto-flex container-wrapper">
-        <transition-group :name="'ani-com-' + ($root.router.countAni % $root.lenAni)">
+        <transition-group :name="'ani-com-' + (countAni % $root.lenAni)">
         <!-- <transition-group name="fade"> -->
           <div
-            v-for="(item, idx) in $root.router.coms"
+            v-for="(item, idx) in coms"
             :key="item.com + '-' + idx"
             :is="item"
             v-if="idx === 0"
@@ -46,11 +46,9 @@ export default {
     initEvents() {
       const vm = this.$root
 
-      // window.onpopstate = vm.initRouter.bind(vm)
       window.addEventListener('popstate', vm.initRouter.bind(vm), false)
       window.addEventListener('resize', handleResize, false)
       window.addEventListener('orientationchange', handleResize, false)
-      // window.onresize = window.onorientationchange = 
 
       function handleResize(e) {
         vm.dw = window.innerWidth
@@ -77,6 +75,17 @@ export default {
           }
         }
       }, false)
+    },
+  },
+  computed: {
+    r() {
+      return this.$root.router
+    },
+    countAni() {
+      return this.r.countAni || 0
+    },
+    coms() {
+      return this.r.coms || []
     },
   },
   components: {

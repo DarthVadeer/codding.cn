@@ -22,7 +22,7 @@ Node.color = {
   green: 'green',
   blue: '#09f',
   orange: '#f80',
-  purple: 'purple',
+  purple: '#c0a',
   yellow: '#ff0',
   white: 'white',
   black: '#333',
@@ -52,6 +52,8 @@ class Common {
     const d = this.d
     return d.levelHeight || d.conf.levelHeight
   }
+  setPos() {}
+  render() {}
   renderArr() {
     const me = this
     const d = me.d
@@ -173,6 +175,9 @@ class Sort extends Common {
         })
       })
     }
+
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
 
     gd.save()
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
@@ -366,6 +371,9 @@ class Tree extends Common {
       me.renderNode(node)
     }
 
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+
     gd.save()
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
@@ -375,6 +383,35 @@ class Tree extends Common {
       renderNode(rootNode)
     })
     gd.restore()
+  }
+}
+
+class Fractal extends Common {
+  constructor() {
+    super(...arguments)
+
+    const me = this
+    const d = me.d
+
+    d.depth = 6
+    d.maxDepth = 6
+    d.canvas.style.boxShadow = 'none'
+    d.canvas.width =
+    d.canvas.height = 512 * d.conf.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
+
+    d.canvas.onclick = (e) => {
+      e.preventDefault()
+      d.depth++
+      d.depth > d.maxDepth && (d.depth = d.maxDepth)
+      me.render()
+    }
+    d.canvas.oncontextmenu = (e) => {
+      e.preventDefault()
+      d.depth--
+      d.depth < 1 && (d.depth = 1)
+      me.render()
+    }
   }
 }
 
@@ -738,7 +775,7 @@ class SegmentTree extends Heap {
     d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
     d.canvas.width = (Math.pow(2, d.level - 1) * d.itemWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
-    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
     d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
   }
   createL() {
@@ -1124,6 +1161,9 @@ class Trie extends Common {
       })
     }
 
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+
     gd.save()
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
@@ -1253,53 +1293,442 @@ class Maze extends Common {
     const me = this
     const d = me.d
 
-    d.devicePixelRatio = 1
     d.itemWidth = 6
-    d.itemHeight = 6
-    d.wall = '#'
+    d.delay = 0
     d.road = ' '
-    d.mazeData = mazeData.split('\n').map((line) => {
-      return line.split('').map((c) => new Node(c))
-    })
+    d.wall = '#'
+    d.sign = 1
+    d.canvas.style.width = ''
+    d.canvas.style.boxShadow = 'none'
+    d.canvas.style.background = 'wheat'
 
-    d.dir = [
-      [-1, 0],
-      [0, 1],
-      [1, 0],
-      [0, -1],
-    ]
-    d.enter = {
-      x: 1,
-      y: 0,
-    }
-    d.exit = {
-      x: d.mazeData.length - 2,
-      y: d.mazeData[0].length - 1,
-    }
+    d.mazeData = mazeData.split('\n').map(line => line.split('').map(c => new Node(c)))
+    d.enter = {x: 1, y: 0}
+    d.exit = {x: d.mazeData.length - 2, y: d.mazeData[0].length - 1}
+    d.dir = [[-1, 0], [0, 1], [1, 0], [0, -1]]
+    // d.dir.push(d.dir.shift())
+    // d.dir.push(d.dir.shift())
+    d.canvas.width = d.itemWidth * d.mazeData[0].length
+    d.canvas.height = d.itemWidth * d.mazeData.length
 
-    d.canvas.style.border = 'none'
-    d.canvas.width = (d.mazeData.length * d.itemWidth) * d.devicePixelRatio
-    d.canvas.style.width = d.canvas.width / d.devicePixelRatio + 'px'
-    d.canvas.height = (d.mazeData[0].length * d.itemHeight) * d.devicePixelRatio
+    // d.mazeData[d.enter.x][d.enter.y].isPath = true
+    // d.mazeData[d.exit.x][d.exit.y].isPath = true
+    // ;['bfs', 'dfs2', 'dfs1'].some(v => v === d.type.startFn) && me.render()
 
-    me.preset()
     d.btn.onclick = (e) => {
-      d.btn.onclick = null
-      me.ready()
+      console.clear()
+
+      d.mazeData.forEach((row, idx, arr) => {
+        row.forEach((node, idx, arr) => {
+          if (node.n !== d.road) return
+          node.visited = false
+          node.visited2 = false
+          node.isPath = false
+        })
+      })
+
+      d.sign++
+      d.delay = 1
+      console.log(d.type.startFn)
+      me[d.type.startFn]()
     }
   }
-  dfs1() {
+  async generateRandomQueue2() {
+    const me = this
+    const d = me.d
+    const sign = d.sign
+    const randomQueue = [{x: 1, y: 1}]
+
+    me.generateReset()
+
+    while (randomQueue.length > 0) {
+      if (d.sign !== sign) {
+        console.log('generateRandomQueue2 时过境迁')
+        return
+      }
+
+      if (d.delay) {
+        me.render()
+        await sleep(d.delay)
+      }
+
+      const p = randomQueue[Math.random() < .5 ? 'pop' : 'shift']()
+
+      for (let i = 0; i < 4; i++) {
+        const _x = d.dir[i][0]
+        const _y = d.dir[i][1]
+        const newX = p.x + d.dir[i][0] * 2
+        const newY = p.y + d.dir[i][1] * 2
+
+        if (
+          me.inArea(newX, newY) && 
+          !d.mazeData[newX][newY].visited2
+        ) {
+          me.openMist(newX, newY)
+          d.mazeData[newX][newY].visited2 = true
+          d.mazeData[p.x + _x][p.y + _y].n = d.road
+          randomQueue[Math.random() < .5 ? 'unshift' : 'push']({
+            x: newX,
+            y: newY,
+            prev: p,
+          })
+        }
+      }
+    }
+
+    me.dfs1()
+    me.render()
+  }
+  async generateRandomQueue1() {
+    const me = this
+    const d = me.d
+    const sign = d.sign
+    const randomQueue = [{x: 1, y: 1}]
+
+    me.generateReset()
+
+    while (randomQueue.length > 0) {
+      if (d.sign !== sign) {
+        console.log('generateRandomQueue1 时过境迁')
+        return
+      }
+
+      randomQueue.swap(rand(0, randomQueue.length - 1), randomQueue.length - 1)
+      const p = randomQueue.pop()
+
+      if (d.delay) {
+        me.render()
+        await sleep(d.delay)
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const _x = d.dir[i][0]
+        const _y = d.dir[i][1]
+        const newX = p.x + d.dir[i][0] * 2
+        const newY = p.y + d.dir[i][1] * 2
+
+        if (
+          me.inArea(newX, newY) && 
+          !d.mazeData[newX][newY].visited2
+        ) {
+          me.openMist(newX, newY)
+          d.mazeData[newX][newY].visited2 = true
+          d.mazeData[p.x + _x][p.y + _y].n = d.road
+          randomQueue.push({
+            x: newX,
+            y: newY,
+            prev: p,
+          })
+        }
+      }
+    }
+
+    me.dfs1()
+    me.render()
+  }
+  async generate3() {
+    const me = this
+    const d = me.d
+    const sign = d.sign
+    const queue = [{x: 1, y: 1}]
+
+    me.generateReset()
+
+    while (queue.length > 0) {
+      const p = queue.shift()
+
+      if (d.sign !== sign) {
+        console.log('generate2 时过境迁')
+        return
+      }
+
+      if (d.delay) {
+        me.render()
+        await sleep(d.delay)
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const _x = d.dir[i][0]
+        const _y = d.dir[i][1]
+        const newX = p.x + d.dir[i][0] * 2
+        const newY = p.y + d.dir[i][1] * 2
+
+        if (
+          me.inArea(newX, newY) && 
+          !d.mazeData[newX][newY].visited2
+        ) {
+          me.openMist(newX, newY)
+          d.mazeData[newX][newY].visited2 = true
+          d.mazeData[p.x + _x][p.y + _y].n = d.road
+          queue.push({
+            x: newX,
+            y: newY,
+            prev: p,
+          })
+        }
+      }
+    }
+
+    me.render()
+  }
+  async generate2() {
+    const me = this
+    const d = me.d
+    const sign = d.sign
+    const stack = [{x: 1, y: 1}]
+
+    me.generateReset()
+
+    while (stack.length > 0) {
+      const p = stack.pop()
+
+      if (d.sign !== sign) {
+        console.log('generate2 时过境迁')
+        return
+      }
+
+      if (d.delay) {
+        me.render()
+        await sleep(d.delay)
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const _x = d.dir[i][0]
+        const _y = d.dir[i][1]
+        const newX = p.x + d.dir[i][0] * 2
+        const newY = p.y + d.dir[i][1] * 2
+
+        if (
+          me.inArea(newX, newY) && 
+          !d.mazeData[newX][newY].visited2
+        ) {
+          me.openMist(newX, newY)
+          d.mazeData[newX][newY].visited2 = true
+          d.mazeData[p.x + _x][p.y + _y].n = d.road
+          stack.push({
+            x: newX,
+            y: newY,
+            prev: p,
+          })
+        }
+      }
+    }
+
+    me.render()
+  }
+  async generate1() {
+    const me = this
+    const d = me.d
+    const sign = d.sign
+
+    me.generateReset()
+
+    async function createRoad(x, y) {
+      if (d.sign !== sign) {
+        console.log('generate1 时过境迁')
+        return new Promise(next => next())
+      }
+
+      if (d.delay) {
+        me.render()
+        await sleep(d.delay)
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const _x = d.dir[i][0]
+        const _y = d.dir[i][1]
+        const newX = x + d.dir[i][0] * 2
+        const newY = y + d.dir[i][1] * 2
+
+        if (
+          me.inArea(newX, newY) && 
+          !d.mazeData[newX][newY].visited2
+        ) {
+          me.openMist(newX, newY)
+          d.mazeData[newX][newY].visited2 = true
+          d.mazeData[x + _x][y + _y].n = d.road
+          await createRoad(newX, newY)
+        }
+      }
+
+      return new Promise(next => next())
+    }
+
+    await createRoad(1, 1)
+    me.render()
+  }
+  generateReset() {
     const me = this
     const d = me.d
 
+    d.row = 81
+    d.col = 81
+
+    d.mazeData = new Array(d.row).fill().map((_, idxRow) => {
+      return new Array(d.col).fill().map((_, idxCol) => {
+        return new Node(
+          idxRow % 2 === 1 && idxCol % 2 === 1 ? ' ' : '#',
+          {
+            inMist: true
+          }
+        )
+      })
+    })
+
+    d.exit = {x: d.mazeData.length - 2, y: d.mazeData[0].length - 1}
+    d.mazeData[d.enter.x][d.enter.y].n = d.road
+    d.mazeData[d.exit.x][d.exit.y].n = d.road
+    d.canvas.width = d.itemWidth * d.mazeData[0].length
+    d.canvas.height = d.itemWidth * d.mazeData.length
+  }
+  findPath(p) {
+    const me = this
+    const d = me.d
+    let _p = p
+
+    d.mazeData.forEach((row, idx, arr) => {
+      row.forEach((node, idx, arr) => {
+        node.isPath = false
+      })
+    })
+
+    while (_p) {
+      d.mazeData[_p.x][_p.y].isPath = true
+      _p = _p.prev
+    }
+  }
+  async bfs() {
+    const me = this
+    const d = me.d
+    const sign = d.sign
+    const queue = [d.enter]
+    let isFind = false
+    let lastP
+
+    while (queue.length > 0) {
+      if (d.sign !== sign) {
+        console.warn('bfs 时过境迁')
+        return
+      }
+
+      const p = queue.shift()
+      const node = d.mazeData[p.x][p.y]
+
+      lastP = p
+      node.visited = true
+
+      if (d.delay) {
+        me.findPath(p)
+        me.render()
+        await sleep(d.delay)
+      }
+
+      if (p.x === d.exit.x && p.y === d.exit.y) {
+        isFind = true
+        break
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const newX = p.x + d.dir[i][0]
+        const newY = p.y + d.dir[i][1]
+
+        if (
+          me.inArea(newX, newY) &&
+          !d.mazeData[newX][newY].visited &&
+          d.mazeData[newX][newY].n === d.road
+        ) {
+          queue.push({
+            x: newX,
+            y: newY,
+            prev: p,
+          })
+        }
+      }
+    }
+
+    if (isFind) {
+      me.findPath(lastP)
+      me.render()
+    } else {
+      console.log('no solution bfs')
+    }
+  }
+  async dfs2() {
+    const me = this
+    const d = me.d
+    const sign = d.sign
+    const stack = [d.enter]
+    let isFind = false
+    let lastP
+
+    while (stack.length > 0) {
+      if (d.sign !== sign) {
+        console.warn('dfs2 时过境迁')
+        return
+      }
+
+      const p = stack.pop()
+      const node = d.mazeData[p.x][p.y]
+
+      lastP = p
+      node.visited = true
+
+      if (d.delay) {
+        me.findPath(p)
+        me.render()
+        await sleep(d.delay)
+      }
+
+      if (p.x === d.exit.x && p.y === d.exit.y) {
+        isFind = true
+        break
+      }
+
+      for (let i = 0; i < 4; i++) {
+        const newX = p.x + d.dir[i][0]
+        const newY = p.y + d.dir[i][1]
+
+        if (
+          me.inArea(newX, newY) &&
+          !d.mazeData[newX][newY].visited &&
+          d.mazeData[newX][newY].n === d.road
+        ) {
+          stack.push({
+            x: newX,
+            y: newY,
+            prev: p,
+          })
+        }
+      }
+    }
+
+    if (isFind) {
+      me.findPath(lastP)
+      me.render()
+    } else {
+      console.log('no solution dfs2')
+    }
+  }
+  async dfs1() {
+    const me = this
+    const d = me.d
+    const sign = d.sign
+
     async function dfs(x, y) {
+      if (d.sign !== sign) {
+        console.warn('dfs1 时过境迁')
+        return
+      }
+
       const node = d.mazeData[x][y]
 
       node.visited = true
       node.isPath = true
 
-      me.render()
-      await sleep(1)
+      if (d.delay) {
+        me.render()
+        await sleep(d.delay)
+      }
 
       if (x === d.exit.x && y === d.exit.y) return new Promise(next => next(true))
 
@@ -1308,8 +1737,8 @@ class Maze extends Common {
         const newY = y + d.dir[i][1]
 
         if (
-          me.inArea(newX, newY) && 
-          !d.mazeData[newX][newY].visited && 
+          me.inArea(newX, newY) &&
+          !d.mazeData[newX][newY].visited &&
           d.mazeData[newX][newY].n === d.road
         ) {
           if (await dfs(newX, newY)) return new Promise(next => next(true))
@@ -1318,157 +1747,16 @@ class Maze extends Common {
 
       node.isPath = false
 
-      // me.render()
-      // await sleep(1)
+      if (d.delay) {
+        me.render()
+        await sleep(d.delay)
+      }
 
       return new Promise(next => next(false))
     }
 
-    me.ready = async () => {
-      console.log(await dfs(d.enter.x, d.enter.y) ? 'yes' : 'no')
-      me.render()
-    }
-  }
-  dfs2() {
-    const me = this
-    const d = me.d
-    const stack = [d.enter]
-
-    me.ready = async () => {
-      let isFind = false
-
-      while (stack.length > 0) {
-        const p = stack.pop()
-        const node = d.mazeData[p.x][p.y]
-
-        d.mazeData.forEach((row, idx, arr) => {
-          row.forEach((node, idx, arr) => {
-            node.isPath = false
-          })
-        })
-
-        node.visited = true
-        let _p = p
-        while (_p) {
-          d.mazeData[_p.x][_p.y].isPath = true
-          _p = _p.prev
-        }
-
-        me.render()
-        await sleep(1)
-
-        if (p.x === d.exit.x && p.y === d.exit.y) {
-          isFind = true
-          break
-        }
-
-        for (let i = 0; i < 4; i++) {
-          const newX = p.x + d.dir[i][0]
-          const newY = p.y + d.dir[i][1]
-
-          if (
-            me.inArea(newX, newY) && 
-            !d.mazeData[newX][newY].visited && 
-            d.mazeData[newX][newY].n === d.road
-          ) {
-            stack.push({
-              x: newX,
-              y: newY,
-              prev: p,
-            })
-          }
-        }
-      }
-
-      me.render()
-    }
-  }
-  nfs() {
-    const me = this
-    const d = me.d
-    const queue = [d.enter]
-
-    me.ready = async () => {
-      let isFind = false
-
-      while (queue.length > 0) {
-        const p = queue.shift()
-        const node = d.mazeData[p.x][p.y]
-        let _p = p
-
-        node.visited = true
-        d.mazeData.forEach((row, idx, arr) => {
-          row.forEach((node, idx, arr) => {
-            node.isPath = false
-          })
-        })
-
-        while (_p) {
-          d.mazeData[_p.x][_p.y].isPath = true
-          _p = _p.prev
-        }
-
-        me.render()
-        await sleep(1)
-
-        if (p.x === d.exit.x && p.y === d.exit.y) {
-          isFind = true
-          break
-        }
-
-        for (let i = 0; i < 4; i++) {
-          const newX = p.x + d.dir[i][0]
-          const newY = p.y + d.dir[i][1]
-
-          if (
-            me.inArea(newX, newY) && 
-            !d.mazeData[newX][newY].visited && 
-            d.mazeData[newX][newY].n === d.road
-          ) {
-            queue.push({
-              x: newX,
-              y: newY,
-              prev: p,
-            })
-          }
-        }
-      }
-
-      me.render()
-    }
-  }
-  preset(cb) {
-    const me = this
-    const d = me.d
-    const {canvas, gd} = d
-
-    me.setPos()
-
-    gd.save()
-    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
-    gd.fillStyle = Node.color.white
-    gd.fillRect(0, 0, canvas.width, canvas.height)
-
-    d.mazeData.forEach((row, stair, arr) => {
-      row.forEach((node, idx, arr) => {
-        node.x = idx * d.itemWidth
-        node.y = stair * d.itemHeight
-
-        gd.beginPath()
-        gd.rect(node.x, node.y, d.itemWidth, d.itemHeight)
-        gd.fillStyle = Node.color[node.n === d.wall ? 'blue' : 'white']
-        gd.fill()
-      })
-    })
-
-    d.canvas.toBlob((blob) => {
-      d.presetImg = new Image()
-      d.presetImg.onload = (e) => {
-        cb && cb()
-      }
-      d.presetImg.src = URL.createObjectURL(blob)
-    })
-    gd.restore()
+    await dfs(d.enter.x, d.enter.y)
+    me.render()
   }
   inArea(x, y) {
     const me = this
@@ -1479,35 +1767,321 @@ class Maze extends Common {
       y >= 0 && y < d.mazeData[0].length
     )
   }
+  openMist(x, y) {
+    const me = this
+    const d = me.d
+
+    for (let i = x - 1; i <= x + 1; i++) {
+      for (let j = y - 1; j <= y + 1; j++) {
+        if (me.inArea(i, j)) {
+          d.mazeData[i][j].inMist = false
+        }
+      }
+    }
+  }
   setPos() {
     const me = this
     const d = me.d
+
+  }
+  render(hard) {
+    // console.warn('render')
+    const me = this
+    const d = me.d
+    const {canvas, gd} = d
+
+    gd.fillStyle = '#fff'
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+
+    d.mazeData.forEach((row, idxRow, arr) => {
+      row.forEach((node, idxCol, arr) => {
+        gd.beginPath()
+        gd.rect(idxCol * d.itemWidth, idxRow * d.itemWidth, d.itemWidth, d.itemWidth)
+        gd.fillStyle = Node.color[node.inMist ? 'black' : (node.n === d.wall ? 'blue' : (node.isPath ? 'red' : (node.visited ? 'yellow' : 'white')))]
+        gd.fill()
+      })
+    })
+  }
+}
+
+class Vicsek extends Fractal {
+  create() {
+    // console.log('Vicsek create')
+  }
+  render() {
+    const me = this
+    const d = me.d
+    const {canvas, gd} = d
+    const dir = {
+      '0-0': 1,
+      '0-2': 1,
+      '1-1': 1,
+      '2-0': 1,
+      '2-2': 1,
+    }
+    let count = 0
+
+    function render(x, y, w, h, depth) {
+      const _w = w / 3
+      const _h = h / 3
+
+      depth++
+
+      if (_w < 1 || _h < 1 || depth > d.depth) {
+        gd.beginPath()
+        gd.rect(x, y, w, h)
+        gd.fillStyle = Node.color.green
+        gd.fill()
+        return
+      }
+
+      ++count
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (dir[i + '-' + j]) {
+            render(x + j * _w, y + i * _h, _w, _h, depth)
+          }
+        }
+      }
+    }
+
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+    render(0, 0, canvas.width, canvas.height, 0)
+    // console.log(me.constructor.name, count)
+  }
+}
+
+class Sierpinski extends Fractal {
+  create() {
+    // console.log('Vicsek create')
+  }
+  render() {
+    const me = this
+    const d = me.d
+    const {canvas, gd} = d
+    const dir = {
+      '0-0': 1,
+      '0-1': 1,
+      '0-2': 1,
+      '1-0': 1,
+      '1-2': 1,
+      '2-0': 1,
+      '2-1': 1,
+      '2-2': 1,
+    }
+    let count = 0
+
+    function render(x, y, w, h, depth) {
+      const _w = w / 3
+      const _h = h / 3
+
+      depth++
+      if (depth > d.depth) return
+      count++
+
+      gd.beginPath()
+      gd.rect(x + _w, y + _h, _w, _h)
+      gd.fillStyle = Node.color.purple
+      gd.fill()
+
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (dir[i + '-' + j]) {
+            render(x + j * _w, y + i * _h, _w, _h, depth)
+          }
+        }
+      }
+    }
+
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+    render(0, 0, canvas.width, canvas.height, 0)
+    // console.log(me.constructor.name, count)
+  }
+}
+
+class SierpinskiTriangle extends Fractal {
+  create() {
+    
+  }
+  render() {
+    const me = this
+    const d = me.d
+    const {canvas, gd} = d
+    let count = 0
+
+    function render(x1, y1, c, depth) {
+      depth++
+
+      const x2 = x1 + c
+      const y2 = y1
+
+      const x3 = (x1 + x2) / 2
+      const h = c * Math.sin(d2a(-60))
+      const y3 = h + y1
+
+      if (c < 1 || depth > d.depth) {
+        gd.beginPath()
+        gd.lineTo(x1, y1)
+        gd.lineTo(x2, y2)
+        gd.lineTo(x3, y3)
+        gd.closePath()
+        gd.fillStyle = Node.color.blue
+        gd.fill()
+        return
+      }
+
+      ++count
+      render(x1, y1, c / 2, depth)
+      render(x1 + c / 2, y1, c / 2, depth)
+      render(x1 + c / 4, y1 + h / 2, c / 2, depth)
+    }
+
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+    render(0, canvas.height - canvas.height * .07, canvas.width, 0)
+    // console.log(me.constructor.name, count)
+  }
+}
+
+class KoachSnowflake extends Fractal {
+  create() {
+    // console.log('Vicsek create')
+  }
+  render() {
+    const me = this
+    const d = me.d
+    const {canvas, gd} = d
+    const dir = {
+      '0-0': 1,
+      '0-2': 1,
+      '1-1': 1,
+      '2-0': 1,
+      '2-2': 1,
+    }
+    const _canvas = canvas.cloneNode()
+    const _gd = _canvas.getContext('2d')
+    let count = 0
+
+    _canvas.width *= .7
+
+    function renderOne(x1, y1, side, deg, depth) {
+      side /= 3
+
+      const x2 = x1 + side * Math.cos(d2a(deg))
+      const y2 = y1 - side * Math.sin(d2a(deg))
+
+      const x3 = x2 + side * Math.cos(d2a(deg - 60))
+      const y3 = y2 - side * Math.sin(d2a(deg - 60))
+
+      const x4 = x3 + side * Math.cos(d2a(deg + 60))
+      const y4 = y3 - side * Math.sin(d2a(deg + 60))
+
+      const x5 = x4 + side * Math.cos(d2a(deg))
+      const y5 = y4 - side * Math.sin(d2a(deg))
+
+      ++count
+      ++depth
+      if (depth >= d.depth || side < 1) {
+        _gd.beginPath()
+        _gd.lineTo(x1, y1)
+        _gd.lineTo(x2, y2)
+        _gd.lineTo(x3, y3)
+        _gd.lineTo(x4, y4)
+        _gd.lineTo(x5, y5)
+        _gd.strokeStyle = Node.color.blue
+        _gd.stroke()
+      } else {
+        renderOne(x1, y1, side, deg + 0, depth)
+        renderOne(x2, y2, side, deg - 60, depth)
+        renderOne(x3, y3, side, deg + 60, depth)
+        renderOne(x4, y4, side, deg + 0, depth)
+      }
+    }
+
+    function renderFull() {
+      new Array(3).fill().forEach((_, idx, arr) => {
+        const deg = idx * 120
+
+        gd.save()
+        gd.translate(canvas.width / 2, canvas.height / 2)
+        gd.rotate(d2a(deg))
+        gd.drawImage(
+          _canvas,
+          0, 0, _canvas.width, _canvas.height,
+          -_canvas.width / 2, _canvas.width * .287, _canvas.width, _canvas.height,
+        )
+        gd.restore()
+
+      })
+    }
+
+    gd.clearRect(0, 0, canvas.width, canvas.height)
+    renderOne(0, 0, _canvas.width, 0, 0)
+
+    renderFull()
+
+    // console.log(me.constructor.name, count)
+  }
+}
+
+class FractalTree extends Fractal {
+  constructor() {
+    super(...arguments)
+
+    const me = this
+    const d = me.d
+
+    d.maxDepth = 10
+    d.depth = 7
+    d.canvas.width *= 2.2
+    d.canvas.height *= .6
+    d.canvas.style.width = ''
+  }
+  create() {
+
   }
   render() {
     const me = this
     const d = me.d
     const {canvas, gd} = d
 
-    if (!d.presetImg) return
+    function renderLine(x1, y1, side, deg, degL, degR, depth) {
+      if (side < 2 || depth > d.depth) return
 
-    gd.save()
-    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
-    gd.drawImage(
-      d.presetImg,
-      0, 0, canvas.width, canvas.height
-    )
+      const x2 = x1 + side * Math.sin(d2a(deg))
+      const y2 = y1 - side * Math.cos(d2a(deg))
 
-    d.mazeData.forEach((row, stair, arr) => {
-      row.forEach((node, idx, arr) => {
-        if (node.n === d.wall) return
+      gd.beginPath()
+      gd.lineTo(x1, y1)
+      gd.lineTo(x2, y2)
+      gd.stroke()
 
-        gd.beginPath()
-        gd.rect(node.x, node.y, d.itemWidth, d.itemHeight)
-        gd.fillStyle = Node.color[node.isPath ? 'red' : (node.visited ? 'yellow' : 'white')]
-        gd.fill()
-      })
+      ++depth
+      renderLine(x2, y2, side * .7, deg + degL, degL, degR, depth)
+      renderLine(x2, y2, side * .7, deg + degR, degL, degR, depth)
+    }
+
+    const steps = [
+      {degL: -30, degR: 10, left: 0},
+      {degL: -20, degR: 20, left: 0},
+      {degL: -10, degR: 50, left: 0},
+      {degL: -90, degR: 90, left: 0},
+    ]
+
+    const space = 100
+    const perW = (canvas.width - space * 2) / steps.length
+
+    gd.fillStyle = Node.color.white
+    gd.fillRect(0, 0, canvas.width, canvas.height)
+
+    steps.forEach((item, idx, arr) => {
+      gd.save()
+      gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
+      renderLine((idx === arr.length - 1 ? canvas.width - 140 : idx * perW + perW / 2 + 50) / d.conf.devicePixelRatio, canvas.height / d.conf.devicePixelRatio, 90, 0, item.degL, item.degR, 0)
+      gd.restore()
     })
-    gd.restore()
   }
 }
 
@@ -1519,9 +2093,19 @@ class Algo {
 
     d.type = {
       list: [
-        {name: '迷宫问题 - 广度优先', cons: Maze, startFn: 'nfs'},
-        {name: '迷宫问题 - 深度优先 - 非递归', cons: Maze, startFn: 'dfs2'},
-        {name: '迷宫问题 - 深度优先 - 递归', cons: Maze, startFn: 'dfs1'},
+        {name: '分形图 - FractalTree', cons: FractalTree, startFn: 'create'},
+        {name: '分形图 - KoachSnowflake', cons: KoachSnowflake, startFn: 'create'},
+        {name: '分形图 - SierpinskiTriangle', cons: SierpinskiTriangle, startFn: 'create'},
+        {name: '分形图 - Sierpinski', cons: Sierpinski, startFn: 'create'},
+        {name: '分形图 - Vicsek', cons: Vicsek, startFn: 'create'},
+        {name: '迷宫创建 - 随机队列 - 2', cons: Maze, startFn: 'generateRandomQueue2'},
+        {name: '迷宫创建 - 随机队列 - 1', cons: Maze, startFn: 'generateRandomQueue1'},
+        {name: '迷宫创建 - 广度优先', cons: Maze, startFn: 'generate3'},
+        {name: '迷宫创建 - 深度优先 - 非递归', cons: Maze, startFn: 'generate2'},
+        // {name: '迷宫创建 - 深度优先 - 递归', cons: Maze, startFn: 'generate1'},
+        {name: '迷宫遍历 - 广度优先', cons: Maze, startFn: 'bfs'},
+        {name: '迷宫遍历 - 深度优先 - 非递归', cons: Maze, startFn: 'dfs2'},
+        {name: '迷宫遍历 - 深度优先 - 递归', cons: Maze, startFn: 'dfs1'},
         {name: 'Trie', cons: Trie, startFn: 'create'},
         {name: '红黑树 (左倾 & 右倾)', cons: RBTree, startFn: 'create'},
         {name: 'AVL树', cons: AVLTree, startFn: 'create'},
@@ -1553,7 +2137,7 @@ class Algo {
       fontSm: '12px Arial',
       fontLg: '16px Arial',
       devicePixelRatio: devicePixelRatio < 2 ? 2 : devicePixelRatio,
-      // devicePixelRatio: devicePixelRatio,
+      devicePixelRatio,
     }
 
     const nodeList = document.querySelector('#box-algo > .list')
@@ -1571,7 +2155,7 @@ class Algo {
       `
     }).join('')
 
-    const len = 20
+    const len = 24
     let randArr = [].rnd(len, 1)
 
     // randArr = new Array(len).fill().map((_, idx) => len - idx)
@@ -1580,8 +2164,9 @@ class Algo {
 
     randArr = randArr.map(n => new Node(n))
     
-    nodeList.querySelectorAll('canvas').forEach((canvas, idx, arr) => {
+    nodeList.querySelectorAll('canvas').forEach(async (canvas, idx, arr) => {
       const type = d.type.list[idx]
+
       const o = new type.cons({
         canvas,
         gd: canvas.getContext('2d'),
@@ -1589,12 +2174,13 @@ class Algo {
         btn: canvas.closest('section').querySelector('.btn'),
         algo: this,
         ...d,
+        type,
       })
 
       d.cons.list.push(o)
       o[type.startFn]()
       o.setPos()
-      o.render()
+      ;![Maze].some(cons => type.cons === cons) && o.render()
     })
   }
 }

@@ -1,5 +1,5 @@
-window.sleep = function(time) {
-  return new Promise(next => time ? setTimeout(next, time) : next())
+window.sleep = function(time, ret) {
+  return new Promise(next => time ? setTimeout(_ => next(ret), time) : next(ret))
 }
 
 window.rand = function(m, n) {
@@ -19,6 +19,14 @@ window.randColor = function(a) {
 
 window.clone = function(o) {
   return JSON.parse(JSON.stringify(o))
+}
+
+window.d2a = function(deg) {
+  return deg / 180 * Math.PI
+}
+
+window.a2d = function(angle) {
+  return angle / Math.PI * 180
 }
 
 Array.prototype.first = function() {
