@@ -1,5 +1,5 @@
 export default {
   com() {
-    return this.router.coms[0]
+    return (this.router.coms || [])[0] || ''
   }
 }

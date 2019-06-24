@@ -1,23 +1,21 @@
 export default {
   lazyLoad() {
     const vm = this.$root
-    const dh = window.innerHeight
-    
+
     clearTimeout(vm.timerLazyLoad)
+
     vm.timerLazyLoad = setTimeout(() => {
-      ;[].slice.call(document.querySelectorAll('[lazy-load]')).forEach((node) => {
+      const nodes = document.querySelectorAll('[lazy-load]')
+      
+      nodes.forEach((node, idx, arr) => {
         const pos = node.getBoundingClientRect()
 
-        if (pos.top > dh || pos.bottom < 0) return
+        if (pos.top > window.innerHeight || pos.bottom < 0) return
 
         const src = node.getAttribute('lazy-load')
-        const oImg = new Image()
-        oImg.src = src
-        oImg.onload = () => {
-          node.style.backgroundImage = 'url(' + src + ')'
-        }
+        node.style.backgroundImage = 'url(' + src + ')'
         node.removeAttribute('lazy-load')
       })
-    }, 240)
+    }, 200)
   }
 }

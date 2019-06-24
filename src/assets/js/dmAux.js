@@ -6,12 +6,8 @@ window.a2d = function(angle) {
   return angle / Math.PI * 180
 }
 
-window.sleep = async function(time) {
-  return new Promise((next) => {
-    time ? setTimeout(() => {
-      next()
-    }, time) : next()
-  })
+window.sleep = function(time) {
+  return new Promise(next => time ? setTimeout(next, time) : next())
 }
 
 window.rand = function(m, n) {
@@ -26,15 +22,33 @@ window.randColor = function(a) {
     a: a === undefined ? 1 : a,
   }
 
-  return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
+  o.toString = function() {
+    return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
+  }
+
+  return o
 }
 
 window.clone = function(o) {
   return JSON.parse(JSON.stringify(o))
 }
 
-Array.prototype.clone = function() {
-  return clone(this)
+window.json2url = function(data) {
+  return Object.keys(data).map(k => k + '=' + encodeURIComponent(data[k])).join('&')
+}
+
+Array.prototype.swap = function(a, b) {
+  const t = this[a]
+  this[a] = this[b]
+  this[b] = t
+}
+
+Array.prototype.min = function() {
+  return Math.min.apply(null, this)
+}
+
+Array.prototype.max = function() {
+  return Math.max.apply(null, this)
 }
 
 Array.prototype.first = function() {
@@ -45,51 +59,31 @@ Array.prototype.last = function() {
   return this[this.length - 1]
 }
 
-Array.prototype.swap = function(a, b) {
-  const t = this[a]
-  this[a] = this[b]
-  this[b] = t
+Array.prototype.clone = function() {
+  return clone(this)
 }
 
-Array.prototype.rnd = function(len, rangeL, rangeR) {
-  rangeL = rangeL === undefined ? 0 : rangeL
-  rangeR = rangeR === undefined ? len : rangeR
-  return new Array(len).fill().map(_ => rand(rangeL, rangeR))
-}
-
-!location.origin && (location.origin = location.href.split('/').filter((_, idx) => {
-  return idx < 3
-}).join('/'))
-
-!Array.prototype.fill && (Array.prototype.fill = function(fillBy, from, to) {
-  from = from === undefined ? 0 : from
-  to = to === undefined ? this.length : to
-
-  for (let i = from; i < to; i++) {
-    this[i] = fillBy
+Array.prototype.shuffle = function() {
+  for (let i = 0; i < this.length; i++) {
+    this.swap(i, rand(i, this.length - 1))
   }
-
   return this
-})
-
-Number.prototype.inRange = function(a, b) {
-  return this >= a && this <= b
 }
 
-Set.prototype.toArray = function() {
-  const arr = []
+Array.prototype.rnd = function(len, l, r) {
+  l = l === undefined ? 0 : l
+  r = r === undefined ? len : r
+  return new Array(len).fill().map(_ => rand(l, r))
+}
 
-  this.forEach((item) => {
-    arr.push(item)
-  })
-
-  return arr
+Number.prototype.inRange = function(l, r) {
+  return this >= l && this <= r
 }
 
 Date.prototype.format = function(format) {
   const o = {
     y: this.getFullYear(),
-    m: (this.getMonth() + 1),
+    m: this.getMonth() + 1,
     d: this.getDate(),
     h: this.getHours(),
     i: this.getMinutes(),
@@ -97,32 +91,149 @@ Date.prototype.format = function(format) {
   }
 
   return (format || 'y-m-d h:i:s').replace(/y|m|d|h|i|s/g, (k) => {
-    let str = o[k].toString()
-    return str.length < 2 ? '0' + str : str
+    const n = o[k]
+    return n < 10 ? '0' + n : n
   })
 }
 
-String.prototype.toSize = function() {
-  const map = {}
-  ;['b', 'k', 'm', 'g', 't', 'p'].forEach((k, idx) => {
-    map[k] = Math.pow(1024, idx)
-  })
-  
-  return eval(this.toLowerCase().replace(/b/i, '').replace(/k|m|g|t|p/, (str) => {
-    return '*' + map[str]
-  }))
-}
+window.$ = function(selector, context = document) {
+  let nodes = []
 
-Number.prototype.toSize = function() {
-  const arr = ['', 'K', 'M', 'G', 'T', 'P']
-
-  if (this <= 1) return this + 'B'
-
-  for (let i = arr.length - 1; i > -1; i--) {
-    const size = Math.pow(1024, i)
-
-    if (this >= size) {
-      return parseFloat((this / size).toFixed(2)) + arr[i] + 'B'
-    }
+  if (typeof selector === 'string') {
+    nodes = [].slice.call(context.querySelectorAll(selector))
+  } else if (selector instanceof Array) {
+    nodes = selector
+  } else {
+    nodes = [selector]
   }
+
+  nodes.__proto__ = $.prototype
+  return nodes
+}
+
+/*$.prototype.each = function(cb) {
+  for (let i = 0; i < this.length; i++) {
+    cb && cb(i, this[i], this)
+  }
+}
+
+$.prototype.addClass = function(sClass) {
+  this.each((idx, node) => {
+    node instanceof HTMLElement && node.classList.add(sClass)
+  })
+  return this
+}
+
+$.prototype.removeClass = function(sClass) {
+  this.each((idx, node) => {
+    node instanceof HTMLElement && node.classList.remove(sClass)
+  })
+  return this
+}
+
+$.prototype.toggleClass = function(sClass) {
+  this.each((idx, node) => {
+    node instanceof HTMLElement && node.classList.toggle(sClass)
+  })
+  return this
+}
+
+$.prototype.toggle = function(sClass) {
+  this.each((idx, node) => {
+    if (node instanceof HTMLElement) {
+      node.style.display = getComputedStyle(node)['display'] === 'none' ? '' : 'none'
+    }
+  })
+  return this
+}*/
+
+$.ajax = function(o) {
+  return new Promise((next) => {
+    const xhr = new XMLHttpRequest()
+    const url = vm.is.local && /\.php$/.test(o.url) ? 'http://10.0.1.2/final-app/' + o.url : o.url
+
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          let data = xhr.responseText
+          try {
+            data = JSON.parse(data)
+          } catch (e) {
+            // console.warn(o.url, 'data parse err')
+          }
+          o.success && o.success(data, xhr)
+        } else {
+          if (!navigator.onLine) {
+            vm.alert('你断网了，请保持网络畅通')
+          } else if (xhr.status === 0) {
+            vm.alert('后台服务未开启')
+          } else {
+            vm.alert('其他错误，错误码：' + xhr.status)
+          }
+          vm.is.loading = false
+          o.error && o.error(xhr)
+        }
+      }
+    }
+
+    switch (o.method) {
+      case 'GET':
+        xhr.open('GET', url + '?' + json2url(o.data), true)
+        xhr.send()
+        break
+      case 'POST':
+        const fm = new FormData()
+        Object.keys(o.data).forEach(key => fm.append(key, o.data[k]))
+        xhr.open('GET', url + '?' + json2url(o.data), true)
+        xhr.send(fm)
+        break
+      default:
+        console.log('method not support', o.method)
+        break
+    }
+  })
+}
+
+$.get = function(url, data, success, error) {
+  return $.ajax({
+    method: 'GET',
+    url, data, success, error,
+  })
+}
+
+$.post = function(url, data, success, error) {
+  return $.ajax({
+    method: 'GET',
+    url, data, success, error,
+  })
+}
+
+$.jsonp = function(url, data, success, error) {
+  const cbName = data['?']
+  const script = document.createElement('script')
+  const fnName = data[cbName] = ('jsonp_' + Math.random()).replace('0.', '')
+
+  delete data['?']
+
+  window[fnName] = script.onerror = (data = {}) => {
+    document.body.removeChild(script)
+    delete window[fnName]
+    const cb = data.type === 'error' ? error : success
+    cb && cb(data)
+  }
+
+  script.src = url + '?' + json2url(data)
+  document.body.appendChild(script)
+}
+
+$.loadScript = function(url, success, error) {
+  const script = document.createElement('script')
+  script.src = url
+  script.onload = script.onerror = (e) => {
+    const cb = e.type === 'load' ? success : error
+    // e.type === 'error' && (vm.is.loading = false)
+    cb && cb()
+    document.body.removeChild(script)
+  }
+  document.body.appendChild(script)
 }

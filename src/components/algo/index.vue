@@ -24,13 +24,13 @@ export default {
   methods: {
 
   },
-  beforeCreate() {
-    this.$root.algo = this
-  },
   mounted() {
     setTimeout(() => {
       window.algo = new Algo()
-    }, 800)
+    }, 500)
+  },
+  beforeCreate() {
+    this.$root.algo = this
   },
   beforeDestroy() {
     delete this.$root.algo

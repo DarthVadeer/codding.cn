@@ -1,64 +1,28 @@
 export default {
-  'router': {
+  router: {
     deep: true,
     handler(newVal) {
-      // console.warn('changed router')
-      const vm = this
+      const vm = this.$root
+
       let hashData = JSON.stringify(newVal)
       !vm.is.local && (hashData = encodeURIComponent(hashData))
       const targetUrl = location.origin + location.pathname + location.search + '#' + hashData
-      history[vm.isRouterPush ? 'pushState' : 'replaceState']({}, '', targetUrl)
 
-      vm.isRouterPush = false
+      history[vm.is.routerPush ? 'pushState' : 'replaceState']({}, '', targetUrl)
+      vm.is.routerPush = false
     }
   },
-  'router.idxChannel'(newVal) {
-    // console.warn('changed router.idxChannel')
-    vm.cctv && vm.cctv.fetchVideoList()
-  },
-  'router.idxAlbum'(newVal) {
-    // console.warn('changed router.idxAlbum')
-    vm.cctv && vm.cctv.fetchVideoList()
-  },
-  'router.idxAux9'(newVal) {
-    // console.warn('changed router.idxAux9')
-    vm.cctv && vm.cctv.fetchVideoList()
-  },
-  'router.videoInfo.m3u8'(newVal) {
-    // console.warn('changed router.videoInfo.m3u8')
-    if (!newVal) return
-    this.$root.playM3u8()
-  },
-  'router.searchText'(newVal) {
-    // console.warn('changed router.searchText')
-    const vm = this.$root
-    if (vm.cctv) {
-      vm.cctv.sugg.text = newVal
-      newVal ? vm.cctv.justFetchAlbum() : vm.cctv.fetchVideoList()
-    }
-  },
-  'router.page.cur'() {
-    const me = this
-    const vm = me.$root
-    const r = vm.router
-    
-    switch (vm.com) {
-      case 'cctv':
-        vm.cctv && vm.cctv.fetchVideoList()
-        break
-    }
-  },
-  'mapPlayTime': {
+  mapPlayTime: {
     deep: true,
     handler(newVal) {
-      // console.warn('changed mapPlayTime')
       localStorage.mapPlayTime = JSON.stringify(newVal)
     }
   },
-  'router.dir.list': {
-    deep: true,
-    handler(newVal) {
-      this.webFtp && this.webFtp.loopOpenDir()
-    },
+  'router.videoInfo.m3u8'(newVal) {
+    if (!newVal) return
+    this.playM3u8()
+  },
+  'is.loading'(newVal) {
+    // console.warn('is.loading changed', newVal)
   },
 }

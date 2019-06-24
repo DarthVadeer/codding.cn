@@ -26,6 +26,7 @@ Node.color = {
   yellow: '#ff0',
   white: 'white',
   black: '#333',
+  gray: '#ccc',
 }
 
 class Common {
@@ -121,7 +122,7 @@ class Sort extends Common {
     const d = me.d
 
     d.arr.forEach((node, idx, arr) => {
-      node.strokeStyle = randColor()
+      node.strokeStyle = randColor().toString()
     })
     d.steps = [d.arr.clone()]
   }

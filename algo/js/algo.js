@@ -6,6 +6,7 @@ class Algo {
 
     d.type = {
       list: [
+        {name: '扫雷', cons: MineSweeper, startFn: 'create'},
         {name: '分形图 - FractalTree', cons: FractalTree, startFn: 'create'},
         {name: '分形图 - KoachSnowflake', cons: KoachSnowflake, startFn: 'create'},
         {name: '分形图 - SierpinskiTriangle', cons: SierpinskiTriangle, startFn: 'create'},

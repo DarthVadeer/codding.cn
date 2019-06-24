@@ -1,78 +1,65 @@
-import './assets/css/reset.scss'
-
+import '@/assets/css/reset.scss'
 import '@/assets/js/dmAux'
-import '@/assets/js/com'
+// import '@/assets/js/com'
 
 import Vue from 'vue'
-import App from './App'
+import App from './App.vue'
 import dm from '@/assets/js/dm'
+import lazyLoad from '@/assets/js/lazyLoad'
+import router from '@/assets/js/router'
 
 Vue.config.productionTip = false
 
 window.vm = new Vue({
-  el: '#app',
   data() {
     return {
+      appName: '田小号🎺',
       ...dm.rootData.call(this),
     }
   },
   methods: {
+    ...router,
+    ...lazyLoad,
     ...dm.rootMethods,
-    ...require('@/assets/js/ajax').default,
-    ...require('@/assets/js/player').default,
-    ...require('@/assets/js/router').default,
-    ...require('@/assets/js/lazyLoad').default,
-  },
-  watch: {
-    ...require('@/assets/js/watch').default,
   },
   computed: {
     ...require('@/assets/js/computed').default,
   },
-  components: { App },
-  template: '<App/>',
+  watch: {
+    ...require('@/assets/js/watch').default,
+  },
   mounted() {
-    const me = this
-    const vm = me.$root
+    const vm = this.$root
     const r = vm.router
-    
-    vm.is.local && vm.get('./api/pub.php', {
-      a: 'test'
-    }, (data) => {}, (e) => {
-      console.log(e)
-      vm.alert('接口探测失败')
-    })
-  }
-})
 
+    vm.initSearch()
+    vm.initRouter()
+    vm.initEvents()
+  },
+  render: h => h(App),
+}).$mount('#app')
 
 {
-  const nodeStyle = document.createElement('style')
-  nodeStyle.innerHTML = new Array(vm.lenAni).fill().map((_, idx) => {
+  const sStyleDef = vm.is.android || vm.is.windows ? `
+    select {border-radius: 4px; border-color: #ccc;}
+  ` : ``
+  const nodeStyle3D = document.createElement('style')
+  nodeStyle3D.id = 'nodeStyle3D'
+  nodeStyle3D.innerHTML = new Array(vm.lenAni).fill().map((_, idx) => {
     const dw = window.innerWidth
     const dh = window.innerHeight
-    // const rand = vm.rand
-    const arr = [
-      'translateX',
-      'translateY',
-      'translateZ',
-      'rotateX',
-      'rotateY',
-      // 'rotate',
-    ]
-    const json = {
-      translateX: 'translateX(' + rand(-dw, dw) + 'px)',
-      translateY: 'translateY(' + rand(-dh, dh) + 'px)',
-      translateZ: 'translateZ(' + rand(-dw, 0) + 'px)',
-      rotateX: 'rotateX(' + rand(-180, 180) + 'deg)',
-      rotateY: 'rotateY(' + rand(-180, 180) + 'deg)',
-      // rotate: 'rotate(' + rand(-180, 180) + 'deg)',
-    }
-    let map = {}
-    new Array(rand(2, 5)).fill().forEach((_, idx) => {
-      const k = arr[rand(0, arr.length - 1)]
-      map[k] = json[k]
-    })
+    const deg = 180
+
+    let arr = [
+      'translateX(' + rand(-dw, dw) + 'px)',
+      'translateY(' + rand(-dh, dh) + 'px)',
+      'translateZ(' + rand(-dw, 0) + 'px)',
+      'rotateX(' + rand(-deg, deg) + 'deg)',
+      'rotateY(' + rand(-deg, deg) + 'deg)',
+      // 'rotate(' + rand(-deg, deg) + 'deg)',
+    ].shuffle()
+
+    arr.length = rand(2, 5)
 
     return `
       .ani-com-${idx}-enter-active, .ani-com-${idx}-leave-active {
@@ -80,9 +67,10 @@ window.vm = new Vue({
       }
       .ani-com-${idx}-enter, .ani-com-${idx}-leave-to {
         opacity: 0;
-        transform: ${Object.keys(map).map(v => map[v]).join(" ")};
+        transform: ${arr.join(' ')};
       }
     `
-  }).join('')
-  document.body.appendChild(nodeStyle)
+  }).join('') + sStyleDef
+
+  document.body.appendChild(nodeStyle3D)
 }

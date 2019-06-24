@@ -1,6 +1,6 @@
 <template>
-  <div class="dbAdmin">
-    dbAdmin
+  <div class="db-admin">
+    db-admin
   </div>
 </template>
 
@@ -9,19 +9,12 @@ export default {
   name: 'dbAdmin',
   data() {
     return {}
-  },
-  methods: {
-
-  },
-  beforeCreate() {
-    this.$root.dbAdmin = this
-  },
-  mounted() {
-    const me = this
-    const vm = me.$root
-    const r = vm.router
-    
-    
-  },
+  }
 }
 </script>
+
+<style lang="scss" scoped>
+.db-admin {
+  
+}
+</style>

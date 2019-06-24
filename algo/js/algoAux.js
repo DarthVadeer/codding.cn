@@ -29,6 +29,14 @@ window.a2d = function(angle) {
   return angle / Math.PI * 180
 }
 
+Array.prototype.min = function() {
+  return Math.min.apply(null, this)
+}
+
+Array.prototype.max = function() {
+  return Math.max.apply(null, this)
+}
+
 Array.prototype.first = function() {
   return this[0]
 }

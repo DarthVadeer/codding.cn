@@ -1,172 +1,167 @@
 <template>
-  <div class="cctv">
-    <div class="flex-layout flex-row flex-respond">
-      <div class="box-list box-list-channel">
-        <ul>
-          <li tabindex="1" 
-            v-for="(item, idx) in channel.list"
-            :class="['gray-title', {on: idx === r.idxChannel}]"
-            @click="clickNav({idxChannel: idx, idxAlbum: 0, idxAux9: 0})"
-            :title="item.name"
-          >{{item.name}}</li>
-        </ul>
+  <div class="cctv layout-respond">
+    <div class="panel-nav">
+      <ul>
+        <li tabindex="1"
+          :class="['gray-title', {on: idx === r.idxChannel}]"
+          v-for="(item, idx) in listChannel"
+          @click="clickNav({idxChannel: idx, idxAlbum: 0})"
+        >{{item.name}}</li>
+      </ul>
+    </div>
+    <div class="panel-nav">
+      <ul>
+        <li tabindex="1"
+          :class="['gray-title', {on: idx === idxAlbum}]"
+          v-for="(item, idx) in (listChannel[r.idxChannel || 0] || {}).children || []"
+          @click="clickNav({idxChannel: r.idxChannel || 0, idxAlbum: idx})"
+        >{{item.name}}</li>
+      </ul>
+    </div>
+    <div class="panel-main flex-layout flex-v">
+      <div class="gray-title flex">
+        <div class="ellipsis auto-flex">
+          {{videoInfo.m3u8 ? '正在播放：' + videoInfo.title : (idxAlbum === undefined ? '今日视频' : curAlbum.name)}}
+        </div>
+        <div class="btn-box">
+          <template v-if="videoInfo.m3u8">
+            <button class="btn btn-success btn-xs"
+              @click="playNext(-1)"
+            >
+              <span class="glyphicon glyphicon-arrow-left"></span>
+            </button>
+            <button class="btn btn-success btn-xs"
+              @click="playNext(1)"
+            >
+              <span class="glyphicon glyphicon-arrow-right"></span>
+            </button>
+            <a class="btn btn-success btn-xs"
+              :href="r.videoInfo.site"
+            >央视播放</a>
+            <button class="btn btn-warning btn-xs"
+              @click="$root.updateRouter({videoInfo: undefined}, 'push')"
+            >关闭视频</button>
+          </template>
+          <template v-else>
+            <button class="btn btn-primary btn-xs"
+              v-if="idxAlbum !== undefined"
+              @click="$root.updateRouter({idxChannel: undefined, idxAlbum: undefined, searchText: undefined}, 'push')"
+            >
+              <i class="glyphicon glyphicon-info-sign"></i>
+              <span>今日内容</span>
+            </button>
+            <!-- <button class="btn btn-primary btn-xs">
+              <i class="glyphicon glyphicon-info-sign"></i>
+              <span>今日关键词</span>
+            </button>
+            <button class="btn btn-primary btn-xs">
+              <i class="glyphicon glyphicon-info-sign"></i>
+              <span>历史关键词</span>
+            </button> -->
+          </template>
+        </div>
       </div>
-      <div class="box-list box-list-album">
-        <ul>
-          <li tabindex="1" 
-            v-for="(item, idx) in listAlbum"
-            :class="['gray-title', {on: idx === r.idxAlbum}]"
-            @click="clickNav({idxAlbum: idx, idxAux9: 0})"
-            :title="item.name"
-          >{{item.name}}</li>
-        </ul>
-      </div>
-      <div class="box-list box-list-aux9"
-        v-if="r.idxChannel === 9 && listAux9.length > 0"
-      >
-        <ul>
-          <li tabindex="1" 
-            v-for="(item, idx) in listAux9"
-            :class="['gray-title ellipsis', {on: idx === r.idxAux9}]"
-            @click="clickNav({idxAux9: idx})"
-            :title="item"
-          >{{item}}</li>
-        </ul>
-      </div>
-      <div class="box-main auto-flex">
-        <div class="flex-layout">
-          <div class="gray-title lmr">
-            <div class="fr btn-box">
-              <button class="btn btn-warning btn-xs"
-                v-if="r.hotWord.isShow"
-                @click="$root.isRouterPush = true; r.hotWord.isShow = false"
-              >关闭关键词</button>
-              <template v-else>
-                <button class="btn btn-primary btn-xs" style="margin-left: 4px;" 
-                  v-for="(item, idx) in hotWord.texts"
-                  @click="$root.isRouterPush = true; r.hotWord.isShow = true; r.hotWord.cur = idx"
-                >
-                  <i class="glyphicon glyphicon-info-sign"></i>
-                  <span>{{item}}</span>
-                </button>
-              </template>
-            </div>
-            <div class="mid">
-              <span v-if="r.searchText.trim()">搜索：{{r.searchText + (r.page.total > 0 ? ' (' + (r.page.total) + ')' : '')}}</span>
-              <span v-else>{{curAlbum.name + (r.page.total > 0 ? ' (' + (r.page.total) + ')' : '')}}</span>
-            </div>
-          </div>
-
-          <form class="space"
-            @submit.prevent="chooseSugg()"
-          >
-            <div class="flex-layout flex-row">
-              <div class="auto-flex" style="overflow: visible;">
-                <div class="input-group">
-                  <div class="inner">
-                    <input type="text" class="form-control" placeholder="搜点什么..."
-                      v-model="sugg.text"
-                      @input="fetchSugg"
-                      @click.stop="fetchSugg"
-                      @keydown="handleKeydownToCtrlSugg"
-                    >
-                    <div class="panel-sugg" v-if="sugg.list.length > 0 && sugg.text.trim()">
-                      <ul>
-                        <li tabindex="1" 
-                          v-for="(item, idx) in sugg.list"
-                          :class="['ellipsis', {on: idx === sugg.cur}]"
-                          @click="sugg.cur = idx; chooseSugg()"
-                        >{{item}}</li>
-                      </ul>
-                    </div>
-                  </div>
-                  <div class="input-group-btn">
-                    <button class="btn btn-success" type="submit" @click.stop>
-                      <i class="glyphicon glyphicon-search"></i>
-                    </button>
+      <div class="auto-flex flex-layout flex-v">
+        <form class="space" @submit.prevent="handleSubmitAndFetchVideoList">
+          <div class="flex">
+            <div class="auto-flex" style="overflow: visible;">
+              <div class="input-group">
+                <div class="inner">
+                  <input type="text" placeholder="搜点什么..." class="form-control"
+                    v-model="sugg.text"
+                    @input="sugg.oldText = $event.target.value; fetchSugg($event)"
+                    @click.stop="fetchSugg"
+                    @keydown="handleSearchKeydown"
+                  >
+                  <div class="panel-sugg" v-if="sugg.list.length > 0">
+                    <ul>
+                      <li
+                        :class="['ellipsis', {on: idx === sugg.cur}]"
+                        v-for="(item, idx) in sugg.list"
+                        @click="sugg.text = item; handleSubmitAndFetchVideoList($event)"
+                      >{{item}}</li>
+                    </ul>
                   </div>
                 </div>
-              </div>
-              <div style="margin-left: 4px;">
-                <select
-                  :class="{select: !$root.is.ios}"
-                  :value="r.playDirection"
-                  @change="r.playDirection = parseInt($event.target.value)"
-                >
-                  <option value="0">逆序播放</option>
-                  <option value="1">顺序播放</option>
-                </select>
-                <select style="min-width: 72px;" 
-                  :class="{select: !$root.is.ios}"
-                  :disabled="$root.is.loading || r.page.total === 0"
-                  :value="r.page.cur"
-                  @change="$root.isRouterPush = true; r.page.cur = parseInt($event.target.value);"
-                >
-                  <option
-                    :value="n - 1"
-                    v-for="n in Math.ceil((r.page.total || 1) / r.page.size)"
-                  >{{'第' + n + '页'}}</option>
-                </select>
+                <div class="input-group-btn">
+                  <button type="submit" class="btn btn-success"> <i class="glyphicon glyphicon-search"></i>
+                  </button>
+                </div>
               </div>
             </div>
-          </form>
-
-          <div class="auto-flex">
-            <div class="auto-scroll space video-wrapper"
-              ref="videoWrapper"
-              @scroll="$root.lazyLoad()"
-            >
-              <video-group :group-list="video.group2"></video-group>
-              <video-group :group-list="video.group"></video-group>
-            </div>
-
-            <div class="auto-scroll space video-wrapper panel-hot-word"
-              v-show="r.hotWord.isShow"
-            >
-              <ul class="video-list"
-                @click="deligateLi"
+            <div class="box-select">
+              <select class="select"
+                :value="r.playDirection"
+                @change="$root.updateRouter({playDirection: $event.target.value == 1 ? 1 : undefined})"
               >
-                <li class="ellipsis" tabindex="1" 
-                  v-for="(item, idx) in hotWord.list"
-                >{{item}}</li>
+                <option :value="1">逆序播放</option>
+                <option :value="undefined">顺序播放</option>
+              </select>
+              <select class="select"
+                :value="page.cur"
+                @change="$root.updateRouter({videoInfo: undefined}); r.page.cur = parseInt($event.target.value);"
+                v-if="searchText || (idxAlbum !== undefined && r.page.total > r.page.size)"
+              >
+                <option
+                  :value="n - 1"
+                  v-for="n in Math.ceil((page.total || 1) / page.size)"
+                >{{'第' + (n) + '页'}}</option>
+              </select>
+            </div>
+          </div>
+        </form>
+        <div class="auto-flex video-main-wrapper">
+          <div class="video-group" @scroll="$root.lazyLoad()">
+            <div class="no-data" v-if="videoList.length === 0 && !vm.is.loading">
+              <div class="inner c cxy">
+                <div class="alert alert-info">
+                  <div style="margin-bottom: 1em;">
+                    <div>暂无数据，点击确定，通过搜索获取数据</div>
+                  </div>
+                  <button class="btn btn-block btn-primary"
+                    @click="sugg.text = curAlbum.name; handleSubmitAndFetchVideoList()"
+                  >确定</button>
+                </div>
+              </div>
+            </div>
+            <section v-else
+              v-for="(groupItem, groupIdx) in videoGroup"
+            >
+              <div class="group-title">
+                <strong>{{groupItem.title}}</strong>
+              </div>
+              <ul>
+                <li
+                  v-for="(item, idx) in groupItem.list"
+                  :key="item.desc + idx"
+                >
+                  <div class="inner"
+                    :style="{backgroundImage: 'url(./static/img/img-blank.png)'}"
+                    :lazy-load="item.img"
+                    :title="item.desc"
+                    :key="item.title"
+                    @click="fetchM3u8(item)"
+                    tabindex="1"
+                  >
+                    <div class="text-box">
+                      <div class="title line-2"
+                        v-if="item.title"
+                      >{{item.title}}</div>
+                      <div class="desc line-2"
+                        v-if="item.desc"
+                      >{{item.desc.length > 40 ? item.desc.slice(0, 40) + '...' : item.desc}}</div>
+                    </div>
+                  </div>
+                </li>
               </ul>
-            </div>
+            </section>
+          </div>
 
-            <loading :is-show="$root.is.loading"></loading>
-          </div>
-        </div>
-
-        <!-- 播放器 -->
-        <div class="box-player flex-layout"
-          v-if="r.videoInfo.m3u8"
-        >
-          <div class="gray-title lmr">
-            <div class="btn-box fr">
-              <button class="btn btn-success btn-xs"
-                @click="playVideo(true)"
-              >
-                <span class="glyphicon glyphicon-arrow-left"></span>
-              </button>
-              <button class="btn btn-success btn-xs"
-                @click="playVideo(false)"
-              >
-                <span class="glyphicon glyphicon-arrow-right"></span>
-              </button>
-              <a class="btn btn-success btn-xs"
-                :href="r.videoInfo.site"
-              >央视播放</a>
-              <span class="btn btn-warning btn-xs"
-                @click="$root.updateRouter({videoInfo: {}}, 'push')"
-              >关闭视频</span>
-            </div>
-            <div class="mid">
-              <span class="hidden-sm hidden-xs">正在播放：</span>
-              <span>{{r.videoInfo.title}}</span>
-            </div>
-          </div>
-          <div class="auto-flex">
-            <player></player>
-          </div>
+          <player
+            v-if="videoUrl"
+            @ended="$delete($root.mapPlayTime, videoInfo.m3u8); playNext()"
+          ></player>
+          <loading :is-show="$root.is.loading"></loading>
         </div>
       </div>
     </div>
@@ -174,135 +169,98 @@
 </template>
 
 <script>
+const coms = [
+  'components/loading',
+  'components/player',
+].map((path) => {
+  return require('@/' + path).default
+})
+
 export default {
   name: 'cctv',
   data() {
     return {
       channel: {
-        list: [],
-      },
-      sugg: {
-        cur: 0,
-        text: '',
-        list: [],
+        list: []
       },
       video: {
+        groupItem: {},
         group: [],
-        group2: [],
-        aux9: {},
-      },
-      hotWord: {
-        isLoaded: false,
         list: [],
-        texts: ['今日关键词', '历史关键词'],
+      },
+      keyWord: {
+        today: [],
+        history: [],
+      },
+      sugg: {
+        text: '',
+        oldText: '',
+        cur: -1,
+        list: [],
       },
     }
   },
   methods: {
-    playVideo(minus) {
-      const me = this
-      const vm = me.$root
+    clickNav(o) {
+      const vm = this.$root
       const r = vm.router
-      let arr = []
-      let targetIndex = -1
 
-      vm.cctv.video.group2.concat(vm.cctv.video.group).forEach((item) => {
-        arr = arr.concat(item.list)
-      })
+      vm.updateRouter({
+        ...o,
+        searchText: undefined,
+        videoInfo: undefined,
+        page: {
+          cur: 0,
+          size: 100,
+          total: 0,
+        },
+      }, 'push')
 
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i].id === r.videoInfo.id) {
+      this.fetchVideoList()
+    },
+    playNext(direction) {
+      const vm = this.$root
+      const r = vm.router
+      const videoList = this.videoList
+      const targetVideoSite = this.videoInfo.site
+      let targetIndex = -100
+      let elItem
+
+      for (let i = 0; i < videoList.length; i++) {
+        if (videoList[i].site === targetVideoSite) {
           targetIndex = i
           break
         }
       }
 
-      minus === undefined ?
-        (r.playDirection == 1 ? targetIndex++ : targetIndex--) :
-        (!minus ? targetIndex++ : targetIndex--)
-
-      if (targetIndex.inRange(0, arr.length - 1)) {
-        vm.cctv.fetchM3u8(arr[targetIndex])
-      } else {
-        let curPage = r.page.cur
-        let asc
-
-        minus === undefined ?
-          (asc = r.playDirection === 1) :
-          (asc = !minus)
-
-        asc ? curPage++ : curPage--
-
-        if (curPage.inRange(0, Math.ceil(r.page.total / r.page.size) - 1)) {
-          vm.cctv.playVideoByChangeCurPage = () => {
-            const list = vm.cctv.video.group[0].list
-            targetIndex = asc ? 0 : list.length - 1
-            vm.cctv.fetchM3u8(list[targetIndex])
-          }
-          r.page.cur = curPage
-        } else {
-          console.warn('page.cur out of range. do not fetchVideoList')
-          vm.alert('没有可以播放的视频了')
-        }
-      }
+      targetIndex += (direction === undefined ? (r.playDirection ? -1 : 1) : direction)
+      elItem = videoList[targetIndex]
+      elItem ? this.fetchM3u8(elItem) : vm.alert('当前页没有可以播放的视频了')
     },
-    deligateLi(e) {
-      const me = this
+    clearSugg() {
+      const sugg = this.sugg
 
-      if (e.target.tagName.toLowerCase() === 'li') {
-        me.sugg.text = e.target.innerText.trim()
-        me.chooseSugg()
-      }
+      clearTimeout(this.timerFetchSugg)
+      sugg.oldText = ''
+      sugg.list = []
+      sugg.cur = -1
     },
-    chooseSugg(suggText) {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      const sugg = me.sugg
-      const searchText = (sugg.list[sugg.cur] || sugg.text || suggText).trim()
-
-      if (!searchText) return
-      
-      vm.updateRouter({
-        searchText,
-      }, 'push')
-      r.hotWord.isShow = false
-      me.justFetchAlbum()
-    },
-    handleKeydownToCtrlSugg(e) {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      const sugg = me.sugg
-      const sKey = vm.keyMap[e.keyCode]
-      let cur = sugg.cur
-      
-      switch (sKey) {
-        case 'up':
-        case 'down':
-          e.preventDefault()
-          const len = sugg.list.length + 1
-          let cur = sugg.cur
-          sKey === 'up' ? cur-- : cur++
-          sugg.cur = (cur % len + len) % len
-          break
-      }
-    },
-    fetchSugg(e) {
-      const me = this
+    fetchSugg(e = {}) {
       const vm = this.$root
       const r = vm.router
-      const sugg = me.sugg
-      const searchText = sugg.text.trim()
-      const signFetchSugg = me.signFetchSugg = Math.random()
+      const sugg = this.sugg
+      const signFetchSugg = this.signFetchSugg = Math.random()
 
-      if (!searchText) return
+      if (e.ctrlKey) return
 
-      // sugg.list = []
-      clearTimeout(vm.timerFetchSugg)
-      vm.timerFetchSugg = setTimeout(() => {
-        vm.loadScript('https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText), () => {
-          if (signFetchSugg !== me.signFetchSugg) {
+      sugg.cur = -1
+      clearTimeout(this.timerFetchSugg)
+      this.timerFetchSugg = setTimeout(() => {
+        const searchText = sugg.text.trim()
+        if (!searchText) return
+
+        $.loadScript('https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText), () => {
+          if (signFetchSugg !== this.signFetchSugg) {
             console.warn('signFetchSugg 时过境迁')
             return
           }
@@ -311,180 +269,143 @@ export default {
           sugg.list = data.map(v => v.name)
           sugg.cur = sugg.list.length
         })
-      }, e.type === 'click' ? 0 : 300)
+      }, e.type !== 'click' ? 260 : 0)
     },
-    clickNav(o) {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
+    handleSubmitAndFetchVideoList() {
+      const vm = this.$root
 
       vm.updateRouter({
-        ...o,
-        searchText: '',
-        page: {
-          cur: 0,
-          size: 100,
-          total: 0,
-        },
-        videoInfo: {},
-      }, 'push')
-      r.hotWord.isShow = false
+        searchText: this.sugg.text,
+        // idxChannel: undefined,
+        // idxAlbum: undefined,
+        videoInfo: undefined,
+      }, this.sugg.text !== this.searchText)
 
-      me.fetchVideoList()
+      this.chooseFetchFn()
     },
-    getChannel() {
-      let page = 0
-      let listResult = []
+    handleSearchKeydown(e) {
+      const vm = this.$root
+      const r = vm.router
+      const sugg = this.sugg
+      const sKey = vm.keyMap[e.type === 'submit' ? 13 : e.keyCode]
 
-      loopGet()
-      function loopGet() {
-        vm.jsonp('http://api.cntv.cn/lanmu/columnSearch', {
-          'p': ++page,
-          'n': '100',
-          'serviceId': 'tvcctv',
-          't': 'jsonp',
-          '?': 'cb',
-        }, (dataOrigin) => {
-          const mapResult = {}
-          const data = dataOrigin.response.docs
-
-          listResult = listResult.concat(data.map((v) => {
-            return {
-              id: v.column_topicid.trim(),
-              name: v.column_name.trim(),
-              _name: v.channel_name.trim(),
-              // img: v.column_logo,
-            }
-          }))
-
-          if (data.length > 0) {
-            loopGet()
-          } else {
-            listResult.forEach((v) => {
-              mapResult[v._name] = mapResult[v._name] || {children: []}
-              mapResult[v._name].children.push(v)
-            })
-
-            const arrResult = []
-            Object.keys(mapResult).forEach((key) => {
-              arrResult.push({
-                name: key,
-                children: mapResult[key].children
-              })
-            })
-
-            arrResult.sort((a, b) => {
-              return a.name.match(/\d+/)[0] - b.name.match(/\d+/)[0]
-            })
-
-            console.log(JSON.stringify(listResult))
-            console.log(listResult)
-            console.log(JSON.stringify(arrResult))
-            console.log(arrResult)
-          }
-        })
+      switch (sKey) {
+        case 'up':
+        case 'down':
+          const len = sugg.list.length + 1
+          e.preventDefault()
+          sKey === 'up' ? sugg.cur-- : sugg.cur++
+          sugg.cur = (sugg.cur % len + len) % len
+          sugg.text = sugg.list[sugg.cur] || sugg.oldText
+          break
       }
     },
-    fetchChannel(cb) {
-      const me = this
-      const vm = me.$root
+    fetchM3u8(elItemOrigin) {
+      const vm = this.$root
       const r = vm.router
-      
-      vm.get('./static/data/cctv.json', {}, (list) => {
-        me.channel.list = list
-        cb && cb()
-      })
-    },
-    async fetchChannel_() {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      let page = 0
-      let result = []
-      let isBreak = false
-      let mapGroup = {}
-      
-      while (!isBreak) {
-        await new Promise((next) => {
-          vm.jsonp('http://api.cntv.cn/lanmu/columnSearch', {
-            'p': ++page,
-            'n': '100',
-            'serviceId': 'tvcctv',
-            't': 'jsonp',
-            '?': 'cb',
-          }, (data) => {
-            data = (((data || {}).response || {}).docs || []).map((v) => {
-              return {
-                id: v.column_topicid,
-                cName: v.channel_name,
-                name: v.column_name,
-              }
-            })
+      const elItem = clone(elItemOrigin)
 
-            result = result.concat(data)
-            isBreak = data.length < 100
-            next()
-          })
-        })
-      }
+      elItem.title = elItem.title || elItem.desc
+      delete elItem.desc
 
-      result.forEach((item, idx, arr) => {
-        mapGroup[item.cName] = mapGroup[item.cName] || []
-        mapGroup[item.cName].push({
-          name: item.name,
-          id: item.id,
-        })
-      })
-
-      let arrResult = Object.keys(mapGroup).sort((a, b) => {
-        return a.match(/\d+/)[0] - b.match(/\d+/)[0]
-      })
-      console.log(arrResult)
-      arrResult = arrResult.map((item, idx, arr) => {
-        return {
-          name: item,
-          children: mapGroup[item]
-        }
-      })
-      console.log(arrResult)
-      console.log(JSON.stringify(arrResult))
-      console.log(JSON.stringify(arrResult).length)
-    },
-    justFetchAlbum(cb) {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      const searchText = r.searchText.trim()
-      const signJustFetchAlbum = me.signJustFetchAlbum = Math.random()
-
-      clearTimeout(me.timerFetchSugg)
-      me.sugg.list = []
-      me.video.group2 = []
-
-      if (!searchText) {
-        console.log('justFetchAlbum ... no searchText')
-        cb && cb()
+      if (elItem.m3u8) {
+        vm.updateRouter({videoInfo: elItem}, 'push')
         return
       }
 
       vm.is.loading = true
-      clearTimeout(me.timerJustFetchAlbum)
-      me.timerJustFetchAlbum = setTimeout(() => {
-        vm.get('./api/pub.php', {
+      window.getHtml5VideoData = (data) => {
+        window.getHtml5VideoData = null
+        vm.is.loading = false
+        data = JSON.parse(data)
+
+        if (data.hls_url) {
+          elItemOrigin.m3u8 = elItem.m3u8 = data.hls_url
+          vm.updateRouter({videoInfo: elItem}, 'push')
+        } else {
+          handleError()
+        }
+      }
+
+      const loadScript = () => {
+        $.loadScript(
+          'http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?' +
+          'pid='  + elItem.id  + '&' +
+          'tai=ipad&' +
+          'from=html5&' +
+          'tsp=1553074558&' +
+          'vn=2049&' +
+          'vc=8AB31F7208274D1C0FD8874764B5EBE3&' +
+          'uid=2C5D032B73247D87E67C414F62BA2E7B&wlan=',
+          null, handleError
+        )
+      }
+
+      const handleError = () => {
+        vm.confirm('播放失败，点击确定进入央视官方播放', () => {
+          location.href = elItem.site
+        })
+      }
+
+      if (elItem.id) {
+        loadScript()
+      } else {
+        $.get('./api/get.php', {
+          a: 'get',
+          url: elItem.site
+        }, (sHtml) => {
+          elItemOrigin.id = elItem.id = 
+          (sHtml.match(/"videoCenterId","([^"]*)"/m) || [])[1] || 
+          (sHtml.match(/(?:guid = ")(\w{32})(?:")/) || [])[1] || ''
+          loadScript()
+        })
+      }
+    },
+    fetchChannel(cb) {
+      const vm = this.$root
+      const r = vm.router
+
+      clearTimeout(vm.timerFetchChannel)
+      vm.timerFetchChannel = setTimeout(() => {
+        $.get('static/data/cctv.json', {
+          a: 'get',
+          url: 'static/data/cctv.json'
+        }, (list) => {
+          this.channel.list = list
+          cb.call(this)
+        })
+      }, 50)
+    },
+    chooseFetchFn(cb) {
+      this[this.searchText ? 'justFetchAlbum' : 'fetchVideoList'](cb)
+    },
+    async justFetchAlbum(cb) {
+      const vm = this.$root
+      const signJustFetchAlbum = this.signJustFetchAlbum = this.signFetchVideoList = Math.random()
+
+      this.clearSugg()
+      vm.is.loading = true
+      clearTimeout(this.timerJustFetchAlbum)
+
+      this.timerJustFetchAlbum = setTimeout(() => {
+        const searchText = this.searchText
+
+        $.get('./api/get.php', {
           a: 'get',
           url: 'https://search.cctv.com/search.php?qtext=' + encodeURIComponent(searchText) + '&type=video'
         }, async (sHtml) => {
           const urls = sHtml.match(/https:\/\/r\.img\.cctvpic\.com\/so\/cctv\/list[^"]*/g) || []
+          this.video.group = []
+          this.video.groupItem.list = []
 
           for (let i = 0; i < urls.length; i++) {
             await new Promise((next) => {
               const src = urls[i]
               window.playlistArray = {}
-              
-              vm.loadScript(src, () => {
-                if (signJustFetchAlbum !== me.signJustFetchAlbum) {
-                  console.log('fetchBySearch 时过境迁')
-                  me.justFetchAlbum()
+
+              $.loadScript(src, () => {
+                if (signJustFetchAlbum !== this.signJustFetchAlbum) {
+                  console.warn('justFetchAlbum 时过境迁')
                   return
                 }
 
@@ -493,7 +414,7 @@ export default {
                   let list = data.video.recent
 
                   list = list || data.video
-                  me.video.group2.push({
+                  this.video.group.push({
                     title: decodeURIComponent(data.playlist.title),
                     list: list.map((item) => {
                       item.title = decodeURIComponent(item.title)
@@ -512,410 +433,321 @@ export default {
             })
           }
 
-          me.fetchVideoList(cb)
+          this.fetchVideoList(cb)
         })
       }, 100)
     },
-    fetchM3u8(elItemOrigin) {
+    fetchVideoList(cb) {
       const vm = this.$root
       const r = vm.router
-      const elItem = vm.clone(elItemOrigin)
+      const elItem = this.curAlbum
+      const signFetchVideoList = this.signFetchVideoList = Math.random()
+      let searchText = this.searchText
 
-      vm.is.loading = true
-      elItem.title = elItem.title || elItem.desc
-      delete elItem.desc
-
-      window.getHtml5VideoData = function(data) {
-        window.getHtml5VideoData = null
-        vm.is.loading = false
-        data = JSON.parse(data)
-
-        if (data.hls_url) {
-          elItem.m3u8 = data.hls_url
-          vm.updateRouter({videoInfo: elItem}, 'push')
-        } else {
-          vm.confirm('无法播放当前视频，点击确定进入央视播放', () => {
-            location.href = elItem.site
-          }, () => {
-            vm.is.loading = false
-          })
-        }
-      }
-
-      if (elItem.id) {
-        loadScript()
-      } else {
-        vm.get('./api/pub.php', {
-          a: 'get',
-          url: elItem.site
-        }, (sHtml) => {
-          elItemOrigin.id = elItem.id = 
-          (sHtml.match(/"videoCenterId","([^"]*)"/m) || [])[1] || 
-          (sHtml.match(/(?:guid = ")(\w{32})(?:")/) || [])[1] || ''
-          loadScript()
-        })
-      }
-
-      function loadScript() {
-        vm.loadScript('http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?pid=' + elItem.id + '&tai=ipad&from=html5&tsp=1553074558&vn=2049&vc=8AB31F7208274D1C0FD8874764B5EBE3&uid=2C5D032B73247D87E67C414F62BA2E7B&wlan=', () => {
-          
-        }, () => {
-          vm.alert('视频地址获取失败')
-        })
-      }
-    },
-    fetchVideoList(cb) {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      const curAlbum = me.curAlbum
-      const sugg = me.sugg
-      const searchText = r.searchText.trim()
-
-      me.cbFetchVideoList = cb || me.cbFetchVideoList
-      sugg.list = []
-
-      if (!curAlbum.id) return
-
+      this.clearSugg()
       vm.is.loading = true
       clearTimeout(vm.timerFetchVideoList)
+
       vm.timerFetchVideoList = setTimeout(() => {
-        const signFetchBySearch = me.signFetchBySearch = Math.random()
-        clearTimeout(me.timerFetchSugg)
-        sugg.list = []
+        searchText = this.searchText
+        if (!searchText) this.video.group = []
 
         if (searchText) {
           fetchBySearch()
+        } else if (r.idxAlbum === undefined) {
+          fetchByMostNew()
         } else {
-          me.video.group2 = []
           fetchByDef()
         }
+      }, 100)
 
-        async function fetchBySearch() {
-          me.video.group = []
-          me.video.group.push({
-            title: '全部视频结果共0条',
-            list: [],
-          })
-          const lastGroup = me.video.group.last()
-
-          for (let i = 0; i < 5; i++) {
-            const curPage = r.page.cur * 5 + i + 1
-
-            if (
-              i > 0 && curPage > Math.ceil(r.page.total / 20) ||
-              signFetchBySearch !== me.signFetchBySearch
-            ) break
-
-            await new Promise((succ) => {
-              vm.get('./api/pub.php', {
-                a: 'get',
-                url: 'https://search.cctv.com/ifsearch.php?page=' + curPage + '&qtext=' + searchText + '&sort=relevance&pageSize=20&type=video&vtime=-1&datepid=1&channel=&pageflag=1&qtext_str=' + searchText,
-              }, (data) => {
-                if (signFetchBySearch !== me.signFetchBySearch) return
-
-                const list = data.list.map((item) => {
-                  if (/\/\w{32}-\d+\.\w+$/.test(item.imglink)) {
-                    const src = item.imglink
-                    const rangeL = src.lastIndexOf('/') + 1
-                    const rangeR = src.search(/-\d+/)
-                    item.id = src.slice(rangeL, rangeR)
-                  } else {
-                    item.id = ''
-                  }
-
-                  try {
-                    item.all_title = decodeURIComponent(item.all_title)
-                  } catch (e) {}
-
-                  return {
-                    id: item.id,
-                    img: item.imglink,
-                    title: '',
-                    desc: item.all_title,
-                    desc: item.all_title,
-                    site: item.urllink,
-                  }
-                })/*.filter((v) => {
-                  return v.site.indexOf('art.cctv.com') > -1
-                })*/
-
-                r.page.total = data.total
-                lastGroup.title = '全部视频结果共' + r.page.total + '条'
-                lastGroup.list = lastGroup.list.concat(list)
-
-                vm.is.loading = false
-                vm.lazyLoad()
-                succ()
-              })
-            })
+      const fetchByMostNew = () => {
+        $.get('api/get.php', {
+          a: 'getCCTVIndex',
+        }, (str) => {
+          if (signFetchVideoList !== this.signFetchVideoList) {
+            console.warn('fetchByMostNew warn 时过境迁')
+            return
           }
 
-          me.cbFetchVideoList && me.cbFetchVideoList()
-          delete me.cbFetchVideoList
+          vm.is.loading = false
+          str = str.slice(str.search(/<body[^<>]+>/), str.lastIndexOf('<\/body>'))
+          str = str.slice(str.indexOf('\n')).trim()
+
+          const div = document.createElement('div')
+          div.innerHTML = str
+          const list = [].slice.call(div.querySelectorAll('a img[lazy]')).map((img, idx, arr) => {
+            const a = img.closest('a')
+            const href = a.href.trim()
+            const node = img.closest('.box, li, .first')
+            let textArr = [].slice.call(node.querySelectorAll('p')).map(node => node.innerText.trim()).filter(v => v)
+            textArr = textArr.length >= 2 ? textArr : [].slice.call(node.querySelectorAll('a')).map(node => node.innerText.trim()).filter(v => v)
+
+            if (!/^http:\/\/tv.cctv.com\/\d{4}\//.test(href) || textArr.length === 0) return
+
+            return {
+              id: '',
+              img: img.getAttribute('lazy'),
+              title: textArr[textArr.length - 2] || '',
+              desc: textArr[textArr.length - 1] || '',
+              site: href,
+            }
+          }).filter(v => v)
+
+          this.video.groupItem = {
+            title: '今日内容共' + list.length + '条',
+            list,
+          }
+          r.page.total = list.length
+          vm.lazyLoad()
+          cb && cb()
+        })
+      }
+
+      const fetchBySearch = async () => {
+        const groupItem = this.video.groupItem = {
+          title: '全部视频结果共0条',
+          list: [],
         }
 
-        function fetchByDef() {
-          function defFinish() {
-            vm.is.loading = false
-            vm.lazyLoad()
-            me.$refs.videoWrapper && (me.$refs.videoWrapper.scrollTop = 0)
-            me.playVideoByChangeCurPage && me.playVideoByChangeCurPage()
-            delete me.playVideoByChangeCurPage
+        for (let i = 0; i < 5; i++) {
+          const curPage = r.page.cur * 5 + i + 1
 
-            if (r.idxChannel === 9) {
-              const list = (me.video.aux9[me.curAlbum.name] || {})[me.listAux9[r.idxAux9]] || []
-              me.video.group = [{
-                title: '全部视频共' + list.length + '条',
-                list,
-              }]
-            }
+          if (i > 0 && curPage > Math.ceil(r.page.total / 20)) break
 
-            me.cbFetchVideoList && me.cbFetchVideoList()
-            delete me.cbFetchVideoList
-          }
-
-          if (r.idxChannel === 9) {
-            if (Object.keys(me.video.aux9).length > 0) {
-              defFinish()
-            } else {
-              vm.get('./static/data/aux9.json', {}, (data) => {
-                me.video.aux9 = data
-                defFinish()
-              }, defFinish)
-            }
-          } else {
-            vm.jsonp('http://api.cntv.cn/lanmu/videolistByColumnId', {
-              'id': curAlbum.id,
-              'n': 100,
-              'of': 'fdate',
-              'p': r.page.cur + 1,
-              'type': '0',
-              'serviceId': 'tvcctv',
-              '?': 'cb',
-            }, (dataOrigin) => {
-              if (signFetchBySearch !== me.signFetchBySearch) {
-                console.warn('signFetchBySearch 时过境迁')
-                me.fetchVideoList()
+          await new Promise((next) => {
+            $.get('./api/get.php', {
+              a: 'get',
+              url: 'https://search.cctv.com/ifsearch.php?'+
+              'page=' + curPage + '&qtext=' + searchText + '&'+
+              'sort=relevance&'+
+              'pageSize=20&'+
+              'type=video&'+
+              'vtime=-1&'+
+              'datepid=1&'+
+              'channel=&'+
+              'pageflag=1&'+
+              'qtext_str=' + searchText,
+            }, (data) => {
+              if (signFetchVideoList !== this.signFetchVideoList) {
+                console.warn('fetchBySearch 时过境迁', searchText)
                 return
               }
 
-              dataOrigin.response = dataOrigin.response || {}
-              const data = dataOrigin.response.docs || []
+              const list = data.list.map((item) => {
+                if (/\/\w{32}-\d+\.\w+$/.test(item.imglink)) {
+                  const src = item.imglink
+                  const rangeL = src.lastIndexOf('/') + 1
+                  const rangeR = src.search(/-\d+/)
+                  item.id = src.slice(rangeL, rangeR)
+                } else {
+                  item.id = ''
+                }
 
-              r.page.total = dataOrigin.response.numFound || 0
-              me.video.group = [{
-                title: '全部视频共' + r.page.total + '条',
-                list: data.map((v) => {
-                  return {
-                    id: v.videoSharedCode.length === 32 ? v.videoSharedCode : '',
-                    img: v.videoKeyFrameUrl || v.videoKeyFrameUrl2 || v.videoKeyFrameUrl3,
-                    title: v.videoTitle || '',
-                    desc: v.videoBrief || '',
-                    site: v.videoUrl,
-                  }
-                })
-              }]
+                try {
+                  item.all_title = decodeURIComponent(item.all_title)
+                } catch (e) {}
 
-              defFinish()
-            }, defFinish)
-          }
-        }
-      }, 200)
-    },
-    fetchHotWord() {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      
-      vm.is.loading = true
-      me.hotWord.list = []
+                return {
+                  id: item.id,
+                  img: item.imglink,
+                  title: '',
+                  desc: item.all_title,
+                  desc: item.all_title,
+                  site: item.urllink,
+                }
+              })/*.filter((v) => {
+                return v.site.indexOf('art.cctv.com') > -1
+              })*/
 
-      clearTimeout(me.timerFetchHotWord)
-      me.timerFetchHotWord = setTimeout(() => {
-        switch (me.hotWord.texts[r.hotWord.cur]) {
-          case '今日关键词':
-            vm.get('./api/pub.php', {
-              a: 'get',
-              url: 'http://tv.cctv.com',
-            }, (sHtml) => {
+              r.page.total = data.total
+              groupItem.title = '全部视频结果共' + r.page.total + '条'
+              groupItem.list = groupItem.list.concat(list)
+
               vm.is.loading = false
-              me.hotWord.list = new Set(sHtml.match(/="http:\/\/tv.cctv.com\/\d{4}\/[^<>]+>[^<>]+<\/a>/gmi).map((item) => {
-                return item.match(/>([^<>]+)</)[1]
-              })).toArray()
+              vm.lazyLoad()
+              next()
             })
-            break
-          case '历史关键词':
-            vm.is.loading = false
-            vm.get('./static/data/hotWord.json', {}, (list) => {
-              me.hotWord.list = list
-            })
-            break
+          })
         }
-      }, 50)
+        cb && cb()
+      }
+
+      const fetchByDef = () => {
+        $.jsonp('http://api.cntv.cn/lanmu/videolistByColumnId', {
+          'id': elItem.id,
+          'n': '100',
+          'of': 'fdate',
+          'p': r.page.cur + 1,
+          'type': '0',
+          'serviceId': 'tvcctv',
+          '?': 'cb',
+        }, ({response}) => {
+          if (signFetchVideoList !== this.signFetchVideoList) {
+            console.warn('fetchByDef warn 时过境迁')
+            return
+          }
+
+          const list = (response || {}).docs || []
+
+          vm.is.loading = false
+          this.video.groupItem = {
+            title: '全部视频结果共' + response.numFound + '条',
+            list: list.map((v) => {
+              return {
+                id: v.videoSharedCode.length === 32 ? v.videoSharedCode : '',
+                img: v.videoKeyFrameUrl || v.videoKeyFrameUrl2 || v.videoKeyFrameUrl3,
+                title: v.videoTitle || '',
+                desc: v.videoBrief || '',
+                site: v.videoUrl,
+              }
+            })
+          }
+          r.page.total = response.numFound
+          vm.lazyLoad()
+          document.querySelector('#app .cctv .video-main-wrapper .video-group').scrollTop = 0
+          cb && cb()
+        })
+      }
+    }
+  },
+  components: {
+    ...(() => {
+      const map = {}
+      coms.forEach((item, idx, arr) => {
+        map[item.name] = item
+      })
+      return map
+    })()
+  },
+  watch: {
+    'r.idxChannel'() {
+      this.fetchVideoList()
+    },
+    'r.idxAlbum'() {
+      this.fetchVideoList()
+    },
+    'r.page.cur'() {
+      this.fetchVideoList()
+    },
+    'r.searchText'(newVal) {
+      this.sugg.text = newVal || ''
+      this.chooseFetchFn()
     },
   },
   computed: {
     r() {
       return this.$root.router
     },
-    curChannel() {
-      return this.channel.list[this.r.idxChannel] || {}
+    idxChannel() {
+      return this.r.idxChannel || 0
+    },
+    idxAlbum() {
+      return this.r.idxAlbum/* || 0*/
+    },
+    videoInfo() {
+      return this.r.videoInfo || {}
+    },
+    videoTitle() {
+      return this.videoInfo.title || 'no title'
+    },
+    videoId() {
+      return this.videoInfo.id || 'no id'
+    },
+    videoUrl() {
+      return this.videoInfo.m3u8 || ''
+    },
+    searchText() {
+      return (this.r.searchText || '').trim()
+    },
+    videoGroup() {
+      return this.video.group.concat(this.video.groupItem)
+    },
+    videoList() {
+      return [].concat.apply([], this.video.group.concat(this.video.groupItem).map(v => v.list))
+    },
+    listChannel() {
+      return this.channel.list
     },
     listAlbum() {
-      return this.curChannel.children || []
+      return (this.listChannel[this.idxChannel] || {}).children || []
     },
     curAlbum() {
-      return this.listAlbum[this.r.idxAlbum] || {name: ''}
+      return this.listAlbum[this.idxAlbum] || {}
     },
-    listAux9() {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      
-      return Object.keys(me.video.aux9[me.curAlbum.name] || {})
-    },
-  },
-  components: {
-    'video-group': {
-      template: `
-        <div v-if="groupList.length > 0">
-          <section class="video-group"
-            v-for="(item, idx) in groupList"
-          >
-            <div class="group-title">
-              <strong>{{item.title}}</strong>
-            </div>
-            <ul class="video-list">
-              <li tabindex="1"
-                v-for="(item, idx) in item.list"
-                :key="item.desc + idx"
-              >
-                <div class="inner"
-                  :style="{backgroundImage: 'url(./static/img/img-blank.png?a)'}"
-                  :lazy-load="item.img"
-                  :title="item.desc"
-                  :key="item.title"
-                  @click="$parent.fetchM3u8(item)"
-                  tabindex="1"
-                >
-                  <div class="text-box">
-                    <div class="title line-2"
-                      v-if="item.title"
-                    >{{item.title}}</div>
-                    <div class="desc line-2"
-                      v-if="item.desc"
-                    >{{item.desc.length > 40 ? item.desc.slice(0, 40) + '...' : item.desc}}</div>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </section>
-        </div>
-      `,
-      props: ['groupList'],
-    }
-  },
-  watch: {
-    'r.hotWord.isShow'(newVal) {
-      if (!newVal) return
-      this.fetchHotWord()
+    page() {
+      return this.r.page || {
+        cur: 0,
+        size: 100,
+        total: 0,
+      }
     },
   },
   mounted() {
-    const me = this
-    const vm = me.$root
+    const vm = this.$root
     const r = vm.router
 
-    me.sugg.text = r.searchText
-    me.fetchChannel(() => {
-      const cb = r.hotWord.isShow && me.fetchHotWord.bind(me)
+    if (vm.is.local && this.videoInfo.m3u8) {
+      vm.playM3u8()
+    }
 
-      r.searchText ? 
-        me.justFetchAlbum(cb) : 
-        me.fetchVideoList(cb)
+    this.sugg.text = r.searchText || ''
+    this.$nextTick(() => {
+      this.fetchChannel(() => {
+        this.chooseFetchFn()
+      })
     })
-
-    // me.fetchChannel_()
   },
   beforeCreate() {
     this.$root.cctv = this
   },
   beforeDestroy() {
-    window.onresize = null
     delete this.$root.cctv
   },
 }
 
 {
   const nodeStyle = document.getElementById('cctv-media') || document.createElement('style')
-
+  let sHtml = ''
   nodeStyle.id = 'cctv-media'
-  let sHtml = new Array(50).fill().map((_, idx) => {
+
+  sHtml += new Array(50).fill().map((_, idx) => {
+    let w = idx * 280 + 500
+    const n = Math.ceil(w / 280)
+
     return `
-      @media (min-width: ${idx * 200 + 720}px) {
-        .cctv .box-main .video-list li {
-          width: ${1 / (idx + 2) * 100}%;
+      @media (min-width: ${w}px) {
+        .cctv .video-main-wrapper .video-group li {
+          width: ${1 / n * 100}% !important;
         }
       }
     `
   }).join('')
 
-  sHtml += `
-    @media (max-width: 720px) {
-      .cctv .box-main .video-list li {
-        width: 33.33%;
-      }
-    }
-    @media (max-width: 550px) {
-      .cctv .box-main .video-list li {
-        width: 50%;
-      }
-    }
-  `
-
   nodeStyle.innerHTML = sHtml
   document.body.appendChild(nodeStyle)
 }
+
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .cctv {
-  .box-list {
-    overflow: auto; background: #eee;
-    border-left: 1px solid #fff; border-right: 1px solid rgba(0,0,0,.08);
-    ul {
-      margin-bottom: 100px;
-      li {
-        cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      }
+  .video-main-wrapper {
+    & > div {
+      width: 100%; height: 100%; position: absolute; left: 0; top: 0; overflow: auto;
     }
-  }
-  .box-main {
-    & > div {width: 100%; height: 100%; position: absolute; left: 0; top: 0; z-index: 1;}
-    .panel-hot-word {
-      background: #fff; overflow-y: scroll;
-      .video-list {
-        line-height: 1.8em;
-        li {display: inline-block; cursor: pointer; border-right: 10px solid transparent;}
-      }
-      .img-list-box {
-        img {vertical-align: top;}
-      }
-    }
-    .video-wrapper {
-      padding-top: 0; padding-bottom: 100px;
-      & > div:first-child {
-        section:first-child {
-          .group-title {margin-top: 0;}
-        }
-      }
+    .video-group {
+      .no-data {}
       section {
-        .group-title {margin: 15px 0 10px 0;}
-        .video-list {
-          margin: -2px;
+        margin: 1em;
+        &:first-child {margin-top: .2em;}
+        .group-title {
+          margin-bottom: 1em;
+        }
+        ul {
+          margin: -2px; font-size: 12px;
           li {
-            display: inline-block; padding: 2px; vertical-align: top;
+            width: 50%; display: inline-block; padding: 2px; vertical-align: top;
             & > .inner {
               padding-top: 62.5%; cursor: pointer; overflow: hidden;
               background: #eee no-repeat center / cover;
@@ -930,18 +762,18 @@ export default {
         }
       }
     }
-    form {
-      .form-control {display: block;}
-      .panel-sugg {
-        width: 100%; background: #fff; position: absolute; left: 0; top: 100%; z-index: 2;
-        box-shadow: 0 0 5px rgba(0,0,0,.2);
-        ul {
-          padding: 6px 0; margin-bottom: 0;
-          li {
-            padding: 6px 12px; cursor: pointer;
-            &:hover,
-            &.on {background: #eee;}
-          }
+  }
+  form {
+    position: relative; z-index: 2;
+    .box-select {
+      select {margin-left: .5em;}
+    }
+    .panel-sugg {
+      width: 100%; position: absolute; left: 0; top: 100%; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,.2); padding: .5em 0;
+      ul {
+        li {
+          padding: .5em 1em; cursor: pointer;
+          &.on, &:hover {background: #f3f6f9;}
         }
       }
     }
@@ -949,8 +781,8 @@ export default {
 }
 
 @media (max-width: 500px) {
-  .cctv .box-main form .panel-sugg {
-    min-width: calc(100vw - 24px);
+  .cctv form .panel-sugg {
+    min-width: calc(100vw - 2em);
   }
 }
 </style>

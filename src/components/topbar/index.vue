@@ -1,17 +1,22 @@
 <template>
-  <div class="topbar">
-    <div class="logo fl">
-      <strong tabindex="1">Codding.cn</strong>
+  <div class="topbar flex">
+    <div class="logo">
+      <strong>
+        <a tabindex="1" href="javascript:">{{$root.appName}} - Official</a>
+      </strong>
     </div>
-    <div class="nav fl">
-      <ul>
-        <li tabindex="1" 
-          v-for="(item, idx) in nav.list"
-          :class="{on: item.com === $root.com}"
-          @click="$root.pushCom(item.com)"
-        >{{item.name}}</li>
-      </ul>
+    <div class="nav auto-flex">
+      <a tabindex="1" href="javascript:"
+        :class="{on: item.com === $root.com}"
+        :data-a="item.com + '-' + $root.com "
+        v-for="(item, idx) in nav.list"
+        @click="$root.pushCom(item.com)"
+      >{{item.name}}</a>
     </div>
+    <!-- <div class="nav">
+      <a tabindex="1" href="javascript:">登录</a>
+      <a tabindex="1" href="javascript:">注册</a>
+    </div> -->
   </div>
 </template>
 
@@ -19,60 +24,30 @@
 export default {
   name: 'topbar',
   data() {
-    const me = this
-    const vm = me.$root
-    const r = vm.router
-    const list = [
-      {name: 'CCTV', com: 'cctv'},
-      // {name: 'webFtp', com: 'webFtp'},
-      // {name: 'dbAdmin', com: 'dbAdmin'},
-      {name: '算法与数据结构', com: 'algo'},
-    ]
-    vm.is.local && list.push({
-      name: 'webFtp',
-      com: 'webFtp'
-    })
-
     return {
       nav: {
-        list
+        list: [
+          {name: 'CCTV', com: 'cctv'},
+          {name: '算法与数据结构', com: 'algo'},
+          // {name: '迷宫', com: 'algo'},
+          // {name: '首页', com: 'index'},
+          // {name: 'WebFtp', com: 'webFtp'},
+          // {name: 'DBAdmin', com: 'dbAdmin'},
+          // {name: 'Talker', com: 'talker'},
+          // {name: 'boboFans', com: 'boboFans'},
+        ]
       }
     }
-  },
-  methods: {
-
-  },
-  mounted() {
-    const me = this
-    const vm = me.$root
-    const r = vm.router
-    
-    
-  },
+  }
 }
 </script>
 
 <style lang="scss" scoped>
 .topbar {
-  line-height: 3em; white-space: nowrap;
-  background: #33373e; color: #c3c6c9;
-  position: relative; z-index: 2;
+  padding: 0 .4em; background: #33373e; color: #c3c6c9; font-size: 14px;
   user-select: none;
-  .logo {
-    font-size: 16px;
-    strong {
-      display: block; padding: 0 12px; cursor: pointer;
-    }
-  }
-  ul {
-    margin-bottom: 0;
-    li {
-      display: inline-block; padding: 0 12px; cursor: pointer;
-      &.on {color: #fff;}
-    }
-  }
-  .nav {
-
-  }
+  a {display: inline-block; padding: .8em .6em;}
+  a.on {color: #fff;}
+  .logo {margin-right: .6em;}
 }
 </style>

@@ -2,52 +2,36 @@ import Hls from 'hls.js'
 
 export default {
   rootData() {
+    const isLocal = location.origin.indexOf(':412') > -1
     const ua = navigator.userAgent
-    const isLocal = location.port.indexOf('683') > -1
-    const isIos = ua.indexOf('like Mac OS X') > -1
-    const isAndroid = ua.indexOf('Android') > -1
-    const isWin = ua.indexOf('Windows NT') > -1
-    let mapPlayTime = {}
+    const isIos = ua.indexOf('iPhone; CPU iPhone OS') > -1
+    const isIpad = ua.indexOf('iPad; CPU OS') > -1
+    const isAndroid = ua.indexOf('Linux; Android') > -1
+    const isWindows = ua.indexOf('Windows NT') > -1
+    let mapPlayTime
 
     try {
       mapPlayTime = JSON.parse(localStorage.mapPlayTime)
-    } catch (e) {}
+    } catch (e) {
+      mapPlayTime = {}
+    }
 
     return {
-      localUrl: 'http://10.0.1.2/codding/',
+      lenAni: 30,
       dw: window.innerWidth,
       dh: window.innerHeight,
-      lenAni: 30,
       mapPlayTime,
+      search: {},
+      router: {},
       is: {
         local: isLocal,
-        loading: true,
         ios: isIos,
+        ipad: isIpad,
         android: isAndroid,
-        win: isWin,
+        windows: isWindows,
+        loading: true,
         supportM3u8: !!document.createElement('video').canPlayType('application/vnd.apple.mpegurl'),
         supportHls: Hls.isSupported(),
-      },
-      mapIcon: {
-        'jpg': 'img',
-        'jpeg': 'img',
-        'png': 'img',
-        'gif': 'img',
-      },
-      searchData: {},
-      router: {
-        coms: [],
-        idxChannel: 0,
-        idxAlbum: 0,
-        playDirection: '0',
-        searchText: '',
-        videoInfo: {
-          id: '',
-          pic: '',
-          title: '',
-          site: '',
-          m3u8: '',
-        },
       },
       alertData: {
         isShow: false,
@@ -78,21 +62,58 @@ export default {
   },
   rootMethods: {
     log() {
-      console.log(arguments)
-    },
-    clone(o) {
-      return JSON.parse(JSON.stringify(o))
+      window['console'].log(arguments)
     },
     getFileName(path) {
-      return (path.split(/\\|\//) || []).last()
+      return (path.split(/\\|\//) || []).last() || ''
     },
     getFilePureName(path) {
       const fileName = this.getFileName(path)
-      return fileName.indexOf('.') > -1 ? fileName.slice(0, fileName.lastIndexOf('.')) : ''
+      return (
+        fileName.indexOf('.') > -1 ?
+        fileName.slice(0, fileName.lastIndexOf('.')) : ''
+      )
     },
     getFileType(path) {
       const fileName = this.getFileName(path)
-      return fileName.indexOf('.') > -1 ? fileName.slice(fileName.lastIndexOf('.') + 1) : ''
+      return (
+        fileName.indexOf('.') > -1 ?
+        fileName.slice(fileName.lastIndexOf('.') + 1) : ''
+      )
+    },
+    playM3u8() {
+      const vm = this.$root
+      const r = vm.router
+      const videoUrl = r.videoInfo.m3u8
+      
+      vm.$nextTick(() => {
+        const video = document.getElementById('videoPlayer')
+        const isSupportM3u8 = vm.is.supportM3u8
+
+        if (!video) {
+          window['console'].warn('no video')
+          return
+        }
+
+        if (isSupportM3u8) {
+          video.src = videoUrl
+          !vm.is.local && video.play()
+        } else if(Hls.isSupported()) {
+          const hls = new Hls()
+          hls.loadSource(videoUrl)
+          hls.attachMedia(video)
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            !vm.is.local && video.play()
+          })
+        } else {
+          vm.alert('当前设备不能播放m3u8')
+        }
+
+        video.oncanplay = () => {
+          video.currentTime = vm.mapPlayTime[r.videoInfo.m3u8] || 0
+          video.oncanplay = null
+        }
+      })
     },
     alert(msg) {
       const vm = this
@@ -105,34 +126,38 @@ export default {
       vm.confirmData.msg = msg
       vm.cbConfirm = cb
     },
+    initEvents() {
+      const vm = this
 
-    getFileFromDataTransfer(dataTransfer, cb) {
-      if (dataTransfer.files.length === 0) {
-        return []
+      function handleResize() {
+        vm.dw = window.innerWidth
+        vm.dh = window.innerHeight
+        vm.lazyLoad()
       }
-      let timerRead = 0
-      let files = []
-      function singleRead(entry) {
-        if (entry.isFile) {
-          entry.file(function(file) {
-            file.fullPath = entry.fullPath
-            files.push(file)
-            timerRead && clearTimeout(timerRead)
-            timerRead = setTimeout(function() {
-              cb && cb(files)
-            }, 100)
-          })
-        } else if (entry.isDirectory) {
-          entry.createReader().readEntries(function(entries) {
-            Array.prototype.slice.call(entries).forEach(singleRead)
-          })
+
+      window.addEventListener('popstate', vm.initRouter.bind(vm), false)
+      window.addEventListener('resize', handleResize, false)
+      window.addEventListener('orientationchange', handleResize, false)
+
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey) {
+          switch (vm.keyMap[e.keyCode]) {
+            case 'y':
+              history.forward()
+              break
+            case 'z':
+              history.back()
+              break
+          }
+        } else {
+          switch (vm.keyMap[e.keyCode]) {
+            case 'esc':
+              vm.alertData.isShow = false
+              vm.confirmData.isShow = false
+              break
+          }
         }
-      }
-      Array.prototype.slice.call(dataTransfer.items).forEach(function(item) {
-        if (item.kind === 'file') {
-          singleRead(item.webkitGetAsEntry())
-        }
-      })
-    },
-  }
+      }, false)
+    }
+  },
 }

@@ -1,18 +1,18 @@
 <template>
-  <div id="app" @click="clickFullPanel">
-    <div class="flex-layout">
-      <topbar></topbar>
-      <div class="auto-flex container-wrapper">
-        <transition-group :name="'ani-com-' + (countAni % $root.lenAni)">
-        <!-- <transition-group name="fade"> -->
-          <div
-            v-for="(item, idx) in coms"
-            :key="item.com + '-' + idx"
-            :is="item"
-            v-if="idx === 0"
-          ></div>
-        </transition-group>
-      </div>
+  <div id="app" class="flex-layout flex-v"
+    @click="clickFullPanel"
+  >
+    <topbar></topbar>
+    <div class="auto-flex">
+      <transition-group :name="'ani-com-' + (countAni % $root.lenAni)">
+      <!-- <transition-group name="fade"> -->
+        <div
+          v-for="(item, idx) in coms"
+          :key="item.com + '-' + idx"
+          :is="item"
+          v-if="idx === 0"
+        ></div>
+      </transition-group>
     </div>
 
     <alert></alert>
@@ -22,101 +22,67 @@
 
 <script>
 const coms = [
+  'components/player',
+  // 'components/loadingDiv',
+  'components/loading',
+  'components/alert',
+  'components/confirm',
+  'components/toggle',
+
+  'components/index',
   'components/topbar',
   'components/cctv',
+  'components/algo',
   'components/webFtp',
   'components/dbAdmin',
-  'components/algo',
+  'components/talker',
+  'components/boboFans',
 ].map((path) => {
   return require('@/' + path).default
 })
 
 export default {
-  name: 'App',
+  name: 'app',
+  data() {
+    return {}
+  },
   methods: {
     clickFullPanel() {
-      const me = this
-      const vm = me.$root
-      const r = vm.router
-      
+      const vm = this.$root
+
       if (vm.cctv) {
         vm.cctv.sugg.list = []
       }
-    },
-    initEvents() {
-      const vm = this.$root
-
-      window.addEventListener('popstate', vm.initRouter.bind(vm), false)
-      window.addEventListener('resize', handleResize, false)
-      window.addEventListener('orientationchange', handleResize, false)
-
-      function handleResize(e) {
-        vm.dw = window.innerWidth
-        vm.dh = window.innerHeight
-        vm.lazyLoad.call(vm)
-      }
-
-      document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey) {
-          switch (vm.keyMap[e.keyCode]) {
-            case 'y':
-              history.forward()
-              break
-            case 'z':
-              history.back()
-              break
-          }
-        } else {
-          switch (vm.keyMap[e.keyCode]) {
-            case 'esc':
-              vm.alertData.isShow = false
-              vm.confirmData.isShow = false
-              break
-          }
-        }
-      }, false)
-    },
+    }
+  },
+  components: {
+    ...(() => {
+      const map = {}
+      coms.forEach((item) => {
+        map[item.name] = item
+      })
+      return map
+    })()
   },
   computed: {
     r() {
       return this.$root.router
     },
-    countAni() {
-      return this.r.countAni || 0
-    },
     coms() {
       return this.r.coms || []
     },
+    countAni() {
+      return this.r.countAni || 0
+    }
   },
-  components: {
-    ...(() => {
-      const map = {}
-      coms.forEach((com) => {
-        map[com.name] = com
-      })
-      return map
-    })()
-  },
-  beforeCreate() {
-    this.$root.app = this
-  },
-  mounted() {
-    const me = this
-    const vm = me.$root
-    const r = vm.router
-    
-    vm.initSearch()
-    vm.initRouter()
-    this.initEvents()
-  },
+  mounted() {},
 }
 </script>
 
 <style lang="scss" scoped>
 #app {
   height: 100%; background: #000;
-  .container-wrapper {
-    z-index: 1;
+  & > .auto-flex {
     & > span,
     & > span > div {
       width: 100%; height: 100%; position: absolute; left: 0; top: 0;

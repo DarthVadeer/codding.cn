@@ -20,6 +20,7 @@ const pathArr = [
   './algo/js/SierpinskiTriangle.js',
   './algo/js/KoachSnowflake.js',
   './algo/js/FractalTree.js',
+  './algo/js/MineSweeper.js',
   './algo/js/Algo.js',
 ]
 
