@@ -21,7 +21,8 @@
     <div class="panel-main flex-layout flex-v">
       <div class="gray-title flex">
         <div class="ellipsis auto-flex">
-          {{videoInfo.m3u8 ? '正在播放：' + videoInfo.title : (idxAlbum === undefined ? '今日视频' : curAlbum.name)}}
+          <span class="hidden-xs" v-if="videoInfo.m3u8">正在播放：</span>
+          {{videoInfo.m3u8 ? videoInfo.title : (idxAlbum === undefined ? '今日视频' : curAlbum.name)}}
         </div>
         <div class="btn-box">
           <template v-if="videoInfo.m3u8">
@@ -44,7 +45,7 @@
           </template>
           <template v-else>
             <button class="btn btn-primary btn-xs"
-              v-if="idxAlbum !== undefined"
+              v-if="searchText || idxAlbum !== undefined"
               @click="$root.updateRouter({idxChannel: undefined, idxAlbum: undefined, searchText: undefined}, 'push')"
             >
               <i class="glyphicon glyphicon-info-sign"></i>
@@ -112,13 +113,13 @@
         </form>
         <div class="auto-flex video-main-wrapper">
           <div class="video-group" @scroll="$root.lazyLoad()">
-            <div class="no-data" v-if="videoList.length === 0 && !vm.is.loading">
+            <div class="no-data" v-if="videoList.length === 0 && !$root.is.loading">
               <div class="inner c cxy">
-                <div class="alert alert-info">
+                <div class="alert alert-default">
                   <div style="margin-bottom: 1em;">
                     <div>暂无数据，点击确定，通过搜索获取数据</div>
                   </div>
-                  <button class="btn btn-block btn-primary"
+                  <button class="btn btn-block btn-default"
                     @click="sugg.text = curAlbum.name; handleSubmitAndFetchVideoList()"
                   >确定</button>
                 </div>

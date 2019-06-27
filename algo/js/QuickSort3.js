@@ -1,7 +1,6 @@
 class QuickSort3 extends Sort {
   startSort() {
-    const me = this
-    const d = me.d
+    const d = this.d
 
     function quickSort(l, r) {
       if (l >= r) return
@@ -19,21 +18,21 @@ class QuickSort3 extends Sort {
 
       while (i < gt) {
         if (d.arr[i].n < v) {
-          d.arr[i].fillStyle = Node.color.green
+          d.arr[i].fillStyle = d.color.green
           d.arr.swap(i, lt + 1)
           lt++
           i++
         } else if (d.arr[i].n > v) {
-          d.arr[i].fillStyle = Node.color.orange
+          d.arr[i].fillStyle = d.color.orange
           d.arr.swap(i, gt - 1)
           gt--
         } else {
-          d.arr[i].fillStyle = Node.color.purple
+          d.arr[i].fillStyle = d.color.purple
           i++
         }
       }
 
-      d.arr[l].fillStyle = Node.color.blue
+      d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, lt)
 
       d.steps.push(
@@ -47,12 +46,11 @@ class QuickSort3 extends Sort {
     }
 
     quickSort(0, d.arr.length - 1)
-
     d.steps.push(
-      d.arr.clone().map((node, idx) => {
-        node.fromIndex = idx
-        node.fillStyle = Node.color.blue
-        return node
+      d.arr.clone().map((item, idx) => {
+        item.fromIndex = idx
+        item.fillStyle = d.color.blue
+        return item
       })
     )
   }

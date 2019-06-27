@@ -64,8 +64,8 @@ Array.prototype.clone = function() {
 }
 
 Array.prototype.shuffle = function() {
-  for (let i = 0; i < this.length; i++) {
-    this.swap(i, rand(i, this.length - 1))
+  for (let len = this.length, i = len - 1; i > -1; i--) {
+    this.swap(i, Math.floor(Math.random() * (i + 1)))
   }
   return this
 }
@@ -154,6 +154,7 @@ $.ajax = function(o) {
 
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
+        // let xhr = {status: 0}
         if (xhr.status === 200) {
           let data = xhr.responseText
           try {
@@ -166,7 +167,7 @@ $.ajax = function(o) {
           if (!navigator.onLine) {
             vm.alert('你断网了，请保持网络畅通')
           } else if (xhr.status === 0) {
-            vm.alert('后台服务未开启')
+            vm.alert('你的网络不能访问codding.cn' + (vm.is.chrome ? '<br /> 复制下面的地址，尝试清理dns缓存 <br /> chrome://net-internals/#dns' : ''))
           } else {
             vm.alert('其他错误，错误码：' + xhr.status)
           }

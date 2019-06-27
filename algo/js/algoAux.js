@@ -1,9 +1,5 @@
-window.sleep = function(time, ret) {
-  return new Promise(next => time ? setTimeout(_ => next(ret), time) : next(ret))
-}
-
-window.rand = function(m, n) {
-  return Math.floor(Math.random() * (n - m + 1) + m)
+window.rand = function(l, r) {
+  return Math.floor(Math.random() * (r - l + 1) + l)
 }
 
 window.randColor = function(a) {
@@ -14,18 +10,26 @@ window.randColor = function(a) {
     a: a === undefined ? 1 : a,
   }
 
-  return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
+  o.toString = () => {
+    return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
+  }
+
+  return o
 }
 
 window.clone = function(o) {
   return JSON.parse(JSON.stringify(o))
 }
 
-window.d2a = function(deg) {
+window.sleep = async function(time) {
+  return new Promise(next => time ? setTimeout(next, time) : next())
+}
+
+window.d2a = (deg) => {
   return deg / 180 * Math.PI
 }
 
-window.a2d = function(angle) {
+window.a2d = (angle) => {
   return angle / Math.PI * 180
 }
 
@@ -55,15 +59,16 @@ Array.prototype.swap = function(a, b) {
   this[b] = t
 }
 
-Array.prototype.rnd = function(len, rangeL, rangeR) {
-  rangeL = rangeL === undefined ? 0 : rangeL
-  rangeR = rangeR === undefined ? len : rangeR
-  return new Array(len).fill().map(_ => rand(rangeL, rangeR))
+Array.prototype.rnd = function(len, l, r) {
+  l = l === undefined ? 0 : l
+  r = r === undefined ? len : r
+  return new Array(len).fill().map(_ => rand(l, r))
 }
 
-// !NodeList.prototype.forEach && (NodeList.prototype.forEach = function(fn) {
-//   console.log('a')
-//   for (let i = 0; i < this.length; i++) {
-//     fn(this[i], i, this)
-//   }
-// })
+Array.prototype.shuffle = function() {
+  for (let len = this.length, i = len - 1; i < len; i++) {
+    this.swap(i, parseInt(Math.random() * (i + 1)))
+  }
+  
+  return this
+}

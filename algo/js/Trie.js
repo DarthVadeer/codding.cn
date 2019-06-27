@@ -2,64 +2,53 @@ class Trie extends Common {
   constructor() {
     super(...arguments)
 
-    const me = this
-    const d = me.d
+    const d = this.d
 
     d.str = `SwiftUI provides views, controls, and layout structures for declaring your app's user interface. The framework, gestures cat dog deer pan panda`
-    d.arr = d.str.toLowerCase().match(/\w+/g) || []
-    d.strArr = []
-    d.root = new Node('root', {map: {}})
+    d.strArr = d.str.toLowerCase().match(/\w+/g) || []
+    d.root = new Item('root', {map: {}, isWord: false})
+
+    d.lineHeight = 14 * 1.5
+    d.row = 3
+    d.steps = []
+    d.lenStep = Math.ceil(d.strArr.length / d.row)
+
+    for (let i = 0, len = d.strArr.length; i < len; i += d.lenStep) {
+      d.steps.push(d.strArr.slice(i, i + d.lenStep).join(' '))
+    }
+
+    d.paddingTop = d.row * d.lineHeight + d.conf.paddingV
+    d.gd.font = d.conf.font
+    d.textWidth = d.gd.measureText(d.steps[0]).width
   }
   create() {
-    const me = this
-    const d = me.d
-    const arrStr = d.str.split(/\s+/)
-    const step = Math.ceil(arrStr.length / 3)
-    
-    for (let i = 0; i < arrStr.length; i += step) {
-      d.strArr.push(
-        arrStr.slice(i, i + step).join(' ')
-      )
-    }
+    const d = this.d
 
-    d.arr.forEach((str, idx, arr) => {
-      me.add(str)
+    d.strArr.forEach((word, idx) => {
+      let node = d.root
+
+      for (let i = 0, len = word.length; i < len; i++) {
+        const c = word[i]
+        node = node.map[c] = node.map[c] || new Item(c, {map: {}, isWord: i === len - 1})
+        node.isWord && (node.fillStyle = d.color.blue)
+      }
     })
   }
-  add(str) {
-    const me = this
-    const d = me.d
-    let node = d.root
-
-    for (let i = 0; i < str.length; i++) {
-      const c = str[i]
-
-      node.map[c] = node.map[c] || new Node(c, {map: {}})
-      node = node.map[c]
-    }
-
-    node.isWord = true
-    node.fillStyle = Node.color.blue
-  }
   setPos() {
-    const me = this
-    const d = me.d
-
-    d.level = -1
+    const d = this.d
     d.iLeft = 0
-    d.iHeight = 0
+    d.contentHeight = 0
 
-    function setPos(node) {
+    function setPos(node, depth) {
       const keys = Object.keys(node.map)
 
-      d.level++
-      keys.forEach((key, idx, arr) => {
-        setPos(node.map[key])
+      keys.forEach((key, idx) => {
+        setPos(node.map[key], depth + 1)
       })
+
       node.x = d.iLeft
-      node.y = d.level * d.conf.levelHeight + d.strArr.length * 20 + d.conf.paddingV
-      d.iHeight = Math.max(d.iHeight, node.y)
-      d.level--
+      node.y = depth * d.conf.levelHeight + d.paddingTop
+      d.contentHeight = Math.max(d.contentHeight, node.y)
 
       if (keys.length === 0) {
         d.iLeft += d.conf.itemWidth
@@ -68,64 +57,62 @@ class Trie extends Common {
       }
     }
 
-    setPos(d.root)
-    d.canvas.width = (d.iLeft + d.conf.paddingH * 2) * d.conf.devicePixelRatio
+    setPos(d.root, 0)
+    d.contentWidth = d.iLeft
+    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
     d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
-    d.canvas.height = (d.iHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
+    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2 + d.conf.itemHeight) * d.conf.devicePixelRatio
   }
   render() {
-    const me = this
-    const d = me.d
-    const itemWidth = me.getItemWidth()
-    const itemHeight = me.getItemHeight()
-    const {canvas, gd} = d
+    const d = this.d
+    const {gd, canvas} = d
 
-    function renderLine(node) {
+    const renderText = () => {
+      gd.font = d.conf.font
+      gd.fillStyle = d.color.black
+
+      d.steps.forEach((str, idx) => {
+        ++d.countRender
+        gd.fillText(str, (d.contentWidth - d.textWidth) / 2, idx * d.lineHeight + d.conf.paddingV)
+      })
+    }
+
+    const renderLine = (node) => {
       const keys = Object.keys(node.map)
 
-      keys.forEach((key, idx, arr) => {
+      ++d.countRender
+      keys.forEach((key, idx) => {
         const _node = node.map[key]
-        renderLine(_node)
 
+        renderLine(_node)
         gd.beginPath()
-        gd.lineTo(node.x + itemWidth / 2, node.y + itemHeight / 2)
-        gd.lineTo(_node.x + itemWidth / 2, _node.y + itemHeight / 2)
-        gd.strokeStyle = Node.color.black
+        gd.lineTo(node.x + d.conf.itemWidth / 2 + .5, node.y + d.conf.itemHeight / 2)
+        gd.lineTo(_node.x + d.conf.itemWidth / 2 + .5, _node.y + d.conf.itemHeight / 2)
+        gd.strokeStyle = d.color.black
         gd.stroke()
       })
-      
-      me.renderNode(node)
     }
 
-    function renderNode(node) {
+    const renderItem = (node) => {
       const keys = Object.keys(node.map)
 
-      me.renderNode(node)
-
-      keys.forEach((key, idx, arr) => {
-        renderNode(node.map[key])
+      ++d.countRender
+      keys.forEach((key, idx) => {
+        renderItem(node.map[key])
       })
+
+      this.renderItem(node)
     }
 
-    gd.fillStyle = Node.color.white
+    gd.fillStyle = d.color.white
     gd.fillRect(0, 0, canvas.width, canvas.height)
 
     gd.save()
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
-
-    gd.save()
-    gd.font = d.conf.fontLg
-    gd.translate((canvas.width / d.conf.devicePixelRatio - d.conf.paddingH * 2 - gd.measureText(d.strArr[0]).width) / 2, 0)
-    d.strArr.forEach((str, idx, arr) => {
-      gd.textBaseline = 'top'
-      gd.fillStyle = Node.color.black
-      gd.fillText(str, 0, idx * 20)
-    })
-    gd.restore()
-
+    renderText()
     renderLine(d.root)
-    renderNode(d.root)
+    renderItem(d.root)
     gd.restore()
   }
 }

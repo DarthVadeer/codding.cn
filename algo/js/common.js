@@ -1,14 +1,15 @@
-class Node {
-  constructor(n) {
-    const o = {
-      n,
+class Item {
+  constructor(n, o) {
+    this.n = n
+
+    o = {
       x: 0,
       y: 0,
       tx: 0,
       ty: 0,
-      fillStyle: Node.color.black,
-      strokeStyle: Node.color.black,
-      ...arguments[1],
+      fillStyle: Algo.color.black,
+      strokeStyle: Algo.color.black,
+      ...o,
     }
 
     for (let key in o) {
@@ -17,174 +18,131 @@ class Node {
   }
 }
 
-Node.color = {
-  red: '#f23',
-  green: 'green',
-  blue: '#09f',
-  orange: '#f80',
-  purple: '#c0a',
-  yellow: '#ff0',
-  white: 'white',
-  black: '#333',
-  gray: '#ccc',
-}
-
 class Common {
   constructor(d = {}) {
-    const me = this
-
-    me.d = d
-    d.canvas.width = (d.arr.length * d.conf.itemWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
-    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
-    d.arr.forEach((node, idx, arr) => {
-      node.x = idx * d.conf.itemWidth
-      node.y = 0
-    })
+    this.d = d
+    d.conf = {
+      itemWidth: 30,
+      itemHeight: 18,
+      levelHeight: 38,
+      paddingH: 15,
+      paddingV: 15,
+      devicePixelRatio,
+      font: '14px Arial',
+      fontSm: '12px Arial',
+      fontLg: '16px Arial',
+      ...d.conf,
+    }
+    d.color = Algo.color
+    d.countRender = 0
   }
-  getItemWidth() {
+  renderItem(item, o = {}) {
+    if (!item) return
+
     const d = this.d
-    return d.itemWidth || d.conf.itemWidth
-  }
-  getItemHeight() {
-    const d = this.d
-    return d.itemHeight || d.conf.itemHeight
-  }
-  getLevelHeight() {
-    const d = this.d
-    return d.levelHeight || d.conf.levelHeight
-  }
-  setPos() {}
-  render() {}
-  renderArr() {
-    const me = this
-    const d = me.d
-    const {canvas, gd} = d
-    const itemWidth = d.conf.itemWidth
-    const itemHeight = d.conf.itemHeight
-
-    d.arr.forEach((node, idx, arr) => {
-      gd.save()
-      gd.beginPath()
-      gd.rect(node.x + 1, node.y, itemWidth - 2, itemHeight)
-      gd.globalAlpha = .8
-      gd.fillStyle = node.fillStyle
-      gd.fill()
-      gd.restore()
-
-      gd.textAlign = 'center'
-      gd.textBaseline = 'middle'
-      gd.fillStyle = Node.color.white
-      gd.font = d.conf.fontSm
-      gd.fillText(node.n, node.x + itemWidth / 2, node.y + itemHeight / 2)
-    })
-  }
-  renderNode(node) {
-    if (!node) return
-
-    const me = this
-    const d = me.d
-    const {canvas, gd} = d
-    const itemWidth = me.getItemWidth()
-    const itemHeight = me.getItemHeight()
+    const {gd} = d
+    const itemWidth = o.itemWidth || d.itemWidth || d.conf.itemWidth
+    const itemHeight = o.itemHeight || d.itemHeight || d.conf.itemHeight
 
     gd.save()
-    gd.beginPath()
-    gd.rect(node.x + 1, node.y, itemWidth - 2, itemHeight)
     gd.globalAlpha = .8
-    gd.fillStyle = node.fillStyle
+    gd.beginPath()
+    gd.rect(item.x + 1, item.y, itemWidth - 2, itemHeight)
+    gd.fillStyle = item.fillStyle
     gd.fill()
     gd.restore()
 
+    gd.beginPath()
     gd.textAlign = 'center'
     gd.textBaseline = 'middle'
-    gd.fillStyle = Node.color.white
-    gd.font = d.conf.fontSm
-    gd.fillText(node.n, node.x + itemWidth / 2, node.y + itemHeight / 2)
+    gd.font = d.conf.font
+    gd.fillStyle = d.color.white
+    gd.fillText(item.n, item.x + itemWidth / 2, item.y + itemHeight / 2)
 
-    if (node.h !== undefined) {
-      gd.fillStyle = Node.color.black
-      gd.font = d.conf.fontSm
-      gd.textAlign = 'center'
-      gd.textBaseline = 'bottom'
+    gd.fillStyle = d.color.black
+    gd.textBaseline = 'bottom'
 
-      ;['高度=' + node.h, '平衡=' + node.balanceFactor].forEach((str, idx, arr) => {
-        gd.fillText(str, node.x + itemWidth / 2, node.y - idx * 14 - 4)
+    if ('balanceFactor' in item) {
+      ;['高度:' + item.h, '平衡:' + item.balanceFactor].forEach((str, idx, arr) => {
+        gd.fillText(str, item.x + itemWidth / 2, (idx - arr.length + 1) * 16 + item.y - 2)
       })
     }
   }
+  /*log() {
+    console.log(
+      '%c' + ' countRender:',
+      'color: #a00',
+      this.d.countRender,
+      this.d.typeItem.name,
+    )
+  }*/
 }
 
 class Sort extends Common {
   constructor() {
     super(...arguments)
 
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    d.arr.forEach((node, idx, arr) => {
-      node.strokeStyle = randColor().toString()
-    })
+    d.arr.forEach(item => item.strokeStyle = randColor().toString())
     d.steps = [d.arr.clone()]
   }
   setPos() {
-    const me = this
-    const d = me.d
-    const itemWidth = d.conf.itemWidth
-    const itemHeight = d.conf.itemHeight
+    const d = this.d
 
-    d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingH * 2) * d.conf.devicePixelRatio
+    d.contentWidth = d.arr.length * d.conf.itemWidth
+    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
+    d.canvas.height = ((d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
 
-    d.steps.forEach((step, stair, arr) => {
-      step.forEach((node, idx, arr) => {
-        if (!node) return
-
-        node.x = idx * itemWidth
-        node.y = stair * d.conf.levelHeight
+    d.steps.forEach((row, stair) => {
+      row.forEach((item, idx) => {
+        if (!item) return
+        item.x = idx * d.conf.itemWidth
+        item.y = stair * d.conf.levelHeight
       })
     })
   }
   render() {
-    const me = this
-    const d = me.d
-    const {canvas, gd} = d
+    const d = this.d
+    const {gd} = d
     const itemWidth = d.conf.itemWidth
     const itemHeight = d.conf.itemHeight
 
-    function renderNode() {
-      d.steps.forEach((step, stair, arr) => {
-        step.forEach((node, idx, arr) => {
-          me.renderNode(node)
+    const renderItem = () => {
+      d.steps.forEach((row, idx) => {
+        row.forEach((item, idx) => {
+          ++d.countRender
+          this.renderItem(item)
         })
       })
     }
 
-    function renderLine() {
-      d.steps.forEach((step, stair, arr) => {
-        stair > 0 && step.forEach((from, idx, arr) => {
-          if (!from) return
+    const renderLine = () => {
+      d.steps.last().forEach((item, idx) => {
+        let stair = d.steps.length
 
-          let _stair = stair
-          let to
+        gd.beginPath()
 
-          while (!to) to = d.steps[--_stair][from.fromIndex]
+        while (--stair > -1) {
+          ++d.countRender
+          const _item = d.steps[stair][item.fromIndex]
+          if (!_item) continue
 
-          gd.beginPath()
-          gd.lineTo(from.x + .5 + itemWidth / 2, from.y + itemHeight / 2)
-          gd.lineTo(to.x + .5 + itemWidth / 2, to.y + itemHeight / 2)
-          gd.strokeStyle = from.strokeStyle
-          gd.stroke()
-        })
+          item = _item
+          gd.lineTo(item.x + itemWidth / 2 + .5, item.y + itemHeight / 2)
+        }
+
+        gd.strokeStyle = item.strokeStyle
+        gd.stroke()
       })
     }
-
-    gd.fillStyle = Node.color.white
-    gd.fillRect(0, 0, canvas.width, canvas.height)
 
     gd.save()
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
     renderLine()
-    renderNode()
+    renderItem()
     gd.restore()
   }
 }
@@ -193,64 +151,65 @@ class Heap extends Common {
   constructor() {
     super(...arguments)
 
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    d.arr.forEach(node => node.fillStyle = Node.color.blue)
+    d.arr.forEach(item => item.fillStyle = d.color.blue)
     d.level = Math.ceil(Math.log(d.arr.length + 1) / Math.log(2))
     d.branchIndex = parseInt((d.arr.length - 2) / 2)
-    d.canvas.width = (Math.pow(2, d.level - 1) * d.conf.itemWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
-    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
-    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
   }
   setPos() {
-    const me = this
-    const d = me.d
-    const itemWidth = me.getItemWidth()
-    const itemHeight = me.getItemHeight()
-    const levelHeight = me.getLevelHeight()
+    const d = this.d
+    const itemWidth = d.itemWidth || d.conf.itemWidth
+    const itemHeight = d.itemHeight || d.conf.itemHeight
     let count = 0
+
+    d.contentWidth = Math.pow(2, d.level - 1) * itemWidth
+    d.contentHeight = (d.level - 1) * d.conf.levelHeight
+
+    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
+    d.canvas.height = ((d.level - 1) * d.conf.levelHeight + itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
 
     for (let i = 0; i < d.level; i++) {
       const n = Math.pow(2, i)
-      const perW = Math.pow(2, d.level - 1) * itemWidth / n
+      const perW = d.contentWidth / n
 
       for (let j = 0; j < n && count + j < d.arr.length; j++) {
         const index = count + j
-        const node = d.arr[index]
+        const item = d.arr[index]
 
-        node.x = j * perW + perW / 2 - itemWidth / 2
-        node.y = i * levelHeight
+        item.x = j * perW + perW / 2 - itemWidth / 2
+        item.y = i * d.conf.levelHeight
       }
 
       count += n
     }
   }
   render() {
-    const me = this
-    const d = me.d
-    const {canvas, gd} = d
+    const d = this.d
+    const {gd} = d
+    const itemWidth = d.itemWidth || d.conf.itemWidth
+    const itemHeight = d.itemHeight || d.conf.itemHeight
 
-    function renderNode() {
-      d.arr.forEach((node, idx, arr) => {
-        me.renderNode(node)
+    const renderItem = () => {
+      d.arr.forEach((item) => {
+        ++d.countRender
+        this.renderItem(item)
       })
     }
 
-    function renderLine() {
-      const itemWidth = me.getItemWidth()
-      const itemHeight = me.getItemHeight()
-
+    const renderLine = () => {
       for (let i = d.branchIndex; i > -1; i--) {
         const node = d.arr[i]
         const nodeL = d.arr[i * 2 + 1]
         const nodeR = d.arr[i * 2 + 2]
 
+        ++d.countRender
         gd.beginPath()
         nodeL && gd.lineTo(nodeL.x + itemWidth / 2, nodeL.y + itemHeight / 2)
         gd.lineTo(node.x + itemWidth / 2, node.y + itemHeight / 2)
         nodeR && gd.lineTo(nodeR.x + itemWidth / 2, nodeR.y + itemHeight / 2)
-        gd.strokeStyle = node.strokeStyle
+        gd.strokeStyle = d.color.black
         gd.stroke()
       }
     }
@@ -259,7 +218,7 @@ class Heap extends Common {
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
     renderLine()
-    renderNode()
+    renderItem()
     gd.restore()
   }
 }
@@ -268,53 +227,40 @@ class Tree extends Common {
   constructor() {
     super(...arguments)
 
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    d.paddingTop = 40
-  }
-  flip(node) {
-    if (!node) return
-
-    const me = this
-    const t = node.l
-
-    node.l = node.r
-    node.r = t
-
-    me.flip(node.l)
-    me.flip(node.r)
-
-    return node
+    d.paddingTop = 60
+    d.contentWidth = d.arr.length * d.conf.itemWidth
   }
   setPos() {
-    const me = this
-    const d = me.d
-    const itemWidth = me.getItemWidth()
-    const itemHeight = me.getItemHeight()
-    const levelHeight = me.getLevelHeight()
-    let translateX = 0
+    const d = this.d
+    const itemWidth = d.itemWidth || d.conf.itemWidth
+    const itemHeight = d.itemHeight || d.conf.itemHeight
+    const levelHeight = d.levelHeight || d.conf.levelHeight
 
-    d.level = -1
     d.iLeft = 0
-    d.iHeight = 0
-    
-    function setPos(node) {
+    d.contentHeight = 0
+    d.translateX = 0
+
+    d.arr.forEach((item, idx) => {
+      item.x = idx * d.conf.itemWidth
+      item.y = 0
+    })
+
+    const setPos = (node, depth) => {
       if (!node) return
 
-      d.level++
-      setPos(node.l)
+      setPos(node.l, depth + 1)
       node.x = d.iLeft
-      node.y = d.level * levelHeight + d.paddingTop + d.conf.paddingV
+      node.y = depth * levelHeight + d.paddingTop
       d.iLeft += itemWidth / 2
-      setPos(node.r)
-      d.level--
+      setPos(node.r, depth + 1)
+
+      d.contentHeight = Math.max(d.contentHeight, node.y)
 
       if (node.l && node.r) {
         node.x = (node.l.x + node.r.x) / 2
       }
-
-      d.iHeight = Math.max(d.iHeight, node.y)
     }
 
     function updateCoord(node) {
@@ -323,65 +269,67 @@ class Tree extends Common {
       updateCoord(node.l)
       updateCoord(node.r)
 
-      node.x += translateX
+      node.x += d.translateX
     }
 
     ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
-      setPos(rootNode)
-      d.iLeft += (idx === arr.length - 1 ? itemWidth / 2 : itemWidth)
+      if (!rootNode) return
+      setPos(rootNode, 0)
+      d.iLeft += idx === arr.length - 1 ? itemWidth / 2 : itemWidth
     })
 
-    translateX = (d.canvas.width / d.conf.devicePixelRatio - d.conf.paddingH * 2 - d.iLeft) / 2
-    !d.root2 && (translateX += itemWidth / 2)
-    d.canvas.height = (d.iHeight + itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
+    d.translateX = (d.contentWidth - d.iLeft) / 2
 
-    ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
-      updateCoord(rootNode)
+    ;[d.root, d.root2].forEach((rootNode, idx) => {
+      if (!rootNode) return
+      updateCoord(rootNode, 0)
+      d.iLeft += itemWidth / 2
     })
+
+    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.devicePixelRatio
+    d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
+    d.canvas.height = (d.contentHeight + itemHeight + d.conf.paddingV * 2) * d.conf.devicePixelRatio
   }
   render() {
-    const me = this
-    const d = me.d
-    const {canvas, gd} = d
-    const itemWidth = me.getItemWidth()
-    const itemHeight = me.getItemHeight()
-    
-    function renderLine(node) {
+    const d = this.d
+    const {gd} = d
+    const itemWidth = d.itemWidth || d.conf.itemWidth
+    const itemHeight = d.itemHeight || d.conf.itemHeight
+
+    const renderItem = (node) => {
+      if (!node) return
+
+      renderItem(node.l)
+      renderItem(node.r)
+      
+      ++d.countRender
+      this.renderItem(node)
+    }
+
+    const renderLine = (node) => {
       if (!node) return
 
       renderLine(node.l)
       renderLine(node.r)
 
-      const nodeL = node.l
-      const nodeR = node.r
-
+      ++d.countRender
       gd.beginPath()
-      nodeL && gd.lineTo(nodeL.x + itemWidth / 2, nodeL.y + itemHeight / 2)
+      node.l && gd.lineTo(node.l.x + itemWidth / 2, node.l.y + itemHeight / 2)
       gd.lineTo(node.x + itemWidth / 2, node.y + itemHeight / 2)
-      nodeR && gd.lineTo(nodeR.x + itemWidth / 2, nodeR.y + itemHeight / 2)
-      gd.strokeStyle = node.strokeStyle
+      node.r && gd.lineTo(node.r.x + itemWidth / 2, node.r.y + itemHeight / 2)
+      gd.strokeStyle = d.color.black
       gd.stroke()
     }
-
-    function renderNode(node) {
-      if (!node) return
-
-      renderNode(node.l)
-      renderNode(node.r)
-
-      me.renderNode(node)
-    }
-
-    gd.fillStyle = Node.color.white
-    gd.fillRect(0, 0, canvas.width, canvas.height)
 
     gd.save()
     gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
-    me.renderArr()
-    ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
+    d.arr.forEach((item) => {
+      this.renderItem(item, {itemWidth: d.conf.itemWidth})
+    })
+    ;[d.root, d.root2].forEach((rootNode, idx) => {
       renderLine(rootNode)
-      renderNode(rootNode)
+      renderItem(rootNode)
     })
     gd.restore()
   }
@@ -391,27 +339,15 @@ class Fractal extends Common {
   constructor() {
     super(...arguments)
 
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    d.depth = 6
     d.maxDepth = 6
-    d.canvas.style.boxShadow = 'none'
-    d.canvas.width =
-    d.canvas.height = 512 * d.conf.devicePixelRatio
+    d.contentWidth = 600
+    d.contentHeight = 600
+    d.canvas.width = d.contentWidth * d.conf.devicePixelRatio
     d.canvas.style.width = d.canvas.width / d.conf.devicePixelRatio + 'px'
-
-    d.canvas.onclick = (e) => {
-      e.preventDefault()
-      d.depth++
-      d.depth > d.maxDepth && (d.depth = d.maxDepth)
-      me.render()
-    }
-    d.canvas.oncontextmenu = (e) => {
-      e.preventDefault()
-      d.depth--
-      d.depth < 1 && (d.depth = 1)
-      me.render()
-    }
+    d.canvas.height = d.contentWidth * d.conf.devicePixelRatio
   }
+  create() {}
+  setPos() {}
 }

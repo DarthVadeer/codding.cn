@@ -8,6 +8,7 @@ export default {
     const isIpad = ua.indexOf('iPad; CPU OS') > -1
     const isAndroid = ua.indexOf('Linux; Android') > -1
     const isWindows = ua.indexOf('Windows NT') > -1
+    const isChrome = navigator.vendor === 'Google Inc.'
     let mapPlayTime
 
     try {
@@ -30,6 +31,7 @@ export default {
         android: isAndroid,
         windows: isWindows,
         loading: true,
+        chrome: isChrome,
         supportM3u8: !!document.createElement('video').canPlayType('application/vnd.apple.mpegurl'),
         supportHls: Hls.isSupported(),
       },

@@ -1,7 +1,6 @@
 class QuickSort extends Sort {
   startSort() {
-    const me = this
-    const d = me.d
+    const d = this.d
 
     function quickSort(l, r) {
       if (l >= r) return
@@ -15,17 +14,17 @@ class QuickSort extends Sort {
       const v = d.arr[l].n
       let j = l
 
-      for (let i = l + 1; i <= r; i++) {
+      for (let i = l + 1, len = d.arr.length; i < len; i++) {
         if (d.arr[i].n < v) {
-          d.arr[i].fillStyle = Node.color.green
+          d.arr[i].fillStyle = d.color.green
           d.arr.swap(i, j + 1)
           j++
         } else {
-          d.arr[i].fillStyle = Node.color.orange
+          d.arr[i].fillStyle = d.color.orange
         }
       }
 
-      d.arr[l].fillStyle = Node.color.blue
+      d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, j)
 
       d.steps.push(
@@ -39,12 +38,11 @@ class QuickSort extends Sort {
     }
 
     quickSort(0, d.arr.length - 1)
-
     d.steps.push(
-      d.arr.clone().map((node, idx) => {
-        node.fromIndex = idx
-        node.fillStyle = Node.color.blue
-        return node
+      d.arr.clone().map((item, idx) => {
+        item.fromIndex = idx
+        item.fillStyle = d.color.blue
+        return item
       })
     )
   }

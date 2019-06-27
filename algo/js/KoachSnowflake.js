@@ -1,80 +1,72 @@
 class KoachSnowflake extends Fractal {
-  create() {
-    // console.log('Vicsek create')
-  }
   render() {
-    const me = this
-    const d = me.d
+    const d = this.d
     const {canvas, gd} = d
-    const dir = {
-      '0-0': 1,
-      '0-2': 1,
-      '1-1': 1,
-      '2-0': 1,
-      '2-2': 1,
-    }
-    const _canvas = canvas.cloneNode()
-    const _gd = _canvas.getContext('2d')
-    let count = 0
+    // d.maxDepth = 2
 
-    _canvas.width *= .7
-
-    function renderOne(x1, y1, side, deg, depth) {
+    const render = (x1, y1, side, deg, depth) => {
+      ++d.countRender
       side /= 3
 
       const x2 = x1 + side * Math.cos(d2a(deg))
-      const y2 = y1 - side * Math.sin(d2a(deg))
+      const y2 = y1 + side * Math.sin(d2a(deg))
 
       const x3 = x2 + side * Math.cos(d2a(deg - 60))
-      const y3 = y2 - side * Math.sin(d2a(deg - 60))
+      const y3 = y2 + side * Math.sin(d2a(deg - 60))
 
       const x4 = x3 + side * Math.cos(d2a(deg + 60))
-      const y4 = y3 - side * Math.sin(d2a(deg + 60))
+      const y4 = y3 + side * Math.sin(d2a(deg + 60))
 
       const x5 = x4 + side * Math.cos(d2a(deg))
-      const y5 = y4 - side * Math.sin(d2a(deg))
+      const y5 = y4 + side * Math.sin(d2a(deg))
 
-      ++count
-      ++depth
-      if (depth >= d.depth || side < 1) {
-        _gd.beginPath()
-        _gd.lineTo(x1, y1)
-        _gd.lineTo(x2, y2)
-        _gd.lineTo(x3, y3)
-        _gd.lineTo(x4, y4)
-        _gd.lineTo(x5, y5)
-        _gd.strokeStyle = Node.color.blue
-        _gd.stroke()
+      if (depth >= d.maxDepth || side < 5) {
+        gd.beginPath()
+        gd.lineTo(x1, y1)
+        gd.lineTo(x2, y2)
+        gd.lineTo(x3, y3)
+        gd.lineTo(x4, y4)
+        gd.lineTo(x5, y5)
+        gd.strokeStyle = d.color.blue
+        gd.stroke()
       } else {
-        renderOne(x1, y1, side, deg + 0, depth)
-        renderOne(x2, y2, side, deg - 60, depth)
-        renderOne(x3, y3, side, deg + 60, depth)
-        renderOne(x4, y4, side, deg + 0, depth)
+        ++depth
+        render(x1, y1, side, deg, depth)
+        render(x2, y2, side, deg - 60, depth)
+        render(x3, y3, side, deg + 60, depth)
+        render(x4, y4, side, deg, depth)
       }
     }
 
-    function renderFull() {
-      new Array(3).fill().forEach((_, idx, arr) => {
-        const deg = idx * 120
+    const side = d.contentWidth * .8 * d.conf.devicePixelRatio
+    gd.save()
+    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
+    render(d.canvas.width * .1, side / 2, side, 0, 0)
+    gd.restore()
 
+    const img = new Image()
+    img.onload = (e) => {
+      gd.fillStyle = d.color.white
+      gd.fillRect(0, 0, canvas.width, canvas.height)
+
+      const len = 3
+      const deg = 360 / len
+      new Array(len).fill().map((_, idx) => {
+        const _deg = idx * deg
         gd.save()
         gd.translate(canvas.width / 2, canvas.height / 2)
-        gd.rotate(d2a(deg))
+        gd.rotate(d2a(_deg))
         gd.drawImage(
-          _canvas,
-          0, 0, _canvas.width, _canvas.height,
-          -_canvas.width / 2, _canvas.width * .287, _canvas.width, _canvas.height,
+          img,
+          0, 0, img.width, img.height,
+          -img.width / 2, -img.height / 1.585, img.width, img.height
         )
         gd.restore()
-
       })
     }
-
-    gd.clearRect(0, 0, canvas.width, canvas.height)
-    renderOne(0, 0, _canvas.width, 0, 0)
-
-    renderFull()
-
-    // console.log(me.constructor.name, count)
+    canvas.toBlob((blob) => {
+      const src = URL.createObjectURL(blob)
+      img.src = src
+    })
   }
 }

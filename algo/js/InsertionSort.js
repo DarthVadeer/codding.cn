@@ -1,20 +1,22 @@
 class InsertionSort extends Sort {
   startSort() {
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    for (let i = 1; i < d.arr.length; i++) {
+    for (let i = 1, len = d.arr.length; i < len; i++) {
       let j = i
+
       d.arr[i].fromIndex = i
-      d.arr[i].fillStyle = Node.color.orange
+      d.arr[i].fillStyle = d.color.blue
 
       for (; j > 0; j--) {
         d.arr[j - 1].fromIndex = j - 1
-        d.arr[j - 1].fillStyle = Node.color.green
+        d.arr[j - 1].fillStyle = d.color.green
 
-        if (d.arr[j].n >= d.arr[j - 1].n) break
-
-        d.arr.swap(j, j - 1)
+        if (d.arr[j].n < d.arr[j - 1].n) {
+          d.arr.swap(j - 1, j)
+        } else {
+          break
+        }
       }
 
       d.steps.push(
@@ -24,11 +26,12 @@ class InsertionSort extends Sort {
       )
     }
 
+    // console.log(d.arr.map(v=>v.n))
     d.steps.push(
-      d.arr.clone().map((node, idx) => {
-        node.fromIndex = idx
-        node.fillStyle = Node.color.blue
-        return node
+      d.arr.clone().map((item, idx) => {
+        item.fromIndex = idx
+        item.fillStyle = d.color.blue
+        return item
       })
     )
   }

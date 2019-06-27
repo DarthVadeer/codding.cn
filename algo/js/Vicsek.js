@@ -1,47 +1,41 @@
 class Vicsek extends Fractal {
-  create() {
-    // console.log('Vicsek create')
+  constructor() {
+    super(...arguments)
+
+    const d = this.d
+    d.maxDepth = 4
   }
   render() {
-    const me = this
-    const d = me.d
+    const d = this.d
     const {canvas, gd} = d
-    const dir = {
-      '0-0': 1,
-      '0-2': 1,
-      '1-1': 1,
-      '2-0': 1,
-      '2-2': 1,
-    }
-    let count = 0
+    const dir = [
+      [0, 0],
+      [0, 2],
+      [1, 1],
+      [2, 0],
+      [2, 2],
+    ]
 
-    function render(x, y, w, h, depth) {
-      const _w = w / 3
-      const _h = h / 3
+    const render = (x, y, side, depth) => {
+      ++d.countRender
 
-      depth++
-
-      if (_w < 1 || _h < 1 || depth > d.depth) {
+      if (depth >= d.maxDepth) {
         gd.beginPath()
-        gd.rect(x, y, w, h)
-        gd.fillStyle = Node.color.green
+        gd.rect(x, y, side, side)
+        gd.fillStyle = d.color.blue
         gd.fill()
         return
       }
 
-      ++count
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          if (dir[i + '-' + j]) {
-            render(x + j * _w, y + i * _h, _w, _h, depth)
-          }
-        }
-      }
+      side /= 3
+      dir.forEach((item, idx) => {
+        render(x + side * item[1], y + side * item[0], side, depth + 1)
+      })
     }
 
-    gd.fillStyle = Node.color.white
-    gd.fillRect(0, 0, canvas.width, canvas.height)
-    render(0, 0, canvas.width, canvas.height, 0)
-    // console.log(me.constructor.name, count)
+    gd.save()
+    gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
+    render(0, 0, d.contentWidth, 0)
+    gd.restore()
   }
 }

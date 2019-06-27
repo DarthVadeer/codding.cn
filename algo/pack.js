@@ -1,34 +1,19 @@
 const fs = require('fs')
-const pathArr = [
-  './algo/js/Common.js',
-  './algo/js/SelectionSort.js',
-  './algo/js/InsertionSort.js',
-  './algo/js/MergeSort.js',
-  './algo/js/QuickSort.js',
-  './algo/js/QuickSort2.js',
-  './algo/js/QuickSort3.js',
-  './algo/js/MaxHeap.js',
-  './algo/js/SegmentTree.js',
-  './algo/js/BinarySearch.js',
-  './algo/js/AVLTree.js',
-  './algo/js/RBTree.js',
-  './algo/js/Trie.js',
-  './algo/js/MazeData.js',
-  './algo/js/Maze.js',
-  './algo/js/Vicsek.js',
-  './algo/js/Sierpinski.js',
-  './algo/js/SierpinskiTriangle.js',
-  './algo/js/KoachSnowflake.js',
-  './algo/js/FractalTree.js',
-  './algo/js/MineSweeper.js',
-  './algo/js/Algo.js',
-]
+const sHtml = fs.readFileSync('./algo/index.html', 'utf-8')
+const pathArr = sHtml.match(/<script src="[^"]+">/g).map(str => './algo' + str.slice(str.indexOf('"') + 2, str.lastIndexOf('"')))
+pathArr.shift()
 
-let result = ''
-pathArr.forEach((path, idx, arr) => {
-  result += fs.readFileSync(path, 'utf-8') + '\n\n'
-})
+let sJs = pathArr.map((path, idx) => {
+  return fs.readFileSync(path)
+}).join('\n\n')
 
-result = result + `export default Algo`
+const classList = sJs.match(/^class \w+ /gm).map(str => '  ' + str.slice(str.indexOf(' ') + 1).trim())
 
-fs.writeFileSync('./src/components/algo/algoAll.js', result)
+sJs += `
+
+export default {
+${classList.join(',\n')}
+}
+`
+
+fs.writeFileSync('./src/components/algo/algoAll.js', sJs)

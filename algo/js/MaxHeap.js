@@ -1,41 +1,39 @@
 class MaxHeap extends Heap {
   heapify() {
-    const me = this
-    const d = me.d
+    const d = this.d
 
     for (let i = d.branchIndex; i > -1; i--) {
-      me.shiftDown(i)
+      this.shiftDown(i)
     }
   }
   createByShiftUp() {
-    const me = this
-    const d = me.d
+    const d = this.d
+    const len = d.arr.length
 
-    for (let i = 1; i < d.arr.length; i++) {
-      me.shiftUp(i)
+    for (let i = 1; i < len; i++) {
+      this.shiftUp(i)
     }
   }
   shiftUp(k) {
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    while (parseInt(k - 1) / 2 > 0) {
+    while (k > 0) {
       let j = parseInt((k - 1) / 2)
 
       if (d.arr[j].n > d.arr[k].n) break
 
-      d.arr.swap(k, j)
+      d.arr.swap(j, k)
       k = j
     }
   }
   shiftDown(k) {
-    const me = this
-    const d = me.d
+    const d = this.d
+    const len = d.arr.length
 
-    while (k * 2 + 1 < d.arr.length) {
+    while (k * 2 + 1 < len) {
       let j = k * 2 + 1
 
-      if (j + 1 < d.arr.length && d.arr[j + 1].n > d.arr[j].n) j++
+      if (j + 1 < len && d.arr[j + 1].n > d.arr[j].n) j++
 
       if (d.arr[k].n > d.arr[j].n) break
 

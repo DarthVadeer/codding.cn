@@ -3,7 +3,7 @@
     @click="clickFullPanel"
   >
     <topbar></topbar>
-    <div class="auto-flex">
+    <div class="auto-flex" style="overflow: visible;">
       <transition-group :name="'ani-com-' + (countAni % $root.lenAni)">
       <!-- <transition-group name="fade"> -->
         <div

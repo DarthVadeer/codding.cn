@@ -1,7 +1,6 @@
 class MergeSort extends Sort {
   startSort() {
-    const me = this
-    const d = me.d
+    const d = this.d
 
     function mergeSort(l, r) {
       if (l >= r) return
@@ -36,13 +35,13 @@ class MergeSort extends Sort {
         }
       }
 
-      const fillStyle = Node.color[l === 0 && r === d.arr.length - 1 ? 'blue' : 'green']
+      const fillStyle = d.color[l === 0 && r === d.arr.length - 1 ? 'blue' : 'green']
 
       d.steps.push(
         new Array(l).fill().concat(
-          d.arr.slice(l, r + 1).clone().map((node) => {
-            node.fillStyle = fillStyle
-            return node
+          d.arr.slice(l, r + 1).clone().map((item) => {
+            item.fillStyle = fillStyle
+            return item
           })
         )
       )

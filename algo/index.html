@@ -2,20 +2,20 @@
 <html lang="zh-cn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width">
-  <title>算法与数据结构 | By 田小号🎺</title>
+  <meta name="viewport" content="width=device-width, user-scalable=no">
+  <title>算法与数据结构 | By 田小号</title>
   <link rel="shortcut icon" type="image/x-icon" href="http://codding.cn/static/img/favicon.ico">
   <style>
-    * {padding: 0; margin: 0;}
-    body {font-size: 14px; background: #fff;}
+    * {padding: 0; margin: 0; font: inherit; box-sizing: border-box;}
+    body {font-size: 14px;}
 
-    #box-algo {padding-top: 1px; padding: 15px; user-select: none;}
-    #box-algo > .list {text-align: center;}
+    #box-algo {text-align: center; padding: 0 15px;}
+    #box-algo > .list {}
     #box-algo > .list section {margin: 15px 0;}
     #box-algo > .list section .box-btn {margin-bottom: 15px;}
-    #box-algo > .list section .box-btn button {padding: 5px 10px; cursor: pointer;}
+    #box-algo > .list section .box-btn .btn {padding: .4em .8em;}
     #box-algo > .list section .box-canvas {}
-    #box-algo > .list section .box-canvas canvas {max-width: 100%; box-shadow: 0 0 1px 1px #ccc;}
+    #box-algo > .list section .box-canvas canvas {border: 1px solid #ccc; max-width: 100%; box-sizing: content-box;}
   </style>
 </head>
 <body>
@@ -33,13 +33,6 @@
   </div>
 </div>
 
-<script>
-  /*window.onerror = function() {
-    const box-algo = document.getElementById('box-algo')
-
-    box-algo.innerHTML = [].slice.call(arguments).join('<br /><br />')
-  }*/
-</script>
 <script src="./js/algoAux.js"></script>
 <script src="./js/Common.js"></script>
 <script src="./js/SelectionSort.js"></script>
@@ -54,65 +47,17 @@
 <script src="./js/AVLTree.js"></script>
 <script src="./js/RBTree.js"></script>
 <script src="./js/Trie.js"></script>
-<script src="./js/MazeData.js"></script>
-<script src="./js/Maze.js"></script>
 <script src="./js/Vicsek.js"></script>
 <script src="./js/Sierpinski.js"></script>
 <script src="./js/SierpinskiTriangle.js"></script>
 <script src="./js/KoachSnowflake.js"></script>
 <script src="./js/FractalTree.js"></script>
-<script src="./js/MineSweeper.js"></script>
+<script src="./js/Fib.js"></script>
 <script src="./js/Algo.js"></script>
 <script>
+console.time('Algo Sort test')
 const algo = new Algo()
-</script>
-
-<script>
-/*document.onclick = function() {
-  const c = document.createElement('canvas')
-  const gd = c.getContext('2d')
-  const cs = [].slice.call(document.querySelectorAll('canvas'))
-  let iWidth = 0
-
-  c.style.background = 'wheat'
-  document.body.insertBefore(c, document.body.children[0])
-
-  c.height = cs.reduce((total, canvas) => {
-    iWidth = Math.max(iWidth, canvas.width + 20)
-    return total += canvas.height + 80
-  }, 0)
-  c.width = iWidth
-
-  let downStair = 0
-  gd.fillStyle = '#fff'
-  gd.fillRect(0, 0, c.width, c.height)
-
-  cs.forEach((canvas, idx, arr) => {
-    downStair += 80
-    const widthText = 240
-    let x = (iWidth - canvas.width) / 2
-    let y = downStair
-
-    gd.beginPath()
-    gd.rect((iWidth - widthText) / 2 + .5, y - 50 + .5, widthText, 30)
-    gd.fillStyle = '#337ab7'
-    gd.fill()
-
-    gd.fillStyle = '#fff'
-    gd.textAlign = 'center'
-    gd.font = '16px Arial'
-    gd.fillText(canvas.title, (iWidth - widthText) / 2 + widthText / 2, y - 30)
-
-    gd.drawImage(
-      canvas,
-      x, y, canvas.width, canvas.height
-    )
-    gd.rect(x + .5, y + .5, canvas.width, canvas.height)
-    gd.strokeStyle = '#ccc'
-    gd.stroke()
-    downStair += canvas.height
-  })
-}*/
+console.timeEnd('Algo Sort test')
 </script>
 
 </body>

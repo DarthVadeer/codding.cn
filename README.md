@@ -1,13 +1,25 @@
+[TOC]
+
 # 我的世界 | By 田小号🎺
 
 
-参考网站
+## 参考网站
 
-https://cli.vuejs.org/zh/config/ <br>
-https://www.jianshu.com/p/dd1b7c5b86ed <br>
-https://cli.vuejs.org/zh/config/ <br>
-https://jiongks.name/blog/code-review-for-vue-next/ <br>
-http://json.is/ <br>
+### vue-cli 配置参考
+
+https://cli.vuejs.org/zh/config/
+
+### 简书babel编译
+
+https://www.jianshu.com/p/dd1b7c5b86ed
+
+### eslint 配置
+
+https://cn.eslint.org/docs/user-guide/configuring
+
+### 囧克斯博客
+
+http://json.is/
 
 ```
 // 让低版本IE支持HTML5 DOM 方法

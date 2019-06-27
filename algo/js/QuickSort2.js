@@ -1,7 +1,6 @@
 class QuickSort2 extends Sort {
   startSort() {
-    const me = this
-    const d = me.d
+    const d = this.d
 
     function quickSort(l, r) {
       if (l >= r) return
@@ -13,27 +12,19 @@ class QuickSort2 extends Sort {
       d.arr.swap(l, rand(l + 1, r))
 
       const v = d.arr[l].n
-      let i = l + 1
-      let j = r
+      let j = l
 
-      while (true) {
-        while (i <= r && d.arr[i].n < v) {
-          d.arr[i].fillStyle = Node.color.green
-          i++
+      for (let i = l + 1, len = d.arr.length; i < len; i++) {
+        if (d.arr[i].n < v) {
+          d.arr[i].fillStyle = d.color.green
+          d.arr.swap(i, j + 1)
+          j++
+        } else {
+          d.arr[i].fillStyle = d.color.orange
         }
-        while (j > l && d.arr[j].n > v) {
-          d.arr[j].fillStyle = Node.color.orange
-          j--
-        }
-        if (i > j) break
-        d.arr.swap(i, j)
-        d.arr[i].fillStyle = Node.color.green
-        d.arr[j].fillStyle = Node.color.orange
-        i++
-        j--
       }
 
-      d.arr[l].fillStyle = Node.color.blue
+      d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, j)
 
       d.steps.push(
@@ -47,12 +38,11 @@ class QuickSort2 extends Sort {
     }
 
     quickSort(0, d.arr.length - 1)
-
     d.steps.push(
-      d.arr.clone().map((node, idx) => {
-        node.fromIndex = idx
-        node.fillStyle = Node.color.blue
-        return node
+      d.arr.clone().map((item, idx) => {
+        item.fromIndex = idx
+        item.fillStyle = d.color.blue
+        return item
       })
     )
   }

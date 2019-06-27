@@ -1,27 +1,36 @@
 class BinarySearch extends Tree {
   create() {
-    const me = this
-    const d = me.d
+    const d = this.d
 
-    d.arr.clone().forEach((node, idx, arr) => {
-      node.fillStyle = Node.color.blue
-      d.root = me.add(d.root, node)
+    d.arr.clone().forEach((item, idx) => {
+      item.fillStyle = d.color.blue
+      d.root = this.add(d.root, item)
     })
 
-    d.root2 = me.flip(clone(d.root))
+    d.root2 = this.flip(clone(d.root))
   }
   add(node, item) {
-    const me = this
-
     if (!node) return item
 
-    if (item.n < node.n) {
-      node.l = me.add(node.l, item)
-    } else if (item.n > node.n) {
-      node.r = me.add(node.r, item)
+    if (item.n > node.n) {
+      node.r = this.add(node.r, item)
+    } else if (item.n < node.n) {
+      node.l = this.add(node.l, item)
     } else {
       // ===
     }
+
+    return node
+  }
+  flip(node) {
+    if (!node) return
+
+    this.flip(node.l)
+    this.flip(node.r)
+
+    const t = node.l
+    node.l = node.r
+    node.r = t
 
     return node
   }
