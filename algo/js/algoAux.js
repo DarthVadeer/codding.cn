@@ -1,13 +1,29 @@
-window.rand = function(l, r) {
+window.sleep = async (time) => {
+  return new Promise(next => time ? setTimeout(next, time) : next())
+}
+
+window.a2d = (angle) => {
+  return angle / Math.PI * 180
+}
+
+window.d2a = (deg) => {
+  return deg / 180 * Math.PI
+}
+
+window.clone = (o) => {
+  return JSON.parse(JSON.stringify(o))
+}
+
+window.rand = (l, r) => {
   return Math.floor(Math.random() * (r - l + 1) + l)
 }
 
-window.randColor = function(a) {
+window.randColor = (a) => {
   const o = {
     r: rand(0, 255),
     g: rand(0, 255),
     b: rand(0, 255),
-    a: a === undefined ? 1 : a,
+    a: a === undefined ? 1 :ａ,
   }
 
   o.toString = () => {
@@ -15,30 +31,6 @@ window.randColor = function(a) {
   }
 
   return o
-}
-
-window.clone = function(o) {
-  return JSON.parse(JSON.stringify(o))
-}
-
-window.sleep = async function(time) {
-  return new Promise(next => time ? setTimeout(next, time) : next())
-}
-
-window.d2a = (deg) => {
-  return deg / 180 * Math.PI
-}
-
-window.a2d = (angle) => {
-  return angle / Math.PI * 180
-}
-
-Array.prototype.min = function() {
-  return Math.min.apply(null, this)
-}
-
-Array.prototype.max = function() {
-  return Math.max.apply(null, this)
 }
 
 Array.prototype.first = function() {
@@ -66,9 +58,34 @@ Array.prototype.rnd = function(len, l, r) {
 }
 
 Array.prototype.shuffle = function() {
-  for (let len = this.length, i = len - 1; i < len; i++) {
+  for (let len = this.length, i = len - 1; i > -1; i--) {
     this.swap(i, parseInt(Math.random() * (i + 1)))
   }
-  
+
   return this
 }
+
+// shuffle 算法测试
+/*{
+  const len = 10
+  const arr = new Array(len).fill(0)
+  const result = new Array(len).fill(0)
+  const shuffleTime = 100000
+
+  function resetArr() {
+    for (let i = 0; i < len; i++) {
+      arr[i] = i < len / 2 ? 1 : 0
+    }
+  }
+
+  for (let i = 0; i < shuffleTime; i++) {
+    resetArr()
+    arr.shuffle()
+
+    for (let j = 0; j < len; j++) {
+      result[j] += arr[j]
+    }
+  }
+
+  console.log(result.map(n => n / shuffleTime))
+}*/

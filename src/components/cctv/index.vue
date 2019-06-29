@@ -112,7 +112,7 @@
           </div>
         </form>
         <div class="auto-flex video-main-wrapper">
-          <div class="video-group" @scroll="$root.lazyLoad()">
+          <div class="video-group respond-list" @scroll="$root.lazyLoad()">
             <div class="no-data" v-if="videoList.length === 0 && !$root.is.loading">
               <div class="inner c cxy">
                 <div class="alert alert-default">
@@ -132,7 +132,7 @@
                 <strong>{{groupItem.title}}</strong>
               </div>
               <ul>
-                <li
+                <li class="respond-item" 
                   v-for="(item, idx) in groupItem.list"
                   :key="item.desc + idx"
                 >
@@ -716,14 +716,24 @@ export default {
     let w = idx * 280 + 500
     const n = Math.ceil(w / 280)
 
+    // .cctv .video-main-wrapper .video-group li {
+
     return `
       @media (min-width: ${w}px) {
-        .cctv .video-main-wrapper .video-group li {
+        .respond-list .respond-item {
           width: ${1 / n * 100}% !important;
         }
       }
     `
   }).join('')
+
+  sHtml = `
+    @media (max-width: 500px) {
+      .respond-list .respond-item {
+        width: 50% !important;
+      }
+    }
+  ` + sHtml
 
   nodeStyle.innerHTML = sHtml
   document.body.appendChild(nodeStyle)

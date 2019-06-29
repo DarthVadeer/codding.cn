@@ -167,7 +167,7 @@ $.ajax = function(o) {
           if (!navigator.onLine) {
             vm.alert('你断网了，请保持网络畅通')
           } else if (xhr.status === 0) {
-            vm.alert('你的网络不能访问codding.cn' + (vm.is.chrome ? '<br /> 复制下面的地址，尝试清理dns缓存 <br /> chrome://net-internals/#dns' : ''))
+            vm.alert('你的网络不能正常访问' + location.origin + (vm.is.chrome ? '<br /> 复制下面的地址，尝试清理dns缓存 <br /> chrome://net-internals/#dns' : ''))
           } else {
             vm.alert('其他错误，错误码：' + xhr.status)
           }

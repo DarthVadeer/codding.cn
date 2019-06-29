@@ -2,7 +2,7 @@ class QuickSort3 extends Sort {
   startSort() {
     const d = this.d
 
-    function quickSort(l, r) {
+    const quickSort = (l, r) => {
       if (l >= r) return
 
       for (let i = l; i <= r; i++) {
@@ -46,11 +46,12 @@ class QuickSort3 extends Sort {
     }
 
     quickSort(0, d.arr.length - 1)
+
     d.steps.push(
-      d.arr.clone().map((item, idx) => {
-        item.fromIndex = idx
-        item.fillStyle = d.color.blue
-        return item
+      d.arr.clone().map((node, idx) => {
+        node.fromIndex = idx
+        node.fillStyle = d.color.blue
+        return node
       })
     )
   }

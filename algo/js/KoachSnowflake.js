@@ -1,11 +1,10 @@
 class KoachSnowflake extends Fractal {
-  render() {
+  create() {
     const d = this.d
     const {canvas, gd} = d
-    // d.maxDepth = 2
 
     const render = (x1, y1, side, deg, depth) => {
-      ++d.countRender
+      ++depth
       side /= 3
 
       const x2 = x1 + side * Math.cos(d2a(deg))
@@ -20,7 +19,7 @@ class KoachSnowflake extends Fractal {
       const x5 = x4 + side * Math.cos(d2a(deg))
       const y5 = y4 + side * Math.sin(d2a(deg))
 
-      if (depth >= d.maxDepth || side < 5) {
+      if (depth >= d.depth) {
         gd.beginPath()
         gd.lineTo(x1, y1)
         gd.lineTo(x2, y2)
@@ -30,7 +29,6 @@ class KoachSnowflake extends Fractal {
         gd.strokeStyle = d.color.blue
         gd.stroke()
       } else {
-        ++depth
         render(x1, y1, side, deg, depth)
         render(x2, y2, side, deg - 60, depth)
         render(x3, y3, side, deg + 60, depth)
@@ -38,34 +36,41 @@ class KoachSnowflake extends Fractal {
       }
     }
 
-    const side = d.contentWidth * .8 * d.conf.devicePixelRatio
     gd.save()
-    gd.scale(d.devicePixelRatio, d.devicePixelRatio)
-    render(d.canvas.width * .1, side / 2, side, 0, 0)
+    gd.scale(d.conf.scale, d.conf.scale)
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
+    render(d.contentWidth * .1, d.contentHeight / 3.71, d.contentWidth * .8, 0, 0)
     gd.restore()
 
-    const img = new Image()
-    img.onload = (e) => {
-      gd.fillStyle = d.color.white
-      gd.fillRect(0, 0, canvas.width, canvas.height)
-
-      const len = 3
-      const deg = 360 / len
-      new Array(len).fill().map((_, idx) => {
-        const _deg = idx * deg
-        gd.save()
-        gd.translate(canvas.width / 2, canvas.height / 2)
-        gd.rotate(d2a(_deg))
-        gd.drawImage(
-          img,
-          0, 0, img.width, img.height,
-          -img.width / 2, -img.height / 1.585, img.width, img.height
-        )
-        gd.restore()
-      })
-    }
-    canvas.toBlob((blob) => {
+    d.canvas.toBlob((blob) => {
       const src = URL.createObjectURL(blob)
+      const img = new Image()
+
+      img.onload = () => {
+        const len = 3
+        const deg = 360 / len
+
+        gd.clearRect(0, 0, canvas.width, canvas.height)
+
+        new Array(len).fill().forEach((_, idx) => {
+          const _deg = deg * idx
+
+          gd.save()
+          gd.translate(
+            (d.contentWidth / 2 + d.conf.paddingH) * d.conf.scale,
+            (d.contentHeight / 2 + d.conf.paddingV) * d.conf.scale
+          )
+          gd.rotate(d2a(_deg))
+          gd.drawImage(
+            img,
+            0, 0, img.width, img.height,
+            -img.width / 2, -img.height / 2, img.width, img.height
+          )
+          gd.restore()
+          this.onready && this.onready()
+        })
+      }
+
       img.src = src
     })
   }

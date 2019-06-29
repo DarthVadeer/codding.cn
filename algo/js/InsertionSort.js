@@ -13,7 +13,7 @@ class InsertionSort extends Sort {
         d.arr[j - 1].fillStyle = d.color.green
 
         if (d.arr[j].n < d.arr[j - 1].n) {
-          d.arr.swap(j - 1, j)
+          d.arr.swap(j, j - 1)
         } else {
           break
         }
@@ -26,12 +26,11 @@ class InsertionSort extends Sort {
       )
     }
 
-    // console.log(d.arr.map(v=>v.n))
     d.steps.push(
-      d.arr.clone().map((item, idx) => {
-        item.fromIndex = idx
-        item.fillStyle = d.color.blue
-        return item
+      d.arr.clone().map((node, idx) => {
+        node.fromIndex = idx
+        node.fillStyle = d.color.blue
+        return node
       })
     )
   }

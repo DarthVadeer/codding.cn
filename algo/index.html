@@ -2,32 +2,32 @@
 <html lang="zh-cn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, user-scalable=no">
+  <meta name="viewport" content="width=device-width">
   <title>算法与数据结构 | By 田小号</title>
   <link rel="shortcut icon" type="image/x-icon" href="http://codding.cn/static/img/favicon.ico">
   <style>
     * {padding: 0; margin: 0; font: inherit; box-sizing: border-box;}
     body {font-size: 14px;}
 
-    #box-algo {text-align: center; padding: 0 15px;}
-    #box-algo > .list {}
-    #box-algo > .list section {margin: 15px 0;}
-    #box-algo > .list section .box-btn {margin-bottom: 15px;}
-    #box-algo > .list section .box-btn .btn {padding: .4em .8em;}
-    #box-algo > .list section .box-canvas {}
-    #box-algo > .list section .box-canvas canvas {border: 1px solid #ccc; max-width: 100%; box-sizing: content-box;}
+    #box-algo {text-align: center;}
+    #box-algo > .list {padding: 15px;}
+    #box-algo > .list .algo-item {margin-bottom: 15px;}
+    #box-algo > .list .algo-item .box-btn {margin-bottom: 15px;}
+    #box-algo > .list .algo-item .box-btn button {padding: .4em 1em; cursor: pointer;}
+    #box-algo > .list .algo-item .box-canvas {}
+    #box-algo > .list .algo-item .box-canvas canvas {max-width: 100%; border: 1px solid #ccc;}
   </style>
 </head>
 <body>
-  
+
 <div id="box-algo">
   <div class="list">
-    <!-- <section>
+    <!-- <section class="algo-item">
       <div class="box-btn">
         <button class="btn btn-primary">${v.name}</button>
       </div>
       <div class="box-canvas">
-        <canvas></canvas>
+        <canvas data-title="${v.name}"></canvas>
       </div>
     </section> -->
   </div>
@@ -39,8 +39,8 @@
 <script src="./js/InsertionSort.js"></script>
 <script src="./js/MergeSort.js"></script>
 <script src="./js/QuickSort.js"></script>
-<script src="./js/QuickSort2.js"></script>
 <script src="./js/QuickSort3.js"></script>
+<script src="./js/QuickSort2.js"></script>
 <script src="./js/MaxHeap.js"></script>
 <script src="./js/SegmentTree.js"></script>
 <script src="./js/BinarySearch.js"></script>
@@ -53,11 +53,65 @@
 <script src="./js/KoachSnowflake.js"></script>
 <script src="./js/FractalTree.js"></script>
 <script src="./js/Fib.js"></script>
+<script src="./js/mazeData.js"></script>
+<script src="./js/Maze.js"></script>
 <script src="./js/Algo.js"></script>
 <script>
-console.time('Algo Sort test')
-const algo = new Algo()
-console.timeEnd('Algo Sort test')
+console.time('Algo')
+const allAlgo = {
+  Maze,
+  Fib,
+  FractalTree,
+  KoachSnowflake,
+  SierpinskiTriangle,
+  Sierpinski,
+  Vicsek,
+  Trie,
+  RBTree,
+  AVLTree,
+  BinarySearch,
+  SegmentTree,
+  SegmentTree,
+  MaxHeap,
+  MaxHeap,
+  QuickSort3,
+  QuickSort2,
+  QuickSort,
+  MergeSort,
+  InsertionSort,
+  SelectionSort,
+}
+
+const algo = new Algo({
+  type: {
+    list: [
+      {name: '迷宫寻路 - 广度优先 - 非递归', cons: allAlgo.Maze, startFn: 'bfs'},
+      {name: '迷宫寻路 - 深度优先 - 非递归', cons: allAlgo.Maze, startFn: 'dfs2'},
+      {name: '迷宫寻路 - 深度优先 - 递归', cons: allAlgo.Maze, startFn: 'dfs1'},
+      // {name: '分形图 - 斐波那契数列', cons: allAlgo.Fib, startFn: 'renderLine', arg: {isRenderAux: false}},
+      // {name: '分形图 - FractalTree', cons: allAlgo.FractalTree, startFn: 'create', arg: {side: 120}},
+      // {name: '分形图 - KoachSnowflake', cons: allAlgo.KoachSnowflake, startFn: 'create'},
+      // {name: '分形图 - SierpinskiTriangle', cons: allAlgo.SierpinskiTriangle, startFn: 'create'},
+      // {name: '分形图 - Sierpinski', cons: allAlgo.Sierpinski, startFn: 'create'},
+      // {name: '分形图 - Vicsek', cons: allAlgo.Vicsek, startFn: 'create'},
+      // {name: '多叉树 - Trie', cons: allAlgo.Trie, startFn: 'create'},
+      // {name: '红黑树 - 左倾&右倾', cons: allAlgo.RBTree, startFn: 'create'},
+      // {name: 'AVL树', cons: allAlgo.AVLTree, startFn: 'create'},
+      // {name: '二分搜索树', cons: allAlgo.BinarySearch, startFn: 'create'},
+      // {name: '线段树 - R', cons: allAlgo.SegmentTree, startFn: 'createR'},
+      // {name: '线段树 - L', cons: allAlgo.SegmentTree, startFn: 'createL'},
+      // {name: '最大堆 - shiftUp', cons: allAlgo.MaxHeap, startFn: 'createByShiftUp'},
+      // {name: '最大堆 - heapify', cons: allAlgo.MaxHeap, startFn: 'heapify'},
+      // {name: '三路快排', cons: allAlgo.QuickSort3, startFn: 'startSort'},
+      // {name: '双路快排', cons: allAlgo.QuickSort2, startFn: 'startSort'},
+      // {name: '单速排序', cons: allAlgo.QuickSort, startFn: 'startSort'},
+      // {name: '归并排序', cons: allAlgo.MergeSort, startFn: 'startSort'},
+      // {name: '插入排序', cons: allAlgo.InsertionSort, startFn: 'startSort'},
+      // {name: '选择排序', cons: allAlgo.SelectionSort, startFn: 'startSort'},
+    ]
+  }
+})
+console.timeEnd('Algo')
 </script>
 
 </body>

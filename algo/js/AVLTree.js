@@ -3,13 +3,19 @@ class AVLTree extends Tree {
     const d = this.d
 
     d.itemWidth = 50
-    d.levelHeight = 60
     d.paddingTop = 80
-    d.arr.clone().forEach((item, idx) => {
-      item.fillStyle = d.color.blue
-      item.h = 1
-      item.balanceFactor = 0
-      d.root = this.add(d.root, item)
+    d.conf.levelHeight = 60
+    d.conf.paddingH = 15
+    d.contentWidth = d.arr.length * d.conf.itemWidth
+    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+
+    d.arr.clone().forEach((node, idx) => {
+      node.width = 50
+      node.fillStyle = d.color.blue
+      node.h = 1
+      node.balanceFactor = 0
+      d.root = this.add(d.root, node)
     })
   }
   add(node, item) {
@@ -27,14 +33,12 @@ class AVLTree extends Tree {
 
     if (Math.abs(balanceFactor) > 1) {
       if (balanceFactor > 0) {
-        // 左边高
         if (this.getBalanceFactor(node.l) < 0) {
           node.l = this.leftRotate(node.l)
         }
         node = this.rightRotate(node)
       } else {
-        // 右边高
-        if (this.getBalanceFactor(node.r) > 0) {
+        if (balanceFactor > 0) {
           node.r = this.rightRotate(node.r)
         }
         node = this.leftRotate(node)

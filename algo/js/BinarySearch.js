@@ -2,9 +2,10 @@ class BinarySearch extends Tree {
   create() {
     const d = this.d
 
-    d.arr.clone().forEach((item, idx) => {
-      item.fillStyle = d.color.blue
-      d.root = this.add(d.root, item)
+    d.arr.clone().forEach((node, idx) => {
+      node.width = 0
+      node.fillStyle = d.color.blue
+      d.root = this.add(d.root, node)
     })
 
     d.root2 = this.flip(clone(d.root))

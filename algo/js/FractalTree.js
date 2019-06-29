@@ -1,16 +1,13 @@
 class FractalTree extends Fractal {
-  render() {}
-  renderTree(args) {
+  create(arg = {}) {
     const d = this.d
     const {canvas, gd} = d
 
-    d.maxDepth = 10
-    d.canvas.height -= 120 * d.conf.devicePixelRatio
+    d.depth = 10
 
     const render = (x1, y1, side, deg, degL, degR, depth) => {
-      if (depth >= d.maxDepth || side < 2) return
-
-      ++d.countRender
+      if (depth >= d.depth || side < 3) return
+      ++d.renderCount
 
       const x2 = x1 + side * Math.cos(d2a(deg))
       const y2 = y1 + side * Math.sin(d2a(deg))
@@ -21,13 +18,25 @@ class FractalTree extends Fractal {
       gd.strokeStyle = d.color.black
       gd.stroke()
 
-      render(x2, y2, side * .75, deg + degL, degL, degR, depth + 1)
-      render(x2, y2, side * .75, deg + degR, degL, degR, depth + 1)
+      ++depth
+      side *= .8
+
+      render(x2, y2, side, deg + degL, degL, degR, depth)
+      render(x2, y2, side, deg + degR, degL, degR, depth)
     }
 
     gd.save()
-    gd.scale(d.conf.devicePixelRatio, d.conf.devicePixelRatio)
-    render(d.contentWidth / 2, canvas.height / d.conf.devicePixelRatio, 120, ...args)
+    gd.scale(d.conf.scale, d.conf.scale)
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
+    render(
+      d.contentWidth / 2 + (arg.translateX || 0),
+      d.contentHeight,
+      arg.side || 100,
+      -90,
+      arg.degL || -15,
+      arg.degR || 15,
+      0,
+    )
     gd.restore()
   }
 }

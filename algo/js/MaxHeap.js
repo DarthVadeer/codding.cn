@@ -8,9 +8,8 @@ class MaxHeap extends Heap {
   }
   createByShiftUp() {
     const d = this.d
-    const len = d.arr.length
 
-    for (let i = 1; i < len; i++) {
+    for (let i = 1; i < d.arr.length; i++) {
       this.shiftUp(i)
     }
   }
@@ -22,18 +21,17 @@ class MaxHeap extends Heap {
 
       if (d.arr[j].n > d.arr[k].n) break
 
-      d.arr.swap(j, k)
+      d.arr.swap(k, j)
       k = j
     }
   }
   shiftDown(k) {
     const d = this.d
-    const len = d.arr.length
 
-    while (k * 2 + 1 < len) {
+    while (k * 2 + 1 < d.arr.length) {
       let j = k * 2 + 1
 
-      if (j + 1 < len && d.arr[j + 1].n > d.arr[j].n) j++
+      if (j + 1 < d.arr.length && d.arr[j + 1].n > d.arr[j].n) j++
 
       if (d.arr[k].n > d.arr[j].n) break
 

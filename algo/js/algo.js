@@ -2,42 +2,14 @@ class Algo {
   constructor(d = {}) {
     this.d = d
 
-    d.type = {
-      list: [
-        {name: '斐波那契数列', cons: Fib, startFn: 'create'},
-        // {name: '分形图 - FractalTree', cons: FractalTree, startFn: 'renderTree', args: [-90, -10, 30, 0]},
-        // {name: '分形图 - FractalTree', cons: FractalTree, startFn: 'renderTree', args: [-90, 20, -20, 0]},
-        // {name: '分形图 - KoachSnowflake', cons: KoachSnowflake, startFn: 'create'},
-        // {name: '分形图 - SierpinskiTriangle', cons: SierpinskiTriangle, startFn: 'create'},
-        // {name: '分形图 - Sierpinski', cons: Sierpinski, startFn: 'create'},
-        // {name: '分形图 - Vicsek', cons: Vicsek, startFn: 'create'},
-        // {name: 'Trie', cons: Trie, startFn: 'create'},
-        // {name: '红黑树 (L&R)', cons: RBTree, startFn: 'create'},
-        // {name: 'AVL树', cons: AVLTree, startFn: 'create'},
-        // {name: '二分搜索树-镜像反转', cons: BinarySearch, startFn: 'create'},
-        // {name: '线段树 - R', cons: SegmentTree, startFn: 'createR'},
-        // {name: '线段树 - L', cons: SegmentTree, startFn: 'createL'},
-        // {name: '最大堆-shiftUp', cons: MaxHeap, startFn: 'createByShiftUp'},
-        // {name: '最大堆-heapify', cons: MaxHeap, startFn: 'heapify'},
-        // {name: '三路排序', cons: QuickSort3, startFn: 'startSort'},
-        // {name: '双路排序', cons: QuickSort2, startFn: 'startSort'},
-        // {name: '单路排序', cons: QuickSort, startFn: 'startSort'},
-        // {name: '归并排序', cons: MergeSort, startFn: 'startSort'},
-        // {name: '插入排序', cons: InsertionSort, startFn: 'startSort'},
-        // {name: '选择排序', cons: SelectionSort, startFn: 'startSort'},
-      ]
-    }
-
-    d.cons = {
-      list: [],
-      map: {},
-    }
+    d.type = d.type || {}
+    d.type.list = d.type.list || []
 
     const nodeList = document.querySelector('#box-algo > .list')
-
+    
     nodeList.innerHTML = d.type.list.map((v) => {
       return `
-        <section>
+        <section class="algo-item">
           <div class="box-btn">
             <button class="btn btn-primary">${v.name}</button>
           </div>
@@ -49,30 +21,42 @@ class Algo {
     }).join('')
 
     const len = 20
-    let randArr = [].rnd(len, 1)
-    randArr = randArr.map(n => new Item(n))
+    let randArr = [].rnd(len, 1, len * 5)
+    // randArr = new Array(len).fill().map((_, idx) => idx)
+
+    randArr = randArr.map(n => new Node(n))
 
     nodeList.querySelectorAll('canvas').forEach((canvas, idx) => {
       const typeItem = d.type.list[idx]
-      // console.time(typeItem.cons.name)
+      console.time(typeItem.cons.name)
       const o = new typeItem.cons({
         canvas,
         gd: canvas.getContext('2d'),
         arr: randArr.clone(),
-        color: Algo.color,
-        conf: Algo.conf,
-        typeItem: typeItem,
+        typeItem,
       })
 
-      d.cons.list.push(o)
-      d.cons.map[typeItem.name] = o
-      o[typeItem.startFn](typeItem.args)
+      o[typeItem.startFn](typeItem.arg)
       o.setPos()
       o.render()
       o.log && o.log()
-      // console.timeEnd(typeItem.cons.name)
+      console.timeEnd(typeItem.cons.name)
     })
   }
+}
+
+Algo.conf = {
+  itemWidth: 30,
+  itemHeight: 18,
+  levelHeight: 36,
+  paddingH: 15,
+  paddingV: 15,
+  paddingTop: 0,
+  lineHeight: 14 * 1.5,
+  scale: devicePixelRatio,
+  font: '14px Arial',
+  fontSm: '12px Arial',
+  fontLg: '16px Arial',
 }
 
 Algo.color = {

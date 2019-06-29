@@ -2,14 +2,14 @@ class MergeSort extends Sort {
   startSort() {
     const d = this.d
 
-    function mergeSort(l, r) {
+    const mergeSort = (l, r) => {
       if (l >= r) return
 
       const mid = l + parseInt((r - l) / 2)
       mergeSort(l, mid)
       mergeSort(mid + 1, r)
 
-      const aux = new Array(r - l + 1).fill()
+      const aux = new Array(r - l + 1)
 
       for (let i = l; i <= r; i++) {
         aux[i - l] = d.arr[i]
@@ -39,9 +39,9 @@ class MergeSort extends Sort {
 
       d.steps.push(
         new Array(l).fill().concat(
-          d.arr.slice(l, r + 1).clone().map((item) => {
-            item.fillStyle = fillStyle
-            return item
+          d.arr.slice(l, r + 1).clone().map((node) => {
+            node.fillStyle = fillStyle
+            return node
           })
         )
       )
