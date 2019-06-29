@@ -8,15 +8,10 @@ class InsertionSort extends Sort {
       d.arr[i].fromIndex = i
       d.arr[i].fillStyle = d.color.blue
 
-      for (; j > 0; j--) {
+      for (; j > 0 && d.arr[j - 1].n > d.arr[j].n; j--) {
         d.arr[j - 1].fromIndex = j - 1
         d.arr[j - 1].fillStyle = d.color.green
-
-        if (d.arr[j].n < d.arr[j - 1].n) {
-          d.arr.swap(j, j - 1)
-        } else {
-          break
-        }
+        d.arr.swap(j - 1, j)
       }
 
       d.steps.push(

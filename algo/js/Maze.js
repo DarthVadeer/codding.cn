@@ -4,10 +4,33 @@ class Maze extends Common {
 
     const d = this.d
 
-    d.itemWidth = 6
+    // d.canvas.onclick = () => {
+    //   // console.log(d.canvas.toDataURL())
+    //   d.canvas.toBlob((blob) => {
+    //     const fm = new FormData()
+    //     const xhr = new XMLHttpRequest()
+
+    //     fm.append('imgName', d.typeItem.name + '.png')
+    //     fm.append('img', blob)
+    //     xhr.open('POST', 'http://localhost/save.php', true)
+    //     xhr.send(fm)
+    //   })
+    // }
+
+    d.itemWidth = 4
+    d.itemHeight = 4
     d.road = ' '
     d.wall = '#'
     d.mazeData = mazeData.split('\n').map(row => row.split('').map(n => new Node(n)))
+    d.canvas.width = d.itemWidth * d.mazeData[0].length
+    d.canvas.style.width = ''
+    d.canvas.height = d.itemWidth * d.mazeData.length
+    d.dir = [
+      [-1, 0],
+      [0, 1],
+      [1, 0],
+      [0, -1],
+    ]
     d.enter = {
       x: 0,
       y: 1,
@@ -16,19 +39,17 @@ class Maze extends Common {
       x: d.mazeData[0].length - 1,
       y: d.mazeData.length - 2,
     }
-    d.dir = [
-      [-1, 0],
-      [0, 1],
-      [1, 0],
-      [0, -1],
-    ]
 
-    // d.mazeData[d.enter.y][d.enter.x].isPath = true
-    // d.mazeData[d.exit.y][d.exit.x].isPath = true
+    d.mazeData[d.enter.y][d.enter.x].isPath = true
+    d.mazeData[d.exit.y][d.exit.x].isPath = true
+  }
+  findPath(p) {
+    const d = this.d
 
-    d.canvas.width = d.mazeData[0].length * d.itemWidth
-    d.canvas.style.width = ''
-    d.canvas.height = d.mazeData.length * d.itemWidth
+    while (p) {
+      d.mazeData[p.y][p.x].isPath = true
+      p = p.from
+    }
   }
   inArea(y, x) {
     const d = this.d
@@ -39,30 +60,25 @@ class Maze extends Common {
   }
   dfs1() {
     const d = this.d
-
-    const findPath = (y, x) => {
+    
+    const dfs = (y, x) => {
       const node = d.mazeData[y][x]
 
-      d.mazeData[y][x].visited = true
+      node.visited = true
       node.isPath = true
 
-      if (y === d.exit.y && x === d.exit.x) {
-        // console.log('dfs1 路找到了')
-        return true
-      }
+      if (y === d.exit.y && x === d.exit.x) return true
 
       for (let i = 0; i < 4; i++) {
-        const newY = y + d.dir[i][0]
         const newX = x + d.dir[i][1]
+        const newY = y + d.dir[i][0]
 
         if (
           this.inArea(newY, newX) &&
           !d.mazeData[newY][newX].visited &&
           d.mazeData[newY][newX].n === d.road
         ) {
-          if (findPath(newY, newX)) {
-            return true
-          }
+          if (dfs(newY, newX)) return true
         }
       }
 
@@ -70,18 +86,9 @@ class Maze extends Common {
       return false
     }
 
-    findPath(d.enter.y, d.enter.x)
-    d.dfs1Ready = true
+    dfs(d.enter.y, d.enter.x)
   }
-  findPath(p) {
-    const d = this.d
-
-    while (p) {
-      d.mazeData[p.y][p.x].isPath = true
-      p = p.from
-    }
-  }
-  async dfs2() {
+  dfs2() {
     const d = this.d
     const stack = [d.enter]
     let p
@@ -90,16 +97,13 @@ class Maze extends Common {
       p = stack.pop()
       const node = d.mazeData[p.y][p.x]
 
-      d.mazeData[p.y][p.x].visited = true
+      node.visited = true
 
-      if (p.y === d.exit.y && p.x === d.exit.x) {
-        // console.log('dfs2 路找到了')
-        break
-      }
+      if (p.y === d.exit.y && p.x === d.exit.x) break
 
       for (let i = 0; i < 4; i++) {
-        const newY = p.y + d.dir[i][0]
         const newX = p.x + d.dir[i][1]
+        const newY = p.y + d.dir[i][0]
 
         if (
           this.inArea(newY, newX) &&
@@ -115,7 +119,6 @@ class Maze extends Common {
       }
     }
 
-    d.dfs2Ready = true
     this.findPath(p)
   }
   bfs() {
@@ -127,16 +130,13 @@ class Maze extends Common {
       p = queue.shift()
       const node = d.mazeData[p.y][p.x]
 
-      d.mazeData[p.y][p.x].visited = true
+      node.visited = true
 
-      if (p.y === d.exit.y && p.x === d.exit.x) {
-        // console.log('dfs2 路找到了')
-        break
-      }
+      if (p.y === d.exit.y && p.x === d.exit.x) break
 
       for (let i = 0; i < 4; i++) {
-        const newY = p.y + d.dir[i][0]
         const newX = p.x + d.dir[i][1]
+        const newY = p.y + d.dir[i][0]
 
         if (
           this.inArea(newY, newX) &&
@@ -152,17 +152,12 @@ class Maze extends Common {
       }
     }
 
-    d.bfsReady = true
     this.findPath(p)
   }
   setPos() {}
   render() {
     const d = this.d
-    const {canvas, gd} = d
-
-    // console.warn('%c render ' + d.typeItem.startFn, 'color: red')
-
-    gd.fillRect(0, 0, canvas.width, canvas.height)
+    const {gd} = d
 
     d.mazeData.forEach((row, stair) => {
       row.forEach((node, idx) => {

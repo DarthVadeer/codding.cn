@@ -9,7 +9,7 @@ class MergeSort extends Sort {
       mergeSort(l, mid)
       mergeSort(mid + 1, r)
 
-      const aux = new Array(r - l + 1)
+      const aux = new Array(r - l + 1).fill()
 
       for (let i = l; i <= r; i++) {
         aux[i - l] = d.arr[i]

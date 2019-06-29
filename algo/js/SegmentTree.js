@@ -19,9 +19,9 @@ class SegmentTree extends Heap {
       createL(treeIndex * 2 + 2, mid + 1, r)
 
       d.arr[treeIndex].n = '[' + l + '..' + r + ']'
-      d.gd.font = d.conf.font
-      d.arr[treeIndex].width = Math.max(d.conf.itemWidth, d.gd.measureText(d.arr[treeIndex].n).width + 10)
       d.arr[treeIndex].fillStyle = d.color.blue
+      d.gd.font = d.conf.font
+      d.arr[treeIndex].width = Math.max(d.gd.measureText(d.arr[treeIndex].n).width + 10, d.conf.itemWidth)
     }
 
     createL(0, 0, d.n)
@@ -46,9 +46,9 @@ class SegmentTree extends Heap {
       createR(treeIndex * 2 + 2, mid, r)
 
       d.arr[treeIndex].n = '[' + l + '..' + r + ']'
-      d.gd.font = d.conf.font
-      d.arr[treeIndex].width = Math.max(d.conf.itemWidth, d.gd.measureText(d.arr[treeIndex].n).width + 10)
       d.arr[treeIndex].fillStyle = d.color.blue
+      d.gd.font = d.conf.font
+      d.arr[treeIndex].width = Math.max(d.gd.measureText(d.arr[treeIndex].n).width + 10, d.conf.itemWidth)
     }
 
     createR(0, 0, d.n)

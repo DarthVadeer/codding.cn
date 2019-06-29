@@ -22,7 +22,7 @@ class QuickSort3 extends Sort {
           d.arr.swap(i, lt + 1)
           lt++
           i++
-        } else if (d.arr[i].n > v) {
+        } else if (d.arr[i].n > v)  {
           d.arr[i].fillStyle = d.color.orange
           d.arr.swap(i, gt - 1)
           gt--

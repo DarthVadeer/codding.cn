@@ -2,28 +2,29 @@ class Trie extends Common {
   create() {
     const d = this.d
 
-    //  your app's user interface. The framework, gestures cat dog deer pan panda
     d.str = `SwiftUI provides views, controls, and layout structures for declaring your app's user interface. The framework, gestures cat dog deer pan panda`
-    d.strArr = d.str.toLowerCase().match(/\w+/g)
-    d._strArr = d.str.split(/\s+/g)
-    d.root = new Node('root', {map: {}, isWord: false})
+    d.strArr = d.str.split(/\s+/g)
     d.steps = []
+    d.arr = d.str.toLowerCase().match(/\w+/g)
+    d.root = new Node('root', {map: {}, isWord: false, width: 50})
     d.row = 3
-    d.lenStep = Math.ceil(d._strArr.length / d.row)
-    d.paddingTop = d.row * d.conf.lineHeight + d.conf.paddingV
+    d.lenRow = Math.ceil(d.strArr.length / d.row)
+    d.paddingTop = d.row * d.conf.itemHeight + d.conf.paddingV
 
-    for (let i = 0; i < d._strArr.length; i += d.lenStep) {
-      d.steps.push(d._strArr.slice(i, i + d.lenStep).clone())
+    for (let i = 0; i < d.strArr.length; i += d.lenRow) {
+      d.steps.push(
+        d.arr.slice(i, i + d.lenRow)
+      )
     }
 
     d.gd.font = d.conf.font
-    d.strWidth = d.gd.measureText(d.steps.first().join(' ')).width
+    d.textWidth = d.gd.measureText(d.steps[0].join(' ')).width
 
-    d.strArr.forEach((str, idx) => {
+    d.arr.forEach((str, idx) => {
       let node = d.root
 
       for (let i = 0, len = str.length; i < len; i++) {
-        const c = str[i]
+        let c = str[i]
         node = node.map[c] = node.map[c] || new Node(c, {map: {}, isWord: i === len - 1})
         node.fillStyle = d.color[node.isWord ? 'blue' : 'black']
       }
@@ -31,7 +32,8 @@ class Trie extends Common {
   }
   setPos() {
     const d = this.d
-    d.iLeft = 0
+
+    d.contentWidth = 0
     d.contentHeight = 0
 
     function setPos(node, depth) {
@@ -41,33 +43,34 @@ class Trie extends Common {
         setPos(node.map[key], depth + 1)
       })
 
-      node.x = d.iLeft
+      node.x = d.contentWidth
       node.y = depth * d.conf.levelHeight + d.paddingTop
       d.contentHeight = Math.max(d.contentHeight, node.y)
 
-      if (keys.length === 0) {
-        d.iLeft += d.conf.itemWidth
-      } else {
+      if (keys.length > 0) {
         node.x = (node.map[keys.first()].x + node.map[keys.last()].x) / 2
+      } else {
+        d.contentWidth += d.conf.itemWidth
       }
     }
 
     setPos(d.root, 0)
-    d.contentWidth = d.iLeft
     d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
     d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
     d.canvas.height = (d.contentHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.scale
   }
   render() {
     const d = this.d
-    const {canvas, gd} = d
+    const {gd} = d
 
-    const renderStr = () => {
-      gd.textBaseline = 'top'
+    const renderText = () => {
+      gd.fillStyle = d.color.black
       gd.font = d.conf.font
+      gd.textBaseline = 'top'
+
       d.steps.forEach((row, idx) => {
         const str = row.join(' ')
-        gd.fillText(str, (d.contentWidth - d.strWidth) / 2, idx * d.conf.lineHeight)
+        gd.fillText(str, (d.contentWidth - d.textWidth) / 2, idx * d.conf.itemHeight)
       })
     }
 
@@ -80,8 +83,8 @@ class Trie extends Common {
         renderLine(_node)
 
         gd.beginPath()
-        gd.lineTo(node.x + d.conf.itemWidth / 2 + .5, node.y + d.conf.itemHeight / 2)
-        gd.lineTo(_node.x + d.conf.itemWidth / 2 + .5, _node.y + d.conf.itemHeight / 2)
+        gd.lineTo(node.x + d.conf.itemWidth / 2, node.y + d.conf.itemHeight / 2)
+        gd.lineTo(_node.x + d.conf.itemWidth / 2, _node.y + d.conf.itemHeight / 2)
         gd.strokeStyle = d.color.black
         gd.stroke()
       })
@@ -100,7 +103,7 @@ class Trie extends Common {
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
-    renderStr()
+    renderText(d.root)
     renderLine(d.root)
     renderNode(d.root)
     gd.restore()

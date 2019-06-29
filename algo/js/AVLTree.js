@@ -2,16 +2,12 @@ class AVLTree extends Tree {
   create() {
     const d = this.d
 
-    d.itemWidth = 50
+    d.paddingH = 0
     d.paddingTop = 80
-    d.conf.levelHeight = 60
-    d.conf.paddingH = 15
-    d.contentWidth = d.arr.length * d.conf.itemWidth
-    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
-    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+    d.itemWidth = 50
+    d.levelHeight = 60
 
-    d.arr.clone().forEach((node, idx) => {
-      node.width = 50
+    d.arr.clone().forEach((node) => {
       node.fillStyle = d.color.blue
       node.h = 1
       node.balanceFactor = 0
@@ -38,7 +34,7 @@ class AVLTree extends Tree {
         }
         node = this.rightRotate(node)
       } else {
-        if (balanceFactor > 0) {
+        if (this.getBalanceFactor(node.r) > 0) {
           node.r = this.rightRotate(node.r)
         }
         node = this.leftRotate(node)

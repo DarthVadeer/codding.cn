@@ -21,7 +21,7 @@ class MaxHeap extends Heap {
 
       if (d.arr[j].n > d.arr[k].n) break
 
-      d.arr.swap(k, j)
+      d.arr.swap(j, k)
       k = j
     }
   }
@@ -33,7 +33,7 @@ class MaxHeap extends Heap {
 
       if (j + 1 < d.arr.length && d.arr[j + 1].n > d.arr[j].n) j++
 
-      if (d.arr[k].n > d.arr[j].n) break
+      if (d.arr[j].n < d.arr[k].n) break
 
       d.arr.swap(k, j)
       k = j

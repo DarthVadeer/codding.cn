@@ -3,11 +3,11 @@ class FractalTree extends Fractal {
     const d = this.d
     const {canvas, gd} = d
 
-    d.depth = 10
+    d.depth = arg.depth || 9
 
-    const render = (x1, y1, side, deg, degL, degR, depth) => {
+    const render = async (x1, y1, side, deg, degL, degR, depth) => {
       if (depth >= d.depth || side < 3) return
-      ++d.renderCount
+      ++d.countLoop
 
       const x2 = x1 + side * Math.cos(d2a(deg))
       const y2 = y1 + side * Math.sin(d2a(deg))
@@ -27,15 +27,14 @@ class FractalTree extends Fractal {
 
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
-    gd.translate(d.conf.paddingH, d.conf.paddingV)
     render(
       d.contentWidth / 2 + (arg.translateX || 0),
       d.contentHeight,
-      arg.side || 100,
+      arg.side || 125,
       -90,
       arg.degL || -15,
       arg.degR || 15,
-      0,
+      0
     )
     gd.restore()
   }

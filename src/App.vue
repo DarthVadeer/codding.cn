@@ -4,8 +4,9 @@
   >
     <topbar></topbar>
     <div class="auto-flex" style="overflow: visible;">
-      <transition-group :name="'ani-com-' + (countAni % $root.lenAni)">
+      <!-- <transition-group :name="'ani-com-' + (countAni % $root.lenAni)"> -->
       <!-- <transition-group name="fade"> -->
+      <transition-group name="f-ade">
         <div
           v-for="(item, idx) in coms"
           :key="item.com + '-' + idx"

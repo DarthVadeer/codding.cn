@@ -2,7 +2,9 @@ class Vicsek extends Fractal {
   create() {
     const d = this.d
     const {gd} = d
-    const dir = [
+
+    d.depth = 4
+    d.dir = [
       [0, 0],
       [0, 2],
       [1, 1],
@@ -10,11 +12,8 @@ class Vicsek extends Fractal {
       [2, 2],
     ]
 
-    d.depth = 4
-
     const render = (x, y, side, depth) => {
-      if (depth >= d.depth) {
-        ++d.renderCount
+      if (side < 2 || depth >= d.depth) {
         gd.beginPath()
         gd.rect(x, y, side, side)
         gd.fillStyle = d.color.blue
@@ -22,17 +21,18 @@ class Vicsek extends Fractal {
         return
       }
 
-      side /= 3
+      ++d.countLoop
       ++depth
+      side /= 3
 
-      dir.forEach((item, idx) => {
+      for (let i = 0; i < d.dir.length; i++) {
+        const item = d.dir[i]
         render(x + item[1] * side, y + item[0] * side, side, depth)
-      })
+      }
     }
 
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
-    gd.translate(d.conf.paddingH, d.conf.paddingV)
     render(0, 0, d.contentWidth, 0)
     gd.restore()
   }

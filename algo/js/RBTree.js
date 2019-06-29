@@ -2,22 +2,19 @@ class RBTree extends Tree {
   create() {
     const d = this.d
 
-    d.arr.clone().forEach((node, idx) => {
-      node.width = 0
+    d.arr.clone().forEach((node) => {
       node.fillStyle = d.color.red
       d.root = this.addL(d.root, node)
       d.root.fillStyle = d.color.black
     })
-    d.arr.clone().forEach((node, idx) => {
-      node.width = 0
+
+    d.arr.clone().forEach((node) => {
       node.fillStyle = d.color.red
       d.root2 = this.addR(d.root2, node)
       d.root2.fillStyle = d.color.black
     })
   }
   addL(node, item) {
-    const d = this.d
-
     if (!node) return item
 
     if (item.n > node.n) {
@@ -43,8 +40,6 @@ class RBTree extends Tree {
     return node
   }
   addR(node, item) {
-    const d = this.d
-
     if (!node) return item
 
     if (item.n > node.n) {
@@ -70,34 +65,37 @@ class RBTree extends Tree {
     return node
   }
   isRed(node) {
-    return node ? node.fillStyle === this.d.color.red : false
-  }
-  leftRotate(x) {
-    const y = x.r
-
-    x.r = y.l
-    y.l = x
-
-    y.fillStyle = x.fillStyle
-    x.fillStyle = this.d.color.red
-
-    return y
-  }
-  rightRotate(x) {
-    const y = x.l
-
-    x.l = y.r
-    y.r = x
-
-    y.fillStyle = x.fillStyle
-    x.fillStyle = this.d.color.red
-
-    return y
+    const d = this.d
+    return node ? node.fillStyle === d.color.red : false
   }
   flipColors(node) {
     const d = this.d
     node.fillStyle = d.color.red
     node.l.fillStyle = 
     node.r.fillStyle = d.color.black
+  }
+  leftRotate(x) {
+    const d = this.d
+    const y = x.r
+
+    x.r = y.l
+    y.l = x
+
+    y.fillStyle = x.fillStyle
+    x.fillStyle = d.color.red
+
+    return y
+  }
+  rightRotate(x) {
+    const d = this.d
+    const y = x.l
+
+    x.l = y.r
+    y.r = x
+
+    y.fillStyle = x.fillStyle
+    x.fillStyle = d.color.red
+
+    return y
   }
 }

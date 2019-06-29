@@ -2,9 +2,16 @@ class KoachSnowflake extends Fractal {
   create() {
     const d = this.d
     const {canvas, gd} = d
+    const _canvas = canvas.cloneNode()
+    const _gd = _canvas.getContext('2d')
+
+    // document.body.insertBefore(_canvas, document.body.children[0])
+
+    d.depth = 5
 
     const render = (x1, y1, side, deg, depth) => {
       ++depth
+      ++d.countLoop
       side /= 3
 
       const x2 = x1 + side * Math.cos(d2a(deg))
@@ -19,15 +26,16 @@ class KoachSnowflake extends Fractal {
       const x5 = x4 + side * Math.cos(d2a(deg))
       const y5 = y4 + side * Math.sin(d2a(deg))
 
-      if (depth >= d.depth) {
-        gd.beginPath()
-        gd.lineTo(x1, y1)
-        gd.lineTo(x2, y2)
-        gd.lineTo(x3, y3)
-        gd.lineTo(x4, y4)
-        gd.lineTo(x5, y5)
-        gd.strokeStyle = d.color.blue
-        gd.stroke()
+      if (depth >= d.depth || side < 3) {
+        _gd.beginPath()
+        _gd.lineTo(x1, y1)
+        _gd.lineTo(x2, y2)
+        _gd.lineTo(x3, y3)
+        _gd.lineTo(x4, y4)
+        _gd.lineTo(x5, y5)
+
+        _gd.strokeStyle = d.color.blue
+        _gd.stroke()
       } else {
         render(x1, y1, side, deg, depth)
         render(x2, y2, side, deg - 60, depth)
@@ -36,42 +44,22 @@ class KoachSnowflake extends Fractal {
       }
     }
 
-    gd.save()
-    gd.scale(d.conf.scale, d.conf.scale)
-    gd.translate(d.conf.paddingH, d.conf.paddingV)
-    render(d.contentWidth * .1, d.contentHeight / 3.71, d.contentWidth * .8, 0, 0)
-    gd.restore()
+    _gd.save()
+    _gd.scale(d.conf.scale, d.conf.scale)
+    render(d.contentWidth * .1, d.contentHeight / 3.72, d.contentWidth * .8, 0, 0)
+    _gd.restore()
 
-    d.canvas.toBlob((blob) => {
-      const src = URL.createObjectURL(blob)
-      const img = new Image()
-
-      img.onload = () => {
-        const len = 3
-        const deg = 360 / len
-
-        gd.clearRect(0, 0, canvas.width, canvas.height)
-
-        new Array(len).fill().forEach((_, idx) => {
-          const _deg = deg * idx
-
-          gd.save()
-          gd.translate(
-            (d.contentWidth / 2 + d.conf.paddingH) * d.conf.scale,
-            (d.contentHeight / 2 + d.conf.paddingV) * d.conf.scale
-          )
-          gd.rotate(d2a(_deg))
-          gd.drawImage(
-            img,
-            0, 0, img.width, img.height,
-            -img.width / 2, -img.height / 2, img.width, img.height
-          )
-          gd.restore()
-          this.onready && this.onready()
-        })
-      }
-
-      img.src = src
+    new Array(3).fill().forEach((_, idx, arr) => {
+      const deg = 360 / arr.length * idx
+      gd.save()
+      gd.translate(d.canvas.width / 2, d.canvas.height / 2)
+      gd.rotate(d2a(deg))
+      gd.drawImage(
+        _canvas,
+        0, 0, d.canvas.width, d.canvas.height,
+        -d.canvas.width / 2, -d.canvas.height / 2, d.canvas.width, d.canvas.height,
+      )
+      gd.restore()
     })
   }
 }

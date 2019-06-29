@@ -14,7 +14,7 @@ class QuickSort extends Sort {
       const v = d.arr[l].n
       let j = l
 
-      for (let i = l; i <= r; i++) {
+      for (let i = l + 1; i <= r; i++) {
         if (d.arr[i].n < v) {
           d.arr[i].fillStyle = d.color.green
           d.arr.swap(i, j + 1)

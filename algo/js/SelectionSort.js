@@ -5,9 +5,6 @@ class SelectionSort extends Sort {
     for (let i = 0, len = d.arr.length; i < len; i++) {
       let minIndex = i
 
-      d.arr[i].fromIndex = i
-      d.arr[i].fillStyle = d.color.orange
-
       for (let j = i + 1; j < len; j++) {
         d.arr[j].fromIndex = j
         d.arr[j].fillStyle = d.color.green
@@ -17,12 +14,14 @@ class SelectionSort extends Sort {
         }
       }
 
+      d.arr[i].fromIndex = i
+      d.arr[i].fillStyle = d.color.orange
       d.arr[minIndex].fillStyle = d.color.blue
       d.arr.swap(i, minIndex)
 
       d.steps.push(
         new Array(i).fill().concat(
-          d.arr.slice(i, d.arr.length).clone()
+          d.arr.slice(i, len).clone()
         )
       )
     }
