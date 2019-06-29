@@ -117,8 +117,6 @@ class Maze extends Common {
 
     d.dfs2Ready = true
     this.findPath(p)
-    // this.render()
-    // this.onready && this.onready()
   }
   bfs() {
     const d = this.d

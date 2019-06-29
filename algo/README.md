@@ -11,4 +11,4 @@
 [《算法大神带你玩转数据结构 从入门到精通》](https://coding.imooc.com/learn/list/207.html) <br>
 [《玩转算法与数据结构》](https://coding.imooc.com/learn/list/71.html) <br>
 
-![算法与数据结构](./h.png)
+![算法与数据结构](./i.png)
