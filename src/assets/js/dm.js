@@ -21,6 +21,7 @@ export default {
       lenAni: 30,
       dw: window.innerWidth,
       dh: window.innerHeight,
+      baseUrl: isLocal ? 'http://10.0.1.2/final-app/' : '/',
       mapPlayTime,
       search: {},
       router: {},
@@ -140,6 +141,7 @@ export default {
       window.addEventListener('popstate', vm.initRouter.bind(vm), false)
       window.addEventListener('resize', handleResize, false)
       window.addEventListener('orientationchange', handleResize, false)
+      setTimeout(vm.lazyLoad.bind(vm), 1000)
 
       document.addEventListener('keydown', (e) => {
         if (e.ctrlKey) {

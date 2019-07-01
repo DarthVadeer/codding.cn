@@ -1,7 +1,7 @@
 class FractalTree extends Fractal {
   create(arg = {}) {
     const d = this.d
-    const {canvas, gd} = d
+    const {gd} = d
 
     d.depth = arg.depth || 9
 

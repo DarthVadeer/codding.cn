@@ -20,6 +20,7 @@
 </head>
 <body>
   
+<div id="test"></div>
 <div id="box-algo">
   <div class="list">
     <!-- <section>
@@ -33,6 +34,11 @@
   </div>
 </div>
 
+<script>
+window.onerror = function() {
+  alert([].slice.call(arguments).join('\n\n'))
+}
+</script>
 <script src="./js/algoAux.js"></script>
 <script src="./js/Common.js"></script>
 <script src="./js/SelectionSort.js"></script>

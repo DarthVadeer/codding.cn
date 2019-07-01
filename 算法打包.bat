@@ -1,1 +1,2 @@
-node ./algo/pack.js
+cd ./algo
+nodemon pack.js

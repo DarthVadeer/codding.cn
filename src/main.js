@@ -74,3 +74,36 @@ window.vm = new Vue({
 
   document.body.appendChild(nodeStyle3D)
 }
+
+{
+  const nodeStyleRespond = document.getElementById('cctv-media') || document.createElement('style')
+  let sCss = ''
+
+  nodeStyleRespond.id = 'node-sytle-respond'
+
+  sCss += new Array(50).fill().map((_, idx) => {
+    let w = idx * 280 + 500
+    const n = Math.ceil(w / 280)
+
+    // .cctv .video-main-wrapper .video-group li {
+
+    return `
+      @media (min-width: ${w}px) {
+        .respond-list .respond-item {
+          width: ${1 / n * 100}%;
+        }
+      }
+    `
+  }).join('')
+
+  sCss = `
+    @media (max-width: 500px) {
+      .respond-list .respond-item {
+        width: 50%;
+      }
+    }
+  ` + sCss
+
+  nodeStyleRespond.innerHTML = sCss
+  document.body.appendChild(nodeStyleRespond)
+}

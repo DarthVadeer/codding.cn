@@ -150,7 +150,7 @@ $.prototype.toggle = function(sClass) {
 $.ajax = function(o) {
   return new Promise((next) => {
     const xhr = new XMLHttpRequest()
-    const url = vm.is.local && /\.php$/.test(o.url) ? 'http://10.0.1.2/final-app/' + o.url : o.url
+    const url = vm.is.local && /\.php$/.test(o.url) ? vm.baseUrl + o.url : o.url
 
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {

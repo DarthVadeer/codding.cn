@@ -1,6 +1,6 @@
 <template>
   <div class="topbar flex">
-    <div class="logo">
+    <div class="logo hidden-xs">
       <strong>
         <a tabindex="1" href="javascript:">{{$root.appName}} - Official</a>
       </strong>
@@ -29,6 +29,7 @@ export default {
         list: [
           {name: 'CCTV', com: 'cctv'},
           {name: '算法与数据结构', com: 'algo'},
+          {name: '创意空间', com: 'goal'},
           // {name: '迷宫', com: 'algo'},
           // {name: '首页', com: 'index'},
           // {name: 'WebFtp', com: 'webFtp'},
@@ -44,10 +45,10 @@ export default {
 
 <style lang="scss" scoped>
 .topbar {
-  padding: 0 .4em; background: #33373e; color: #c3c6c9; font-size: 14px;
-  user-select: none;
-  a {display: inline-block; padding: .8em .6em;}
+  padding: 0 8px; background: #33373e; color: #c3c6c9; font-size: 14px;
+  user-select: none; z-index: 2;
+  a {display: inline-block; padding: 12px 8px;}
   a.on {color: #fff;}
-  .logo {margin-right: .6em;}
+  .logo {margin-right: 0;}
 }
 </style>

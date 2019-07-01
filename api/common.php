@@ -14,3 +14,13 @@ function res($data) {
   echo json_encode($data);
   exit;
 }
+
+function br() {
+  echo '<br>';
+}
+
+function pre($data) {
+  echo '<pre>';
+  print_r($data);
+  echo '</pre>';
+}

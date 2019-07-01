@@ -1249,7 +1249,7 @@ class KoachSnowflake extends Fractal {
 class FractalTree extends Fractal {
   create(arg = {}) {
     const d = this.d
-    const {canvas, gd} = d
+    const {gd} = d
 
     d.depth = arg.depth || 9
 
@@ -1613,7 +1613,7 @@ class Maze extends Common {
       row.forEach((node, idx) => {
         gd.beginPath()
         gd.rect(idx * d.itemWidth, stair * d.itemWidth, d.itemWidth, d.itemWidth)
-        gd.fillStyle = d.color[node.n === d.wall ? 'blue' : (node.isPath ? 'red' : (node.visited ? 'yellow' : 'transparent'))]
+        gd.fillStyle = d.color[node.n === d.wall ? 'blue' : (node.isPath ? 'red' : (node.visited ? 'yellow' : 'white'))]
         gd.fill()
       })
     })
@@ -1648,9 +1648,9 @@ class Algo {
 
     d.type = d.type || {}
     d.type.list = d.type.list || [
-      {name: '迷宫寻路 - 广度 - 非递归', cons: 'Maze', startFn: 'bfs'},
-      {name: '迷宫寻路 - 深度优先 - 非递归', cons: 'Maze', startFn: 'dfs2'},
-      {name: '迷宫寻路 - 深度优先 - 递归', cons: 'Maze', startFn: 'dfs1'},
+      // {name: '迷宫寻路 - 广度 - 非递归', cons: 'Maze', startFn: 'bfs'},
+      // {name: '迷宫寻路 - 深度优先 - 非递归', cons: 'Maze', startFn: 'dfs2'},
+      // {name: '迷宫寻路 - 深度优先 - 递归', cons: 'Maze', startFn: 'dfs1'},
       {name: '分形图 - FractalTree', cons: 'FractalTree', startFn: 'create', arg: {degL: -5, degR: 25, translateX: -120}},
       {name: '分形图 - FractalTree', cons: 'FractalTree', startFn: 'create', arg: {}},
       {name: '分形图 - KoachSnowflake', cons: 'KoachSnowflake', startFn: 'create'},
@@ -1694,13 +1694,20 @@ class Algo {
     // randArr = new Array(len).fill().map((_, idx) => len - idx)
 
     randArr = randArr.map(n => new Node(n))
+    const gdList = []
 
     nodeList.querySelectorAll('canvas').forEach((canvas, idx) => {
       const typeItem = d.type.list[idx]
+      const gd = canvas.getContext('2d')
+      try {
+        gdList.push(typeItem.cons + ' - ' + gd)
+      } catch (e) {
+        alert('error')
+      }
       console.time(typeItem.cons)
       const o = new allAlgo[typeItem.cons]({
         canvas,
-        gd: canvas.getContext('2d'),
+        gd,
         arr: randArr.clone(),
         typeItem,
       })
@@ -1711,6 +1718,10 @@ class Algo {
       o.log && o.log()
       console.timeEnd(typeItem.cons)
     })
+
+    setTimeout(() => {
+      test.innerHTML = gdList.join('<br /><br />')
+    }, 2000)
   }
 }
 

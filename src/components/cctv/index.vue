@@ -171,8 +171,8 @@
 
 <script>
 const coms = [
-  'components/loading',
-  'components/player',
+  'components/com/loading',
+  'components/com/player',
 ].map((path) => {
   return require('@/' + path).default
 })
@@ -706,39 +706,6 @@ export default {
     delete this.$root.cctv
   },
 }
-
-{
-  const nodeStyle = document.getElementById('cctv-media') || document.createElement('style')
-  let sHtml = ''
-  nodeStyle.id = 'cctv-media'
-
-  sHtml += new Array(50).fill().map((_, idx) => {
-    let w = idx * 280 + 500
-    const n = Math.ceil(w / 280)
-
-    // .cctv .video-main-wrapper .video-group li {
-
-    return `
-      @media (min-width: ${w}px) {
-        .respond-list .respond-item {
-          width: ${1 / n * 100}% !important;
-        }
-      }
-    `
-  }).join('')
-
-  sHtml = `
-    @media (max-width: 500px) {
-      .respond-list .respond-item {
-        width: 50% !important;
-      }
-    }
-  ` + sHtml
-
-  nodeStyle.innerHTML = sHtml
-  document.body.appendChild(nodeStyle)
-}
-
 </script>
 
 <style lang="scss" scoped>
@@ -750,7 +717,7 @@ export default {
     .video-group {
       .no-data {}
       section {
-        margin: 1em;
+        margin: 1em 1em 1.4em 1em;
         &:first-child {margin-top: .2em;}
         .group-title {
           margin-bottom: 1em;
@@ -758,7 +725,7 @@ export default {
         ul {
           margin: -2px; font-size: 12px;
           li {
-            width: 50%; display: inline-block; padding: 2px; vertical-align: top;
+            display: inline-block; padding: 2px; vertical-align: top;
             & > .inner {
               padding-top: 62.5%; cursor: pointer; overflow: hidden;
               background: #eee no-repeat center / cover;

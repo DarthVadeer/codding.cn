@@ -1,5 +1,5 @@
 const fs = require('fs')
-const pathArr = fs.readFileSync('./algo/index.html', 'utf-8').match(/\.\/js\/\w+\.js/g).map(str => './algo' + str.slice(1))
+const pathArr = fs.readFileSync('./index.html', 'utf-8').match(/\.\/js\/\w+\.js/g) || []
 pathArr.shift()
 
 let sJs = pathArr.map((path) => {
@@ -15,6 +15,6 @@ ${classList.join(',\n')}
 }`
 
 // console.log(sJs)
-fs.writeFileSync('./src/components/algo/allAlgo.js', sJs)
+fs.writeFileSync('../src/components/algo/allAlgo.js', sJs)
 
 console.log('succ')

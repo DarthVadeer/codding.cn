@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Toggle from '@/components/toggle'
+import Toggle from '@/components/com/toggle'
 
 export default {
   name: 'webFtp',

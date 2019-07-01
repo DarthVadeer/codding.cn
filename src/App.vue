@@ -4,9 +4,8 @@
   >
     <topbar></topbar>
     <div class="auto-flex" style="overflow: visible;">
-      <!-- <transition-group :name="'ani-com-' + (countAni % $root.lenAni)"> -->
+      <transition-group :name="'ani-com-' + (countAni % $root.lenAni)">
       <!-- <transition-group name="fade"> -->
-      <transition-group name="f-ade">
         <div
           v-for="(item, idx) in coms"
           :key="item.com + '-' + idx"
@@ -23,12 +22,11 @@
 
 <script>
 const coms = [
-  'components/player',
-  // 'components/loadingDiv',
-  'components/loading',
-  'components/alert',
-  'components/confirm',
-  'components/toggle',
+  'components/com/player',
+  'components/com/loading',
+  'components/com/alert',
+  'components/com/confirm',
+  'components/com/toggle',
 
   'components/index',
   'components/topbar',
@@ -38,6 +36,8 @@ const coms = [
   'components/dbAdmin',
   'components/talker',
   'components/boboFans',
+  'components/goal',
+  'components/x-frame',
 ].map((path) => {
   return require('@/' + path).default
 })
