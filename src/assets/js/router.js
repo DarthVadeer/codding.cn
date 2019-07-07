@@ -48,17 +48,24 @@ export default {
     const vm = this.$root
     const r = vm.router
 
-    if (com === r.coms[0]) return
-
     vm.updateRouter({
-      ...o,
       idxChannel: undefined,
       idxAlbum: undefined,
       videoInfo: undefined,
-    }, 'push')
+      algoInfo: undefined,
+      searchText: undefined,
+      goalUrl: undefined,
+      ...o,
+    })
+
+    if (com === r.coms[0]) return
+
+    vm.is.routerPush = true
     vm.router.countAni++
     r.coms.unshift(com)
     while (r.coms.length > 2) r.coms.pop()
+
+    setTimeout(() => vm.is.routerPush = false, 100)
   },
   updateRouter(o, isRouterPush) {
     const vm = this.$root

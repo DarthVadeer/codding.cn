@@ -117,7 +117,7 @@
               <div class="inner c cxy">
                 <div class="alert alert-default">
                   <div style="margin-bottom: 1em;">
-                    <div>暂无数据，点击确定，通过搜索获取数据</div>
+                    <div>暂无数据，点击确定，{{idxAlbum === undefined ? '返回首页' : '通过搜索获取数据'}}</div>
                   </div>
                   <button class="btn btn-block btn-default"
                     @click="sugg.text = curAlbum.name; handleSubmitAndFetchVideoList()"
@@ -362,6 +362,24 @@ export default {
         })
       }
     },
+    fetchAllChannel() {
+      // https://api.cntv.cn/lanmu/columnSearch?&fl=&fc=&cid=&p=17&n=20&serviceId=tvcctv&t=jsonp&cb=Callback
+      const vm = this.$root
+      const r = vm.router
+
+      $.jsonp('https://api.cntv.cn/lanmu/columnSearch', {
+        fl: '',
+        fc: '',
+        cid: '',
+        p: '17',
+        n: '100',
+        serviceId: 'tvcctv',
+        t: 'jsonp',
+        '?': 'cb',
+      }, ({response}) => {
+        console.log(response)
+      })
+    },
     fetchChannel(cb) {
       const vm = this.$root
       const r = vm.router
@@ -583,12 +601,13 @@ export default {
           'type': '0',
           'serviceId': 'tvcctv',
           '?': 'cb',
-        }, ({response}) => {
+        }, (dataOrigin) => {
           if (signFetchVideoList !== this.signFetchVideoList) {
             console.warn('fetchByDef warn 时过境迁')
             return
           }
 
+          const response = (dataOrigin || {}).response || {}
           const list = (response || {}).docs || []
 
           vm.is.loading = false
@@ -687,6 +706,8 @@ export default {
   mounted() {
     const vm = this.$root
     const r = vm.router
+
+    // this.fetchAllChannel()
 
     if (vm.is.local && this.videoInfo.m3u8) {
       vm.playM3u8()

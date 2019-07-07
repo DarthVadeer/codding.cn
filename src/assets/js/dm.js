@@ -2,7 +2,7 @@ import Hls from 'hls.js'
 
 export default {
   rootData() {
-    const isLocal = location.origin.indexOf(':412') > -1
+    const isLocal = location.origin.search(/:412|:300/) > -1
     const ua = navigator.userAgent
     const isIos = ua.indexOf('iPhone; CPU iPhone OS') > -1
     const isIpad = ua.indexOf('iPad; CPU OS') > -1
@@ -22,6 +22,7 @@ export default {
       dw: window.innerWidth,
       dh: window.innerHeight,
       baseUrl: isLocal ? 'http://10.0.1.2/final-app/' : '/',
+      algoTimeDelay: 50,
       mapPlayTime,
       search: {},
       router: {},
@@ -162,6 +163,6 @@ export default {
           }
         }
       }, false)
-    }
+    },
   },
 }

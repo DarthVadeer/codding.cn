@@ -2,6 +2,20 @@
 
 # 我的世界 | By 田小号🎺
 
+炫酷动画
+
+https://github.com/mojs/mojs
+
+进场动画 b<b></b>
+
+https://codepen.io/sol0mka/full/39427561a8a0b15d7896480a7d96d3d1/
+
+https://codepen.io/sol0mka/full/yNOage/
+
+# es6+支持情况
+
+http://kangax.github.io/compat-table/es6/#test-Array.from
+
 17 素材网 <br>
 http://www.17sucai.com/pins/tag/5685.html
 
@@ -55,4 +69,43 @@ module.exports = {
   },
   lintOnSave: false
 }
+```
+
+```
+// 17素材网，内容抓取代码
+async function getData() {
+  let result = []
+
+  for (let i = 1; i <= 23; i++) {
+    await new Promise((next) => {
+      $.get('http://www.17sucai.com/pins/tag/418.html?p=' + i, (str) => {
+
+        $(str).find('.picbox li.item').each((idx, li) => {
+          li = $(li)
+          result.push({
+            href: li.find('.demo-btn').attr('href'),
+            text: li.find('.txt').text(),
+            img: li.find('.lazy').attr('data-url'),
+          })
+        })
+
+        next()
+      })
+    })
+    break
+  }
+
+  result = result.filter((v) => {
+    return (
+      v.href &&
+      v.img &&
+      v.text
+    )
+  })
+
+  console.log(JSON.stringify(result))
+}
+
+getData()
+
 ```

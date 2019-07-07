@@ -2,32 +2,34 @@
 <html lang="zh-cn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width">
   <title>算法与数据结构</title>
+  <meta name="viewport" content="width=device-width">
   <link rel="shortcut icon" type="image/x-icon" href="http://codding.cn/static/img/favicon.ico">
   <style>
     * {padding: 0; margin: 0; font: inherit; box-sizing: border-box;}
     body {font-size: 14px;}
 
-    #box-algo {text-align: center; padding: 15px;}
-    #box-algo > .list {}
+    #box-algo {text-align: center; user-select: none;}
+    #box-algo > .list {padding: 15px;}
     #box-algo > .list section {margin-bottom: 15px;}
-    #box-algo > .list section .btn-box {margin-bottom: 15px;}
-    #box-algo > .list section .btn-box button {padding: .4em 1em; cursor: pointer;}
-    #box-algo > .list section .btn-canvas {}
-    #box-algo > .list section .btn-canvas canvas {border: 1px solid #ccc; max-width: 100%;}
+    #box-algo > .list section .box-btn {margin-bottom: 15px;}
+    #box-algo > .list section .box-btn button {padding: .4em 1em; cursor: pointer;}
+    #box-algo > .list section .box-canvas {}
+    #box-algo > .list section .box-canvas canvas {border: 1px solid #ccc; max-width: 100%;}
   </style>
 </head>
 <body>
-  
-<div id="test"></div>
+
+<pre id="msg"></pre>
+<pre id="msg2"></pre>
+
 <div id="box-algo">
   <div class="list">
     <!-- <section>
-      <div class="btn-box">
+      <div class="box-btn">
         <button class="btn btn-primary">${v.name}</button>
       </div>
-      <div class="btn-canvas">
+      <div class="box-canvas">
         <canvas data-title="${v.name}"></canvas>
       </div>
     </section> -->
@@ -36,36 +38,24 @@
 
 <script>
 window.onerror = function() {
-  alert([].slice.call(arguments).join('\n\n'))
+  msg.innerHTML = [].slice.call(arguments).join('<br /><br />')
 }
 </script>
 <script src="./js/algoAux.js"></script>
 <script src="./js/Common.js"></script>
-<script src="./js/SelectionSort.js"></script>
-<script src="./js/InsertionSort.js"></script>
-<script src="./js/MergeSort.js"></script>
-<script src="./js/QuickSort.js"></script>
-<script src="./js/QuickSort2.js"></script>
-<script src="./js/QuickSort3.js"></script>
-<script src="./js/MaxHeap.js"></script>
+<script src="./js/Sort.js"></script>
+<script src="./js/Heap.js"></script>
 <script src="./js/SegmentTree.js"></script>
-<script src="./js/BinarySearch.js"></script>
-<script src="./js/AVLTree.js"></script>
-<script src="./js/RBTree.js"></script>
+<script src="./js/Tree.js"></script>
 <script src="./js/Trie.js"></script>
-<script src="./js/Vicsek.js"></script>
-<script src="./js/Sierpinski.js"></script>
-<script src="./js/SierpinskiTriangle.js"></script>
-<script src="./js/KoachSnowflake.js"></script>
-<script src="./js/FractalTree.js"></script>
-<script src="./js/Fib.js"></script>
-<script src="./js/MazeData.js"></script>
+<script src="./js/Fractal.js"></script>
+<script src="./js/mazeData.js"></script>
 <script src="./js/Maze.js"></script>
 <script src="./js/Algo.js"></script>
 <script>
-console.time('algo')
+// console.time('new Algo')
 const algo = new Algo()
-console.timeEnd('algo')
+// console.timeEnd('new Algo')
 </script>
 
 </body>

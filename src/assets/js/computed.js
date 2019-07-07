@@ -7,6 +7,9 @@ export default {
       case 'x-frame':
         com = comList[1]
         break
+      case 'algo-info':
+        com = comList[1]
+        break
       default:
         
         break

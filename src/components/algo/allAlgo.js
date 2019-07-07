@@ -1,48 +1,43 @@
 class Node {
-  constructor(n, extend) {
+  constructor(n, o) {
     this.n = n
 
-    extend = {
+    o = {
       x: 0,
       y: 0,
       tx: 0,
       ty: 0,
       fillStyle: Algo.color.black,
       strokeStyle: Algo.color.black,
-      ...extend,
+      ...o,
     }
 
-    for (let key in extend) {
-      this[key] = extend[key]
+    for (let key in o) {
+      this[key] = o[key]
     }
   }
 }
 
 class Common {
-  constructor(d = {}) {
+  constructor(d= {}) {
     this.d = d
 
-    d.conf = Algo.conf
-    d.color = Algo.color
     d.contentWidth = d.arr.length * d.conf.itemWidth
     d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
     d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
   }
-  renderNode(node, o = {}) {
+  renderNode(node, arg = {}) {
     if (!node) return
 
     const d = this.d
     const {gd} = d
-    const itemWidth = node.width || o.itemWidth || d.itemWidth || d.conf.itemWidth
-    const itemHeight = node.height || o.itemHeight || d.itemHeight || d.conf.itemHeight
+    const itemWidth = node.width || arg.itemWidth || d.itemWidth || d.conf.itemWidth
+    const itemHeight = node.height || arg.itemHeight || d.itemHeight || d.conf.itemHeight
+    const x = arg.itemWidth ? node.x : node.x - (itemWidth - (d.itemWidth || d.conf.itemWidth)) / 2
 
-    let x = node.width ? 
-    node.x - (node.width - d.conf.itemWidth) / 2 :
-    node.x
-
-    gd.beginPath()
     gd.save()
-    gd.globalAlpha = .8
+    gd.beginPath()
+    gd.globalAlpha = .75
     gd.rect(x + 1, node.y, itemWidth - 2, itemHeight)
     gd.fillStyle = node.fillStyle
     gd.fill()
@@ -50,15 +45,17 @@ class Common {
 
     gd.textAlign = 'center'
     gd.textBaseline = 'middle'
-    gd.fillStyle = d.color.white
     gd.font = d.conf.font
-    gd.fillText(node.n, x + itemWidth / 2 + .5, node.y + itemHeight / 2)
+    gd.fillStyle = d.color.white
+    gd.fillText(node.n, x + itemWidth / 2, node.y + itemHeight / 2)
 
     if ('balanceFactor' in node) {
       gd.textBaseline = 'bottom'
+      gd.textAlign = 'center'
+      gd.fillStyle = d.color.black
+
       ;['高度:' + node.h, '平衡:' + node.balanceFactor].forEach((str, idx, arr) => {
-        gd.fillStyle = d.color.black
-        gd.fillText(str, x + itemWidth / 2, -(arr.length - idx - 1) * 16 + node.y - 2)
+        gd.fillText(str, node.x + itemWidth / 2, (idx - arr.length + 1) * itemHeight + node.y)
       })
     }
   }
@@ -70,272 +67,16 @@ class Sort extends Common {
 
     const d = this.d
 
-    d.arr.forEach(node => node.strokeStyle = randColor().toString())
+    d.arr.forEach(v => v.strokeStyle = randColor().toString())
     d.steps = [d.arr.clone()]
   }
-  setPos() {
-    const d = this.d
-
-    d.steps.forEach((row, stair) => {
-      row.forEach((node, idx) => {
-        if (!node) return
-
-        node.x = idx * d.conf.itemWidth
-        node.y = stair * d.conf.levelHeight
-      })
-    })
-
-    d.contentHeight = (d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight
-    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
-  }
-  render() {
-    const d = this.d
-    const {gd} = d
-
-    const renderLine = () => {
-      d.steps.last().forEach((node, idx) => {
-        let stair = d.steps.length
-
-        gd.beginPath()
-
-        while (--stair > -1) {
-          const _node = d.steps[stair][node.fromIndex]
-          if (!_node) continue
-
-          node = _node
-          gd.lineTo(node.x + d.conf.itemWidth / 2 + .5, node.y + d.conf.itemHeight / 2)
-        }
-
-        gd.strokeStyle = node.strokeStyle
-        gd.stroke()
-      })
-    }
-
-    const renderNode = () => {
-      d.steps.forEach((row, idx) => {
-        row.forEach((node, idx) => {
-          this.renderNode(node)
-        })
-      })
-    }
-
-    gd.save()
-    gd.scale(d.conf.scale, d.conf.scale)
-    gd.translate(d.conf.paddingH, d.conf.paddingV)
-    renderLine()
-    renderNode()
-    gd.restore()
-  }
-}
-
-class Heap extends Common {
-  constructor() {
-    super(...arguments)
-
-    const d = this.d
-    d.level = Math.ceil(Math.log(d.arr.length + 1) / Math.log(2))
-    d.branchIndex = parseInt((d.arr.length - 2) / 2)
-    d.arr.forEach(node => node.fillStyle = d.color.blue)
-  }
-  setPos() {
-    const d = this.d
-    let count = 0
-
-    d.contentWidth = Math.pow(2, d.level - 1) * d.conf.itemWidth
-    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
-    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
-    d.contentHeight = (d.level - 1) * d.conf.levelHeight
-    d.canvas.height = (d.contentHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.scale
-    
-    for (let i = 0; i < d.level; i++) {
-      const n = Math.pow(2, i)
-      const perW = d.contentWidth / n
-
-      for (let j = 0; j < n && count + j < d.arr.length; j++) {
-        const index = count + j
-        const node = d.arr[index]
-
-        node.x = j * perW + perW / 2 - d.conf.itemWidth / 2
-        node.y = i * d.conf.levelHeight
-      }
-
-      count += n
-    }
-  }
-  render() {
-    const d = this.d
-    const {gd} = d
-
-    const renderLine = () => {
-      for (let i = d.branchIndex; i > -1; i--) {
-        const node = d.arr[i]
-        const nodeL = d.arr[i * 2 + 1]
-        const nodeR = d.arr[i * 2 + 2]
-
-        gd.beginPath()
-        nodeL && gd.lineTo(nodeL.x + d.conf.itemWidth / 2, nodeL.y + d.conf.itemHeight / 2)
-        gd.lineTo(node.x + d.conf.itemWidth / 2, node.y + d.conf.itemHeight / 2)
-        nodeR && gd.lineTo(nodeR.x + d.conf.itemWidth / 2, nodeR.y + d.conf.itemHeight / 2)
-        gd.strokeStyle = d.color.black
-        gd.stroke()
-      }
-    }
-
-    const renderNode = () => {
-      d.arr.forEach((node, idx) => {
-        this.renderNode(node)
-      })
-    }
-
-    gd.save()
-    gd.scale(d.conf.scale, d.conf.scale)
-    gd.translate(d.conf.paddingH, d.conf.paddingV)
-    renderLine()
-    renderNode()
-    gd.restore()
-  }
-}
-
-class Tree extends Common {
-  constructor() {
-    super(...arguments)
-
-    const d = this.d
-
-    d.paddingH = 20
-    d.paddingTop = 60
-  }
-  setPos() {
-    const d = this.d
-    const itemWidth = d.itemWidth || d.conf.itemWidth
-    const itemHeight = d.itemHeight || d.conf.itemHeight
-    const levelHeight = d.levelHeight || d.conf.levelHeight
-
-    d.contentWidth = d.arr.length * d.conf.itemWidth + d.paddingH * 2
-    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
-    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
-
-    d.iLeft = 0
-    d.contentHeight = 0
-    d.translateX = 0
-
-    d.arr.forEach((node, idx) => {
-      node.x = idx * d.conf.itemWidth + d.paddingH
-      node.y = 0
-    })
-
-    const setPos = (node, depth) => {
-      if (!node) return
-
-      setPos(node.l, depth + 1)
-      node.x = d.iLeft
-      d.iLeft += itemWidth / 2
-      node.y = depth * levelHeight + d.paddingTop
-      setPos(node.r, depth + 1)
-
-      d.contentHeight = Math.max(d.contentHeight, node.y)
-
-      if (node.l && node.r) {
-        node.x = (node.l.x + node.r.x) / 2
-      }
-    }
-
-    const updateCoord = (node) => {
-      if (!node) return
-
-      updateCoord(node.l)
-      updateCoord(node.r)
-
-      node.x += d.translateX
-    }
-
-    ;[d.root, d.root2].forEach((rootNode, idx, arr) => {
-      if (!rootNode) return
-      setPos(rootNode, 0)
-      d.iLeft += idx === arr.length - 1 ? itemWidth / 2 : itemWidth
-    })
-
-    d.translateX = (d.contentWidth - d.iLeft) / 2
-    !d.root2 && (d.translateX += itemWidth / 4)
-
-    ;[d.root, d.root2].forEach((rootNode, idx) => {
-      if (!rootNode) return
-      updateCoord(rootNode)
-    })
-
-    d.canvas.height = (d.contentHeight + itemHeight + d.conf.paddingV * 2) * d.conf.scale
-  }
-  render() {
-    const d = this.d
-    const {gd} = d
-    const itemWidth = d.itemWidth || d.conf.itemWidth
-    const itemHeight = d.itemHeight || d.conf.itemHeight
-    const levelHeight = d.levelHeight || d.conf.levelHeight
-
-    const renderLine = (node) => {
-      if (!node) return
-
-      renderLine(node.l)
-      renderLine(node.r)
-
-      gd.beginPath()
-      node.l && gd.lineTo(node.l.x + itemWidth / 2, node.l.y + itemHeight / 2)
-      gd.lineTo(node.x + itemWidth / 2, node.y + itemHeight / 2)
-      node.r && gd.lineTo(node.r.x + itemWidth / 2, node.r.y + itemHeight / 2)
-      gd.strokeStyle = d.color.black
-      gd.stroke()
-    }
-
-    const renderNode = (node) => {
-      if (!node) return
-
-      renderNode(node.l)
-      renderNode(node.r)
-      this.renderNode(node)
-    }
-
-    gd.save()
-    gd.scale(d.conf.scale, d.conf.scale)
-    gd.translate(d.conf.paddingH, d.conf.paddingV)
-    d.arr.forEach(node => this.renderNode(node, {itemWidth: d.conf.itemWidth}))
-    ;[d.root, d.root2].forEach((rootNode, idx) => {
-      renderLine(rootNode)
-      renderNode(rootNode)
-    })
-    gd.restore()
-  }
-}
-
-class Fractal extends Common {
-  constructor() {
-    super(...arguments)
-
-    const d = this.d
-
-    d.depth = 5
-    d.maxDepth = 6
-    d.countLoop = 0
-    d.contentWidth = 600
-    d.contentHeight = 600
-    d.canvas.width = d.contentWidth * d.conf.scale
-    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
-    d.canvas.height = d.contentHeight * d.conf.scale
-  }
-  create() {}
-  setPos() {}
-  render() {}
-  /*log() {
-    const d = this.d
-    console.log('%c countLoop ' + d.countLoop + ' ' + d.typeItem.cons, 'color: red')
-  }*/
-}
-
-class SelectionSort extends Sort {
-  startSort() {
+  SelectionSort() {
     const d = this.d
 
     for (let i = 0, len = d.arr.length; i < len; i++) {
       let minIndex = i
+
+      d.arr[i].fromIndex = i
 
       for (let j = i + 1; j < len; j++) {
         d.arr[j].fromIndex = j
@@ -346,7 +87,6 @@ class SelectionSort extends Sort {
         }
       }
 
-      d.arr[i].fromIndex = i
       d.arr[i].fillStyle = d.color.orange
       d.arr[minIndex].fillStyle = d.color.blue
       d.arr.swap(i, minIndex)
@@ -366,10 +106,7 @@ class SelectionSort extends Sort {
       })
     )
   }
-}
-
-class InsertionSort extends Sort {
-  startSort() {
+  InsertionSort() {
     const d = this.d
 
     for (let i = 1, len = d.arr.length; i < len; i++) {
@@ -378,10 +115,15 @@ class InsertionSort extends Sort {
       d.arr[i].fromIndex = i
       d.arr[i].fillStyle = d.color.blue
 
-      for (; j > 0 && d.arr[j - 1].n > d.arr[j].n; j--) {
+      for (; j > 0; j--) {
         d.arr[j - 1].fromIndex = j - 1
         d.arr[j - 1].fillStyle = d.color.green
-        d.arr.swap(j - 1, j)
+
+        if (d.arr[j].n < d.arr[j - 1].n) {
+          d.arr.swap(j, j - 1)
+        } else {
+          break
+        }
       }
 
       d.steps.push(
@@ -399,13 +141,10 @@ class InsertionSort extends Sort {
       })
     )
   }
-}
-
-class MergeSort extends Sort {
-  startSort() {
+  MergeSort() {
     const d = this.d
 
-    const mergeSort = (l, r) => {
+    function mergeSort(l, r) {
       if (l >= r) return
 
       const mid = l + parseInt((r - l) / 2)
@@ -424,17 +163,13 @@ class MergeSort extends Sort {
 
       for (let k = l; k <= r; k++) {
         if (i > mid) {
-          d.arr[k] = aux[j - l]
-          j++
+          d.arr[k] = aux[j++ - l]
         } else if (j > r) {
-          d.arr[k] = aux[i - l]
-          i++
+          d.arr[k] = aux[i++ - l]
         } else if (aux[i - l].n <= aux[j - l].n) {
-          d.arr[k] = aux[i - l]
-          i++
+          d.arr[k] = aux[i++ - l]
         } else {
-          d.arr[k] = aux[j - l]
-          j++
+          d.arr[k] = aux[j++ - l]
         }
       }
 
@@ -452,10 +187,7 @@ class MergeSort extends Sort {
 
     mergeSort(0, d.arr.length - 1)
   }
-}
-
-class QuickSort extends Sort {
-  startSort() {
+  QuickSort1() {
     const d = this.d
 
     const quickSort = (l, r) => {
@@ -503,10 +235,7 @@ class QuickSort extends Sort {
       })
     )
   }
-}
-
-class QuickSort2 extends Sort {
-  startSort() {
+  QuickSort2() {
     const d = this.d
 
     const quickSort = (l, r) => {
@@ -562,10 +291,7 @@ class QuickSort2 extends Sort {
       })
     )
   }
-}
-
-class QuickSort3 extends Sort {
-  startSort() {
+  QuickSort3() {
     const d = this.d
 
     const quickSort = (l, r) => {
@@ -588,7 +314,7 @@ class QuickSort3 extends Sort {
           d.arr.swap(i, lt + 1)
           lt++
           i++
-        } else if (d.arr[i].n > v)  {
+        } else if (d.arr[i].n > v) {
           d.arr[i].fillStyle = d.color.orange
           d.arr.swap(i, gt - 1)
           gt--
@@ -621,9 +347,102 @@ class QuickSort3 extends Sort {
       })
     )
   }
+  setPos() {
+    const d = this.d
+
+    d.steps.forEach((row, stair) => {
+      row.forEach((node, idx) => {
+        if (!node) return
+        node.x = idx * d.conf.itemWidth
+        node.y = stair * d.conf.levelHeight
+      })
+    })
+
+    d.contentHeight = (d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight
+    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
+  }
+  render() {
+    const d = this.d
+    const {gd} = d
+
+    const renderLine = () => {
+      d.steps.last().forEach((node, idx) => {
+        if (!node) return
+
+        let stair = d.steps.length
+
+        gd.beginPath()
+
+        while (--stair > -1) {
+          const _node = d.steps[stair][node.fromIndex]
+          if (!_node) continue
+          node = _node
+          gd.lineTo(node.x + d.conf.itemWidth / 2, node.y + d.conf.itemHeight / 2)
+        }
+
+        gd.strokeStyle = node.strokeStyle
+        gd.stroke()
+      })
+    }
+
+    const renderNode = () => {
+      d.steps.forEach((row, idx) => {
+        row.forEach((node, idx) => {
+          this.renderNode(node)
+        })
+      })
+    }
+
+    gd.save()
+    gd.scale(d.conf.scale, d.conf.scale)
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
+    renderLine()
+    renderNode()
+    gd.restore()
+  }
 }
 
-class MaxHeap extends Heap {
+class Heap extends Common {
+  constructor() {
+    super(...arguments)
+
+    const d = this.d
+
+    d.arr.forEach(node => node.fillStyle = d.color.blue)
+    d.level = Math.ceil(Math.log(d.arr.length + 1) / Math.log(2))
+    d.branchIndex = parseInt((d.arr.length - 2) / 2)
+    d.contentWidth = Math.pow(2, d.level - 1) * d.conf.itemWidth
+    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+    d.contentHeight = (d.level - 1) * d.conf.levelHeight + d.conf.itemHeight
+    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
+  }
+  shiftUp(k) {
+    const d = this.d
+
+    while (k > 0) {
+      let j = parseInt((k - 1) / 2)
+
+      if (d.arr[j].n > d.arr[k].n) break
+
+      d.arr.swap(k, j)
+      k = j
+    }
+  }
+  shiftDown(k) {
+    const d = this.d
+
+    while (k * 2 + 1 < d.arr.length) {
+      let j = k * 2 + 1
+
+      if (j + 1 < d.arr.length && d.arr[j + 1].n > d.arr[j].n) j++
+
+      if (d.arr[k].n > d.arr[j].n) break
+
+      d.arr.swap(k, j)
+      k = j
+    }
+  }
   heapify() {
     const d = this.d
 
@@ -638,42 +457,78 @@ class MaxHeap extends Heap {
       this.shiftUp(i)
     }
   }
-  shiftUp(k) {
+  setPos() {
     const d = this.d
+    let count = 0
 
-    while (k > 0) {
-      let j = parseInt((k - 1) / 2)
+    for (let i = 0; i < d.level; i++) {
+      const n = Math.pow(2, i)
+      const perW = d.contentWidth / n
 
-      if (d.arr[j].n > d.arr[k].n) break
+      for (let j = 0; j < n && count + j < d.arr.length; j++) {
+        const index = count + j
+        const node = d.arr[index]
 
-      d.arr.swap(j, k)
-      k = j
+        node.x = j * perW + perW / 2 - d.conf.itemWidth / 2
+        node.y = i * d.conf.levelHeight
+      }
+
+      count += n
     }
   }
-  shiftDown(k) {
+  render() {
     const d = this.d
+    const {gd} = d
 
-    while (k * 2 + 1 < d.arr.length) {
-      let j = k * 2 + 1
+    const renderLine = () => {
+      for (let i = d.branchIndex; i > -1; i--) {
+        const node = d.arr[i]
+        const nodeL = d.arr[i * 2 + 1]
+        const nodeR = d.arr[i * 2 + 2]
 
-      if (j + 1 < d.arr.length && d.arr[j + 1].n > d.arr[j].n) j++
-
-      if (d.arr[j].n < d.arr[k].n) break
-
-      d.arr.swap(k, j)
-      k = j
+        gd.beginPath()
+        nodeL && gd.lineTo(nodeL.x + d.conf.itemWidth / 2, nodeL.y + d.conf.itemHeight / 2)
+        gd.lineTo(node.x + d.conf.itemWidth / 2, node.y + d.conf.itemHeight / 2)
+        nodeR && gd.lineTo(nodeR.x + d.conf.itemWidth / 2, nodeR.y + d.conf.itemHeight / 2)
+        gd.stroke()
+      }
     }
+
+    const renderNode = () => {
+      d.arr.forEach((node, idx) => {
+        this.renderNode(node)
+      })
+    }
+
+    gd.save()
+    gd.scale(d.conf.scale, d.conf.scale)
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
+    renderLine()
+    renderNode()
+    gd.restore()
   }
 }
 
 class SegmentTree extends Heap {
-  createL() {
+  constructor() {
+    super(...arguments)
+
     const d = this.d
 
     d.n = 10
     d.level = Math.ceil(Math.log(d.n + 1) / Math.log(2)) + 1
     d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
-    d.branchIndex = parseInt((d.arr.length - 2) / 2)
+    d.branchIndex = parseInt((d.arr.length - 1) / 2)
+
+    d.contentWidth = Math.pow(2, d.level - 1) * d.conf.itemWidth
+    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+
+    d.contentHeight = (d.level - 1) * d.conf.levelHeight + d.conf.itemHeight
+    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
+  }
+  createL() {
+    const d = this.d
 
     const createL = (treeIndex, l, r) => {
       if (l >= r) {
@@ -687,20 +542,15 @@ class SegmentTree extends Heap {
       createL(treeIndex * 2 + 2, mid + 1, r)
 
       d.arr[treeIndex].n = '[' + l + '..' + r + ']'
-      d.arr[treeIndex].fillStyle = d.color.blue
       d.gd.font = d.conf.font
-      d.arr[treeIndex].width = Math.max(d.gd.measureText(d.arr[treeIndex].n).width + 10, d.conf.itemWidth)
+      d.arr[treeIndex].width = Math.max(d.conf.itemWidth, d.gd.measureText(d.arr[treeIndex].n).width + 10)
+      d.arr[treeIndex].fillStyle = d.color.blue
     }
 
     createL(0, 0, d.n)
   }
   createR() {
     const d = this.d
-
-    d.n = 10
-    d.level = Math.ceil(Math.log(d.n + 1) / Math.log(2)) + 1
-    d.arr = new Array(Math.pow(2, d.level) - 1).fill().map(_ => new Node(null))
-    d.branchIndex = parseInt((d.arr.length - 2) / 2)
 
     const createR = (treeIndex, l, r) => {
       if (l >= r) {
@@ -714,38 +564,224 @@ class SegmentTree extends Heap {
       createR(treeIndex * 2 + 2, mid, r)
 
       d.arr[treeIndex].n = '[' + l + '..' + r + ']'
-      d.arr[treeIndex].fillStyle = d.color.blue
       d.gd.font = d.conf.font
-      d.arr[treeIndex].width = Math.max(d.gd.measureText(d.arr[treeIndex].n).width + 10, d.conf.itemWidth)
+      d.arr[treeIndex].width = Math.max(d.conf.itemWidth, d.gd.measureText(d.arr[treeIndex].n).width + 10)
+      d.arr[treeIndex].fillStyle = d.color.blue
     }
 
     createR(0, 0, d.n)
   }
 }
 
-class BinarySearch extends Tree {
-  create() {
+class Tree extends Common {
+  constructor() {
+    super(...arguments)
+
     const d = this.d
 
-    d.arr.clone().forEach((node) => {
-      node.fillStyle = d.color.blue
-      d.root = this.add(d.root, node)
-    })
-
-    d.root2 = this.flip(clone(d.root))
+    d.paddingTop = 60
+    d.paddingH = 30
   }
-  add(node, item) {
-    if (!node) return item
+  Binary(arg = {}) {
+    const d = this.d
 
-    if (item.n > node.n) {
-      node.r = this.add(node.r, item)
-    } else if (item.n < node.n) {
-      node.l = this.add(node.l, item)
-    } else {
-      // ===
+    const add = (node, item) => {
+      if (!node) return item
+
+      if (item.n > node.n) {
+        node.r = add(node.r, item)
+      } else if (item.n < node.n) {
+        node.l = add(node.l, item)
+      } else {
+        // ===
+      }
+
+      return node
     }
 
-    return node
+    d.arr.clone().forEach((node, idx) => {
+      node.fillStyle = d.color.blue
+      d.root = add(d.root, node)
+    })
+    
+    delete d.paddingH
+  }
+  BinaryFlip(arg = {}) {
+    const d = this.d
+
+    this.Binary(arg)
+    d.paddingH = 30
+    d.root2 = this.flip(clone(d.root))
+  }
+  AVL() {
+    const d = this.d
+
+    d.paddingTop = 100
+    d.paddingH = d.conf.paddingH
+    d.levelHeight = 60
+    d.itemWidth = 50
+
+    const add = (node, item) => {
+      if (!node) return item
+
+      if (item.n > node.n) {
+        node.r = add(node.r, item)
+      } else if (item.n < node.n) {
+        node.l = add(node.l, item)
+      } else {
+        // ===
+      }
+
+      const balanceFactor = this.getBalanceFactor(node)
+
+      if (Math.abs(balanceFactor) > 1) {
+        if (balanceFactor > 0) {
+          if (this.getBalanceFactor(node.l) < 0) {
+            node.l = this.leftRotate(node.l)
+          }
+          node = this.rightRotate(node)
+        } else {
+          if (this.getBalanceFactor(node.r) > 0) {
+            node.r = this.rightRotate(node.r)
+          }
+          node = this.leftRotate(node)
+        }
+      }
+
+      node.h = Math.max(this.getHeight(node.l), this.getHeight(node.r)) + 1
+      node.balanceFactor = this.getBalanceFactor(node)
+
+      return node
+    }
+
+    d.arr.clone().forEach((node, idx) => {
+      node.fillStyle = d.color.blue
+      node.h = 1
+      node.balanceFactor = 0
+      d.root = add(d.root, node)
+    })
+  }
+  RB() {
+    const d = this.d
+
+    const addL = (node, item) => {
+      if (!node) return item
+
+      if (item.n > node.n) {
+        node.r = addL(node.r, item)
+      } else if (item.n < node.n) {
+        node.l = addL(node.l, item)
+      } else {
+        // ===
+      }
+
+      if (!this.isRed(node.l) && this.isRed(node.r)) {
+        node = this.leftRotate(node)
+      }
+
+      if (this.isRed(node.l) &&　this.isRed(node.l.l)) {
+        node = this.rightRotate(node)
+      }
+
+      if (this.isRed(node.l) && this.isRed(node.r)) {
+        this.flipColors(node)
+      }
+
+      return node
+    }
+
+    const addR = (node, item) => {
+      if (!node) return item
+
+      if (item.n > node.n) {
+        node.r = addR(node.r, item)
+      } else if (item.n < node.n) {
+        node.l = addR(node.l, item)
+      } else {
+        // ===
+      }
+
+      if (this.isRed(node.l) && !this.isRed(node.r)) {
+        node = this.rightRotate(node)
+      }
+
+      if (this.isRed(node.r) &&　this.isRed(node.r.r)) {
+        node = this.leftRotate(node)
+      }
+
+      if (this.isRed(node.l) && this.isRed(node.r)) {
+        this.flipColors(node)
+      }
+
+      return node
+    }
+
+    d.arr.clone().forEach((node, idx) => {
+      node.fillStyle = d.color.red
+      d.root = addL(d.root, node)
+      d.root.fillStyle = d.color.black
+    })
+
+    d.arr.clone().forEach((node, idx) => {
+      node.fillStyle = d.color.red
+      d.root2 = addR(d.root2, node)
+      d.root2.fillStyle = d.color.black
+    })
+  }
+  getHeight(node) {
+    return node ? node.h : 0
+  }
+  getBalanceFactor(node) {
+    return node ? this.getHeight(node.l) - this.getHeight(node.r) : 0
+  }
+  isRed(node) {
+    const d = this.d
+    return node ? node.fillStyle === d.color.red : false
+  }
+  flipColors(node) {
+    const d = this.d
+    node.fillStyle = d.color.red
+    node.l.fillStyle = node.r.fillStyle = d.color.black
+  }
+  leftRotate(x) {
+    const d = this.d
+    const y = x.r
+
+    x.r = y.l
+    y.l = x
+
+    if ('balanceFactor' in x) {
+      x.h = Math.max(this.getHeight(x.l), this.getHeight(x.r)) + 1
+      y.h = Math.max(this.getHeight(y.l), this.getHeight(y.r)) + 1
+
+      x.balanceFactor = this.getBalanceFactor(x)
+      y.balanceFactor = this.getBalanceFactor(y)
+    } else {
+      y.fillStyle = x.fillStyle
+      x.fillStyle = d.color.red
+    }
+
+    return y
+  }
+  rightRotate(x) {
+    const d = this.d
+    const y = x.l
+
+    x.l = y.r
+    y.r = x
+
+    if ('balanceFactor' in x) {
+      x.h = Math.max(this.getHeight(x.l), this.getHeight(x.r)) + 1
+      y.h = Math.max(this.getHeight(y.l), this.getHeight(y.r)) + 1
+
+      x.balanceFactor = this.getBalanceFactor(x)
+      y.balanceFactor = this.getBalanceFactor(y)
+    } else {
+      y.fillStyle = x.fillStyle
+      x.fillStyle = d.color.red
+    }
+
+    return y
   }
   flip(node) {
     if (!node) return
@@ -756,194 +792,103 @@ class BinarySearch extends Tree {
     const t = node.l
     node.l = node.r
     node.r = t
-
     return node
   }
-}
-
-class AVLTree extends Tree {
-  create() {
+  setPos() {
     const d = this.d
+    const itemWidth = d.itemWidth || d.conf.itemWidth
+    const itemHeight = d.itemHeight || d.conf.itemHeight
+    const levelHeight = d.levelHeight || d.conf.levelHeight
 
-    d.paddingH = 0
-    d.paddingTop = 80
-    d.itemWidth = 50
-    d.levelHeight = 60
+    d.iLeft = 0
+    d.contentWidth = d.arr.length * d.conf.itemWidth
+    d.canvas.width = (d.contentWidth + (d.paddingH || d.conf.paddingH) * 2) * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+    d.contentHeight = 0
 
-    d.arr.clone().forEach((node) => {
-      node.fillStyle = d.color.blue
-      node.h = 1
-      node.balanceFactor = 0
-      d.root = this.add(d.root, node)
+    d.arr.forEach((node, idx) => {
+      node.x = idx * d.conf.itemWidth
+      node.y = 0
     })
-  }
-  add(node, item) {
-    if (!node) return item
 
-    if (item.n > node.n) {
-      node.r = this.add(node.r, item)
-    } else if (item.n < node.n) {
-      node.l = this.add(node.l, item)
-    } else {
-      // ===
-    }
+    const setPos = (node, depth) => {
+      if (!node) return
 
-    const balanceFactor = this.getBalanceFactor(node)
+      setPos(node.l, depth + 1)
+      node.x = d.iLeft
+      d.iLeft += itemWidth / 2
+      node.y = depth * levelHeight + d.paddingTop
+      setPos(node.r, depth + 1)
 
-    if (Math.abs(balanceFactor) > 1) {
-      if (balanceFactor > 0) {
-        if (this.getBalanceFactor(node.l) < 0) {
-          node.l = this.leftRotate(node.l)
-        }
-        node = this.rightRotate(node)
-      } else {
-        if (this.getBalanceFactor(node.r) > 0) {
-          node.r = this.rightRotate(node.r)
-        }
-        node = this.leftRotate(node)
+      d.contentHeight = Math.max(d.contentHeight, node.y)
+
+      if (node.l && node.r) {
+        node.x = (node.l.x + node.r.x) / 2
       }
     }
 
-    node.h = Math.max(this.getHeight(node.l), this.getHeight(node.r)) + 1
-    node.balanceFactor = this.getBalanceFactor(node)
+    const updateCoord = (node) => {
+      if (!node) return
 
-    return node
-  }
-  getHeight(node) {
-    return node ? node.h : 0
-  }
-  getBalanceFactor(node) {
-    return node ? this.getHeight(node.l) - this.getHeight(node.r) : 0
-  }
-  leftRotate(x) {
-    const y = x.r
+      updateCoord(node.l)
+      updateCoord(node.r)
 
-    x.r = y.l
-    y.l = x
+      node.x += d.translateX
+    }
 
-    x.h = Math.max(this.getHeight(x.l), this.getHeight(x.r)) + 1
-    y.h = Math.max(this.getHeight(y.l), this.getHeight(y.r)) + 1
-
-    x.balanceFactor = this.getBalanceFactor(x)
-    y.balanceFactor = this.getBalanceFactor(y)
-
-    return y
-  }
-  rightRotate(x) {
-    const y = x.l
-
-    x.l = y.r
-    y.r = x
-
-    x.h = Math.max(this.getHeight(x.l), this.getHeight(x.r)) + 1
-    y.h = Math.max(this.getHeight(y.l), this.getHeight(y.r)) + 1
-
-    x.balanceFactor = this.getBalanceFactor(x)
-    y.balanceFactor = this.getBalanceFactor(y)
-
-    return y
-  }
-}
-
-class RBTree extends Tree {
-  create() {
-    const d = this.d
-
-    d.arr.clone().forEach((node) => {
-      node.fillStyle = d.color.red
-      d.root = this.addL(d.root, node)
-      d.root.fillStyle = d.color.black
+    ;[d.root, d.root2].forEach((rootNode, idx) => {
+      setPos(rootNode, 0)
+      d.iLeft += itemWidth / 2
+      idx === 0 && d.root2 && (d.iLeft += itemWidth / 2)
     })
 
-    d.arr.clone().forEach((node) => {
-      node.fillStyle = d.color.red
-      d.root2 = this.addR(d.root2, node)
-      d.root2.fillStyle = d.color.black
+    d.translateX = (d.contentWidth - d.iLeft) / 2
+    !d.root2 && (d.translateX += itemWidth / 4)
+
+    ;[d.root, d.root2].forEach((rootNode, idx) => {
+      updateCoord(rootNode)
     })
+
+    d.canvas.height = (d.contentHeight + itemHeight + d.conf.paddingV * 2) * d.conf.scale
   }
-  addL(node, item) {
-    if (!node) return item
-
-    if (item.n > node.n) {
-      node.r = this.addL(node.r, item)
-    } else if (item.n < node.n) {
-      node.l = this.addL(node.l, item)
-    } else {
-      // ===
-    }
-
-    if (!this.isRed(node.l) && this.isRed(node.r)) {
-      node = this.leftRotate(node)
-    }
-
-    if (this.isRed(node.l) && this.isRed(node.l.l)) {
-      node = this.rightRotate(node)
-    }
-
-    if (this.isRed(node.l) && this.isRed(node.r)) {
-      this.flipColors(node)
-    }
-
-    return node
-  }
-  addR(node, item) {
-    if (!node) return item
-
-    if (item.n > node.n) {
-      node.r = this.addR(node.r, item)
-    } else if (item.n < node.n) {
-      node.l = this.addR(node.l, item)
-    } else {
-      // ===
-    }
-
-    if (this.isRed(node.l) && !this.isRed(node.r)) {
-      node = this.rightRotate(node)
-    }
-
-    if (this.isRed(node.r) && this.isRed(node.r.r)) {
-      node = this.leftRotate(node)
-    }
-
-    if (this.isRed(node.l) && this.isRed(node.r)) {
-      this.flipColors(node)
-    }
-
-    return node
-  }
-  isRed(node) {
+  render() {
     const d = this.d
-    return node ? node.fillStyle === d.color.red : false
-  }
-  flipColors(node) {
-    const d = this.d
-    node.fillStyle = d.color.red
-    node.l.fillStyle = 
-    node.r.fillStyle = d.color.black
-  }
-  leftRotate(x) {
-    const d = this.d
-    const y = x.r
+    const {gd} = d
+    const itemWidth = d.itemWidth || d.conf.itemWidth
+    const itemHeight = d.itemHeight || d.conf.itemHeight
 
-    x.r = y.l
-    y.l = x
+    const renderLine = (node) => {
+      if (!node) return
 
-    y.fillStyle = x.fillStyle
-    x.fillStyle = d.color.red
+      renderLine(node.l)
+      renderLine(node.r)
 
-    return y
-  }
-  rightRotate(x) {
-    const d = this.d
-    const y = x.l
+      gd.beginPath()
+      node.l && gd.lineTo(node.l.x + itemWidth / 2, node.l.y + itemHeight / 2)
+      gd.lineTo(node.x + itemWidth / 2, node.y + itemHeight / 2)
+      node.r && gd.lineTo(node.r.x + itemWidth / 2, node.r.y + itemHeight / 2)
+      gd.strokeStyle = d.color.black
+      gd.stroke()
+    }
 
-    x.l = y.r
-    y.r = x
+    const renderNode = (node) => {
+      if (!node) return
 
-    y.fillStyle = x.fillStyle
-    x.fillStyle = d.color.red
+      renderNode(node.l)
+      renderNode(node.r)
 
-    return y
+      this.renderNode(node)
+    }
+
+    gd.save()
+    gd.scale(d.conf.scale, d.conf.scale)
+    gd.translate((d.paddingH || d.conf.paddingH), d.conf.paddingV)
+    d.arr.forEach(node => this.renderNode(node, {itemWidth: d.conf.itemWidth}))
+    ;[d.root, d.root2].forEach((rootNode, idx) => {
+      renderLine(rootNode)
+      renderNode(rootNode)
+    })
+    gd.restore()
   }
 }
 
@@ -951,77 +896,66 @@ class Trie extends Common {
   create() {
     const d = this.d
 
-    d.str = `SwiftUI provides views, controls, and layout structures for declaring your app's user interface. The framework, gestures cat dog deer pan panda`
-    d.strArr = d.str.split(/\s+/g)
-    d.steps = []
-    d.arr = d.str.toLowerCase().match(/\w+/g)
-    d.root = new Node('root', {map: {}, isWord: false, width: 50})
-    d.row = 3
-    d.lenRow = Math.ceil(d.strArr.length / d.row)
-    d.paddingTop = d.row * d.conf.itemHeight + d.conf.paddingV
-
-    for (let i = 0; i < d.strArr.length; i += d.lenRow) {
-      d.steps.push(
-        d.arr.slice(i, i + d.lenRow)
-      )
-    }
-
-    d.gd.font = d.conf.font
-    d.textWidth = d.gd.measureText(d.steps[0].join(' ')).width
-
+    d.str = `SwiftUI provides views, controls, and layout structures for declaring your app's user interface. The framework, gestures cat dog deer pan panda new news`
+    d.arr = d.str.toLowerCase().match(/\w+/g) || []
+    d.root = new Node('root', {map: {}, isWord: false})
     d.arr.forEach((str, idx) => {
       let node = d.root
 
       for (let i = 0, len = str.length; i < len; i++) {
-        let c = str[i]
+        const c = str[i]
         node = node.map[c] = node.map[c] || new Node(c, {map: {}, isWord: i === len - 1})
         node.fillStyle = d.color[node.isWord ? 'blue' : 'black']
       }
     })
+
+    d.row = 3
+    d.steps = []
+    d.strArr = d.str.split(/\s+/g)
+    d.lenStep = Math.ceil(d.strArr.length / d.row)
+    d.paddingTop = d.row * d.conf.itemHeight + d.conf.paddingV
+
+    for (let i = 0; i < d.strArr.length; i += d.lenStep) {
+      d.steps.push(d.strArr.slice(i, i + d.lenStep).join(' '))
+    }
+
+    d.gd.font = d.conf.font
+    d.textWidth = d.gd.measureText(d.steps[0]).width
   }
   setPos() {
     const d = this.d
 
-    d.contentWidth = 0
+    d.iLeft = 0
     d.contentHeight = 0
 
-    function setPos(node, depth) {
+    const setPos = (node, depth) => {
       const keys = Object.keys(node.map)
 
       keys.forEach((key, idx) => {
         setPos(node.map[key], depth + 1)
       })
 
-      node.x = d.contentWidth
+      node.x = d.iLeft
       node.y = depth * d.conf.levelHeight + d.paddingTop
-      d.contentHeight = Math.max(d.contentHeight, node.y)
+      d.contentHeight = Math.max(d.contentHeight, node.y + d.conf.itemHeight)
 
-      if (keys.length > 0) {
-        node.x = (node.map[keys.first()].x + node.map[keys.last()].x) / 2
+      if (keys.length === 0) {
+        d.iLeft += d.conf.itemWidth
       } else {
-        d.contentWidth += d.conf.itemWidth
+        node.x = (node.map[keys.first()].x + node.map[keys.last()].x) / 2
       }
     }
 
     setPos(d.root, 0)
+
+    d.contentWidth = d.iLeft
     d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
     d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
-    d.canvas.height = (d.contentHeight + d.conf.itemHeight + d.conf.paddingV * 2) * d.conf.scale
+    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
   }
   render() {
     const d = this.d
     const {gd} = d
-
-    const renderText = () => {
-      gd.fillStyle = d.color.black
-      gd.font = d.conf.font
-      gd.textBaseline = 'top'
-
-      d.steps.forEach((row, idx) => {
-        const str = row.join(' ')
-        gd.fillText(str, (d.contentWidth - d.textWidth) / 2, idx * d.conf.itemHeight)
-      })
-    }
 
     const renderLine = (node) => {
       const keys = Object.keys(node.map)
@@ -1029,13 +963,13 @@ class Trie extends Common {
       keys.forEach((key, idx) => {
         const _node = node.map[key]
 
-        renderLine(_node)
-
         gd.beginPath()
         gd.lineTo(node.x + d.conf.itemWidth / 2, node.y + d.conf.itemHeight / 2)
         gd.lineTo(_node.x + d.conf.itemWidth / 2, _node.y + d.conf.itemHeight / 2)
         gd.strokeStyle = d.color.black
         gd.stroke()
+
+        renderLine(_node)
       })
     }
 
@@ -1052,19 +986,106 @@ class Trie extends Common {
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
-    renderText(d.root)
+    d.steps.forEach((str, idx) => {
+      gd.textBaseline = 'top'
+      gd.textAlign = 'left'
+      gd.font = d.conf.font
+      gd.fillText(str, (d.contentWidth - d.textWidth) / 2, idx * d.conf.itemHeight)
+    })
     renderLine(d.root)
     renderNode(d.root)
     gd.restore()
   }
 }
 
-class Vicsek extends Fractal {
-  create() {
+class Fractal extends Common {
+  constructor() {
+    super(...arguments)
+
+    const d = this.d
+
+    d.depth = 4
+    d.renderCount = 0
+    d.contentWidth = 600
+    d.contentHeight = 600
+    d.canvas.width = d.contentWidth * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+    d.canvas.height = d.contentHeight * d.conf.scale
+  }
+  getFibList(end) {
+    const result = []
+    let a = 1
+    let b = 1
+
+    for (let i = 0; i < end; i++) {
+      result.push(a)
+      const t = b
+      b += a
+      a = t
+    }
+
+    return result
+  }
+  Fib(arg = {}) {
+    this.d = Object.assign(this.d, arg)
+
+    const d = this.d
+    const {canvas, gd} = d
+
+    d.fib = this.getFibList(15)
+    d.contentWidth = d.fib[d.fib.length - 1]
+    d.contentHeight = d.fib[d.fib.length - 2]
+
+    canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
+    canvas.style.width = canvas.width / d.conf.scale + 'px'
+    canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
+
+    let cx = d.fib[d.fib.length - 2]
+    let cy = d.fib[d.fib.length - 2]
+
+    gd.save()
+    gd.scale(d.conf.scale, d.conf.scale)
+    gd.translate(d.conf.paddingH, d.conf.paddingV)
+
+    for (let len = d.fib.length, i = len - 1; i > 2; i--) {
+      const _i = (len - i + 1) % 4
+      const deg = _i * 90
+      const r = d.fib[i - 1]
+
+      ++d.renderCount
+      gd.beginPath()
+      if (d.isRenderAux) {
+        gd.lineTo(cx, cy)
+        gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
+        gd.lineTo(cx, cy)
+        gd.closePath()
+      } else {
+        gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
+      }
+      gd.stroke()
+
+      switch (_i) {
+        case 0:
+          cy += d.fib[i - 3]
+          break
+        case 1:
+          cx -= d.fib[i - 3]
+          break
+        case 2:
+          cy -= d.fib[i - 3]
+          break
+        case 3:
+          cx += d.fib[i - 3]
+          break
+      }
+    }
+
+    gd.restore()
+  }
+  Vicsek() {
     const d = this.d
     const {gd} = d
 
-    d.depth = 4
     d.dir = [
       [0, 0],
       [0, 2],
@@ -1074,21 +1095,20 @@ class Vicsek extends Fractal {
     ]
 
     const render = (x, y, side, depth) => {
-      if (side < 2 || depth >= d.depth) {
+      if (depth >= d.depth || side < 1) {
+        // 到达极限 -> 绘制
+        ++d.renderCount
         gd.beginPath()
         gd.rect(x, y, side, side)
         gd.fillStyle = d.color.blue
         gd.fill()
-        return
-      }
-
-      ++d.countLoop
-      ++depth
-      side /= 3
-
-      for (let i = 0; i < d.dir.length; i++) {
-        const item = d.dir[i]
-        render(x + item[1] * side, y + item[0] * side, side, depth)
+      } else {
+        // 递归
+        ++depth
+        side /= 3
+        d.dir.forEach((item, idx) => {
+          render(x + side * item[1], y + side * item[0], side, depth)
+        })
       }
     }
 
@@ -1097,37 +1117,31 @@ class Vicsek extends Fractal {
     render(0, 0, d.contentWidth, 0)
     gd.restore()
   }
-}
-
-class Sierpinski extends Fractal {
-  create() {
+  Sierpinski() {
     const d = this.d
     const {gd} = d
 
-    d.depth = 4
-
     const render = (x, y, side, depth) => {
-      if (side < 2 || depth >= d.depth) return
+      if (depth >= d.depth || side < 2) return
 
-      ++d.countLoop
       ++depth
       side /= 3
 
       for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
           if (i === 1 && j === 1) {
+            // 绘制
+            ++d.renderCount
             gd.beginPath()
             gd.rect(x + side, y + side, side, side)
             gd.fillStyle = d.color.purple
             gd.fill()
           } else {
+            // 递归
             render(x + j * side, y + i * side, side, depth)
           }
         }
       }
-
-      depth++
-      side /= 3
     }
 
     gd.save()
@@ -1135,29 +1149,27 @@ class Sierpinski extends Fractal {
     render(0, 0, d.contentWidth, 0)
     gd.restore()
   }
-}
-
-class SierpinskiTriangle extends Fractal {
-  create() {
+  SierpinskiTriangle() {
     const d = this.d
     const {gd} = d
 
-    d.depth = 5
+    d.depth = 6
 
     const render = (x1, y1, side, depth) => {
-      ++d.countLoop
-
       const x2 = x1 + side
       const y2 = y1
 
       const x3 = x1 + side * Math.cos(d2a(-60))
       const y3 = y1 + side * Math.sin(d2a(-60))
 
-      if (depth >= d.depth || side < 4) {
+      if (depth >= d.depth || side < 2) {
+        // 递归到底 -> 绘制
+        ++d.renderCount
         gd.beginPath()
         gd.lineTo(x1, y1)
         gd.lineTo(x2, y2)
         gd.lineTo(x3, y3)
+        gd.closePath()
         gd.fillStyle = d.color.cyan
         gd.fill()
       } else {
@@ -1169,31 +1181,21 @@ class SierpinskiTriangle extends Fractal {
       }
     }
 
-    let space = d.contentHeight
-    space = space * Math.sin(d2a(60))
-    space = (d.contentHeight - space) / 2
+    const space = (d.contentHeight - d.contentHeight * Math.sin(d2a(60))) / 2
 
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
     render(0, d.contentHeight - space, d.contentWidth, 0)
     gd.restore()
   }
-}
-
-class KoachSnowflake extends Fractal {
-  create() {
+  KoachSnowflake() {
     const d = this.d
     const {canvas, gd} = d
-    const _canvas = canvas.cloneNode()
-    const _gd = _canvas.getContext('2d')
-
-    // document.body.insertBefore(_canvas, document.body.children[0])
 
     d.depth = 5
 
     const render = (x1, y1, side, deg, depth) => {
       ++depth
-      ++d.countLoop
       side /= 3
 
       const x2 = x1 + side * Math.cos(d2a(deg))
@@ -1208,16 +1210,16 @@ class KoachSnowflake extends Fractal {
       const x5 = x4 + side * Math.cos(d2a(deg))
       const y5 = y4 + side * Math.sin(d2a(deg))
 
-      if (depth >= d.depth || side < 3) {
-        _gd.beginPath()
-        _gd.lineTo(x1, y1)
-        _gd.lineTo(x2, y2)
-        _gd.lineTo(x3, y3)
-        _gd.lineTo(x4, y4)
-        _gd.lineTo(x5, y5)
-
-        _gd.strokeStyle = d.color.blue
-        _gd.stroke()
+      if (depth >= d.depth) {
+        ++d.renderCount
+        gd.beginPath()
+        gd.lineTo(x1, y1)
+        gd.lineTo(x2, y2)
+        gd.lineTo(x3, y3)
+        gd.lineTo(x4, y4)
+        gd.lineTo(x5, y5)
+        gd.strokeStyle = d.color.blue
+        gd.stroke()
       } else {
         render(x1, y1, side, deg, depth)
         render(x2, y2, side, deg - 60, depth)
@@ -1226,36 +1228,41 @@ class KoachSnowflake extends Fractal {
       }
     }
 
-    _gd.save()
-    _gd.scale(d.conf.scale, d.conf.scale)
+    gd.save()
+    gd.scale(d.conf.scale, d.conf.scale)
     render(d.contentWidth * .1, d.contentHeight / 3.72, d.contentWidth * .8, 0, 0)
-    _gd.restore()
+    gd.restore()
 
+    const _canvas = canvas.cloneNode()
+    // document.body.insertBefore(_canvas, document.body.children[0])
+    _canvas.getContext('2d').drawImage(
+      canvas,
+      0, 0, canvas.width, canvas.height
+    )
+
+    gd.clearRect(0, 0, canvas.width, canvas.height)
     new Array(3).fill().forEach((_, idx, arr) => {
       const deg = 360 / arr.length * idx
+
       gd.save()
-      gd.translate(d.canvas.width / 2, d.canvas.height / 2)
+      gd.translate(canvas.width / 2, canvas.height / 2)
       gd.rotate(d2a(deg))
       gd.drawImage(
         _canvas,
-        0, 0, d.canvas.width, d.canvas.height,
-        -d.canvas.width / 2, -d.canvas.height / 2, d.canvas.width, d.canvas.height,
+        0, 0, canvas.width, canvas.height,
+        -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height,
       )
       gd.restore()
     })
   }
-}
-
-class FractalTree extends Fractal {
-  create(arg = {}) {
+  FractalTree(arg = {}) {
     const d = this.d
-    const {gd} = d
+    const {canvas, gd} = d
 
-    d.depth = arg.depth || 9
+    d.depth = arg.depth || 12
 
-    const render = async (x1, y1, side, deg, degL, degR, depth) => {
-      if (depth >= d.depth || side < 3) return
-      ++d.countLoop
+    const render = (x1, y1, side, deg, depth) => {
+      if (depth >= d.depth || side < 2) return
 
       const x2 = x1 + side * Math.cos(d2a(deg))
       const y2 = y1 + side * Math.sin(d2a(deg))
@@ -1266,187 +1273,80 @@ class FractalTree extends Fractal {
       gd.strokeStyle = d.color.black
       gd.stroke()
 
+      ++d.renderCount
       ++depth
       side *= .8
 
-      render(x2, y2, side, deg + degL, degL, degR, depth)
-      render(x2, y2, side, deg + degR, degL, degR, depth)
+      render(x2, y2, side, deg + (arg.degL || -15), depth)
+      render(x2, y2, side, deg + (arg.degR || 15), depth)
     }
 
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
     render(
       d.contentWidth / 2 + (arg.translateX || 0),
-      d.contentHeight,
-      arg.side || 125,
+      d.contentHeight + (arg.translateY || 0),
+      arg.side || 100,
       -90,
-      arg.degL || -15,
-      arg.degR || 15,
       0
     )
     gd.restore()
   }
-}
-
-class Fib extends Fractal {
-  create(arg = {}) {
+  NearOne() {
     const d = this.d
-    const {canvas, gd} = d
-    const fib = this.getFibList(15)
-    let cx = fib[fib.length - 2]
-    let cy = fib[fib.length - 2]
+    const {gd} = d
+    const fillStyle = rgba(
+      0x00,
+      0xBC,
+      0xD4,
+      1
+    )
+    
+    d.depth = 8
 
-    canvas.width = (fib[fib.length - 1] + d.conf.paddingH * 2) * d.conf.scale
-    canvas.style.width = canvas.width / d.conf.scale + 'px'
-    canvas.height = (fib[fib.length - 2] + d.conf.paddingV * 2) * d.conf.scale
+    const render = (x, y, side, depth) => {
+      if (depth >= d.depth || side < 1) return
 
-    gd.save()
-    gd.scale(d.conf.scale, d.conf.scale)
-    gd.translate(d.conf.paddingH, d.conf.paddingV)
-    for (let len = fib.length, i = len - 1; i > -1; i--) {
-      const _i = (len - i + 1) % 4
-      const deg = _i * 90
-      const r = fib[i - 1]
+      const isH = depth % 2 === 0
+      const w = side / (isH ? 2 : 1)
 
       gd.beginPath()
-      gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
+      gd.rect(x, y, w, side)
+      fillStyle.a = (d.depth - depth) / d.depth
+      gd.fillStyle = fillStyle.toString()
+      gd.fill()
+      
       gd.strokeStyle = d.color.black
       gd.stroke()
 
-      switch (_i) {
-        case 0:
-          cy += fib[i - 3]
-          break
-        case 1:
-          cx -= fib[i - 3]
-          break
-        case 2:
-          cy -= fib[i - 3]
-          break
-        case 3:
-          cx += fib[i - 3]
-          break
-      }
+      gd.textAlign = 'center'
+      gd.textBaseline = 'middle'
+      gd.font = (side / 10) + 'px Arial'
+      gd.fillStyle = d.color.black
+      gd.fillText('1/' + Math.pow(2, depth + 1), x + w / 2, y + side / 2)
+
+      ++depth
+      isH ? 
+      render(x + side / 2, y + side / 2, side / 2, depth) :
+      render(x, y - side, side, depth)
     }
+
+    gd.save()
+    gd.scale(d.conf.scale, d.conf.scale)
+    render(0, 0, d.contentWidth, 0)
     gd.restore()
   }
-  getFibList(end) {
-    let result = []
-    let a = 1
-    let b = 1
-
-    for (let i = 0; i < end; i++) {
-      result.push(a)
-      const t = b
-      b += a
-      a = t
-    }
-
-    return result
+  setPos() {
+    const d = this.d
   }
+  render() {
+    const d = this.d
+  }
+  /*log() {
+    const d = this.d
+    console.log('%c renderCount ' + d.renderCount, 'color: red', d.typeItem.name)
+  }*/
 }
-
-const mazeData = `#####################################################################################################
-                                    #     #     #   #     # # #               # # # # #   #   #   # #
-# # # ### # ############# ### # ##### ##### ##### ### ##### # # ####### ####### # # # # ### ### ### #
-# # #   # #       #   # #   # # #       # #   # #         #           # # #               # # # # # #
-### # # ### ####### ### ######### ####### # ### # ######### ### ######### # ############### # # # # #
-#   # # #           # #   #   # #                   # #   # # # # # # # #     # # #     #           #
-### ####### # # # ### # ### ### # ### ##### ######### # ### # ### # # # # ##### # # ##### ###########
-#         # # # #       #   # #     #     #         # #         # #   #       # # # # # #     # #   #
-# # # ####### ### ### ### ### # ##### ############### # ##### ### # ### ####### # # # # # ##### # ###
-# # #   # #   #     #   #   #       #   #   # # # # #     # #             # # # # #   # #     #   # #
-### # ### ### ### ### ### ### ########### ### # # # # ##### ### ### # # ### # # # # ### # ####### # #
-#   # # #       # #       #                             # #   # # # # #               # #     #   # #
-# # ### ### # ### ### # ### ##### # # ####### # # # ##### # ##### ######### # # # # ### # ####### # #
-# #       # #   # #   #         # # #       # # # # # # #                 # # # # #         # # #   #
-# # # ### # # ####### # # # ##### ### # # ####### ### # # ### ### ##### # ######### # # # ### # # ###
-# # #   # # #   #     # # #     #   # # #     # #           #   #     # #     #     # # #           #
-# ### ####### ##### # # # # ######### ### # ### ####### # ######### ##### ####### # # # # ### # # # #
-# #       #       # # # # #       #     # #           # #         #     #   #     # # # #   # # # # #
-# # # # # # # # # ### ##### # ####### ##### # ### # ##### # ####### ########### # ##### # ######### #
-# # # # # # # # #   #     # #     # #     # #   # #   # # #     #           #   #     # #       #   #
-# # ### # # ### # ### # ### # # ### ######### # # # ### ######### # ############# # # ### ######### #
-# #   # # # #   # #   #   # # #             # # # #             # # # # # #   # # # #   #         # #
-# # # # # ##### # # # ##### # ### # # ### # # ##### # ### # ######### # # ### # ##### # # # # # ### #
-# # # # # #     # # #     # #   # # #   # # #     # #   # #       # # # #   #       # # # # # # # # #
-# # # # ##### # # # # # ### # # # ### ####### # ### # ### # # # ### # # # ### ####### # ### ##### ###
-# # # # #     # # # # #   # # # #   #       # #   # # # # # # #                     # #   # # # # # #
-# ##### ### # # ##### # ### ### # ########### ######### ### ####### # # # # ##### ##### ##### # # # #
-#   # # #   # #     # #   # # # #       # # #             # # #   # # # # #     #     #   #         #
-# ### ##### ### ##### # ##### ### # # ### # ####### # # ##### # ##### # ### # ### ##### ### ### # # #
-# #         #       # #         # # #             # # #     #       # #   # #   # #   #       # # # #
-### ####### ### # ################### ### ####### ####### ### ### # # # # # # ##### ##### # #########
-#   #         # #                   #   #       #       #       # # # # # # #           # #   #     #
-# # ####### ##### # # ### # # # # ### ### ### ##### # ##### # ############### # ### # ### # ### #####
-# #   #         # # #   # # # # # #     #   #     # #     # #   # # # #   # # #   # # #   #         #
-# # ####### ######### ##### # ### # # ### # # # ##### # ### # ### # # # ### ### # ##### # # # # # # #
-# # # #         #         # #   # # #   # # # #     # #   # #                 # #     # # # # # # # #
-##### ##### # ##### # # # # # # ##### ##### ### ##### # ##### # # # # ################# ### ####### #
-#           #   #   # # # # # #     #     #   #     # #     # # # # #           #     #   #       # #
-### ### # # # ### # ####### ##### ### # ##### # # ##### # # # # # ### ##### ##### ##### ### # ### ###
-# # #   # # #   # #       #     # #   #     # # #   #   # # # # # #       #           #   # #   #   #
-# ##### ##### ### # # ##### # ##### # # # ##### # ##### # # ######### # ##### # ####### ### # ##### #
-#         #     # # #     # #     # # # #     # #     # # #     #     #     # #       #   # #     # #
-# ### # ##### ####### ####### ################# # ####### # ######### # # ##### # ############# #####
-# #   # #       #           # # # #         # # #       # #     #     # #     # #       #     # # # #
-# ### ### # # # # # # ##### ### # # ### # ### ### # # ##### ##### ### ### ############### ####### # #
-# #     # # # # # # #     #           # #       # # #   # #   # # #     #         #     #     # #   #
-# ### ####### ### # ####### ### # ####### # ######### ### ##### ##### ############# ##### ##### # ###
-# #   # # #     # #       #   # #     # # #         #             #             #           # #     #
-# ##### # ### ##### ### ### ##### # ### ### ##### # # # # # # # ##### # # # # ### ########### # #####
-# #               #   # #       # #   # # #     # # # # # # # #     # # # # #         #             #
-# ##### # # # # # # ####### # ##### ### # ##################### # # ########### # ##### ### ### # ###
-# # #   # # # # # #     #   #   #               # # # # # #   # # #           # #     #   #   # #   #
-### ### ### ### # # # ### # # # ### # # # ####### # # # # # ########### # # # ### # ### ### ##### # #
-#       #     # # # #   # # # # #   # # #         #   # #       #     # # # #   # #       #   #   # #
-####### ### # ### ####### ##### # # # ### # # ##### ### # ####### ####### # # ### # # # ########### #
-#         # # #     #   #     # # # # #   # #         #     # #     #   # # #   # # # #     #   # # #
-####### ### # ### ### ### # ####### # # # # # # ### ### ##### # ##### ####### ### # # # ####### # ###
-#   #     # # #         # # #   #   # # # # # #   # #               # # #   #   # # # #   # # #     #
-### ### ######### # # ####### ##### # # # ##### ##### ### # # # ##### # # ### ######### ### # # #####
-#             #   # #     # #   #   # # # #             # # # #   #         #   # # # #       #     #
-##### # # # # ### # # ##### # ##### ##### ### # ### # ####### ##### ### # ####### # # ### ##### #####
-#     # # # #   # # #     # # #   # #       # #   # #       #         # #     #   #     # # # #     #
-##### ####### # ### # ##### # # ####### # # ### ### # ### ### ### # ####### ##### # ####### # # ### #
-#         #   #   # #                 # # # #     # #   #   #   # # # # # #   # # #   # # #       # #
-# # # # ##### ####### ### # # # ### ### # # # # # ################### # # ##### # # ### # # #########
-# # # #     #     #     # # # #   #   # # # # # #     # #           # # # # # # #             # #   #
-# ##### ##### ##### # ##### ### ########### # # # # ### # ### # ##### # # # # # # ####### ##### # ###
-# #         #     # #     #   #     #     # # # # #         # #           #             #           #
-# ##### # ########### # # # # # ##### ### # ### # # # # ######### # # # ### ### # ### ### ### # #####
-# # #   #           # # # # # #         # # #   # # # #         # # # #       # #   # #     # #     #
-### ### # ### # ############# # # # ########### # ### # # ### ##### # # # # ##### ### ### ##### #####
-#       #   # #             # # # #   # #     # # #   # #   #     # # # # #     #   # # # # # #   # #
-### # # # # ### # # # ##### ### ### ### # ##### ##### # # # ############### # ######### ### # ##### #
-#   # # # #   # # # #     #   #   #           # #     # # #           #     # # # # # #             #
-# # ### ########### # # ########### # # # # # ##### # # ### ##### ####### # ### # # # ### ### ##### #
-# # #         # # # # #           # # # # # #   #   # #   #     #     #   #           # #   # #   # #
-# # ### ### ### # ##### # # # ##### # ### ### ### # # # ##### # # # ##### # ### # ##### # ##### #####
-# # #     # #       #   # # #     # #   #   # #   # # #     # # # #     # #   # #                 # #
-# ##### ##### ### ##### ##### ##### ##### # # ### ### # # ####### # ##### # # ##### ### # # # ##### #
-# #             #     #   #       #     # # # #     # # #     #   #     # # #     #   # # # #       #
-# # # # # # # ### # ##### # # # ### ####### # # # # # ### ####### # ######### # # # ### ##### # # # #
-# # # # # # #   # #     # # # #   #       # # # # # # #       #   #     # #   # # #   #     # # # # #
-##### # # # ####### # ######### ### ####### # # ######### # # ### ####### ### # ######### ###########
-#     # # #       # # # # # #     #     # # # #       #   # # #             # #         #     # #   #
-# # ### ### # ##### ### # # ### ######### ##### # # ##### ####### # ### # ##### # ### ### # ### # ###
-# # #   #   #     #         #       #         # # #   #       #   #   # #   #   #   #   # #         #
-# ######### # ##### # # # ##### # ### ####### # # # ##### # ####### ##### ### # # ### ### # # # # ###
-# #         #     # # # #     # #   #       # # # #   #   # #           #   # # # # #   # # # # #   #
-### # ### # # ####### # # # ######### ############# ##### # ####### ##### # ### ### ######### # # # #
-#   # #   # #     # # # # #                   # #       # #   #         # # #             #   # # # #
-### ######### ##### ### ### # # ### # ######### ### # # ### # ### # # ### # ### # # ######### #######
-#   #                 # #   # #   # #       #     # # #   # # #   # #   # # #   # #         #       #
-############# ### # # # ### # # # ### ### ##### ################### ##### # ### ### ### # ### # # # #
-#               # # # #   # # # #   #   #   # #   #   # # # #           # # #     #   # #   # # # # #
-### # ##### # # # ##### ### # # # # # ####### # ### ### # # ### # # # ##### # # ### # # # # ### # # #
-#   # #     # # # # # # #   # # # # #                         # # # #     # # #   # # # # #   # # # #
-### ##### # # ##### # ##### # ### # # # # # # # ### # # # # ##### # # # ####### # ##### ### # ##### #
-#   #     # #             # #   # # # # # # # #   # # # # #     # # # #     #   #     # #   #     # #
-### # # # ### ####### ### # # ##### ##### # ### ####### # # # # ### # # # ##### # # ### ### # # # # #
-#   # # # #         #   # # #     #     # # #         # # # # #   # # # #   #   # #   # #   # # # #  
-#####################################################################################################`
 
 class Maze extends Common {
   constructor() {
@@ -1454,33 +1354,17 @@ class Maze extends Common {
 
     const d = this.d
 
-    // d.canvas.onclick = () => {
-    //   // console.log(d.canvas.toDataURL())
-    //   d.canvas.toBlob((blob) => {
-    //     const fm = new FormData()
-    //     const xhr = new XMLHttpRequest()
-
-    //     fm.append('imgName', d.typeItem.name + '.png')
-    //     fm.append('img', blob)
-    //     xhr.open('POST', 'http://localhost/save.php', true)
-    //     xhr.send(fm)
-    //   })
-    // }
-
-    d.itemWidth = 4
-    d.itemHeight = 4
-    d.road = ' '
-    d.wall = '#'
-    d.mazeData = mazeData.split('\n').map(row => row.split('').map(n => new Node(n)))
-    d.canvas.width = d.itemWidth * d.mazeData[0].length
+    d.isRenderVisited = true
+    d.itemWidth = 6
+    d.mazeData = typeof mazeData ===  "undefined" ? require('./mazeData').default : mazeData
+    d.mazeData = d.mazeData.split('\n').map(row => row.split('').map(c => new Node(c)))
+    d.contentWidth = d.mazeData[0].length * d.itemWidth
+    d.contentHeight = d.mazeData.length * d.itemWidth
+    d.canvas.width = d.contentWidth
     d.canvas.style.width = ''
-    d.canvas.height = d.itemWidth * d.mazeData.length
-    d.dir = [
-      [-1, 0],
-      [0, 1],
-      [1, 0],
-      [0, -1],
-    ]
+    d.canvas.height = d.contentHeight
+    d.wall = '#'
+    d.road = ' '
     d.enter = {
       x: 0,
       y: 1,
@@ -1489,9 +1373,21 @@ class Maze extends Common {
       x: d.mazeData[0].length - 1,
       y: d.mazeData.length - 2,
     }
+    d.dir = [
+      [-1, 0],
+      [0, 1],
+      [1, 0],
+      [0, -1],
+    ]
 
-    d.mazeData[d.enter.y][d.enter.x].isPath = true
-    d.mazeData[d.exit.y][d.exit.x].isPath = true
+    // d.mazeData[d.enter.y][d.enter.x].isPath = true
+    // d.mazeData[d.exit.y][d.exit.x].isPath = true
+  }
+  inArea(y, x) {
+    return (
+      y >= 0 && y < this.d.mazeData.length && 
+      x >= 0 && x < this.d.mazeData[0].length
+    )
   }
   findPath(p) {
     const d = this.d
@@ -1501,34 +1397,29 @@ class Maze extends Common {
       p = p.from
     }
   }
-  inArea(y, x) {
-    const d = this.d
-    return (
-      y >= 0 && y < d.mazeData.length &&
-      x >= 0 && x < d.mazeData[0].length
-    )
-  }
   dfs1() {
     const d = this.d
-    
-    const dfs = (y, x) => {
-      const node = d.mazeData[y][x]
+
+    const dfs = (p) => {
+      const node = d.mazeData[p.y][p.x]
 
       node.visited = true
       node.isPath = true
 
-      if (y === d.exit.y && x === d.exit.x) return true
+      if (p.x === d.exit.x && p.y === d.exit.y) return true
 
       for (let i = 0; i < 4; i++) {
-        const newX = x + d.dir[i][1]
-        const newY = y + d.dir[i][0]
+        const newX = p.x + d.dir[i][1]
+        const newY = p.y + d.dir[i][0]
 
         if (
           this.inArea(newY, newX) &&
           !d.mazeData[newY][newX].visited &&
           d.mazeData[newY][newX].n === d.road
         ) {
-          if (dfs(newY, newX)) return true
+          if (dfs({x: newX, y: newY})) {
+            return true
+          }
         }
       }
 
@@ -1536,7 +1427,7 @@ class Maze extends Common {
       return false
     }
 
-    dfs(d.enter.y, d.enter.x)
+    dfs(d.enter)
   }
   dfs2() {
     const d = this.d
@@ -1545,11 +1436,13 @@ class Maze extends Common {
 
     while (stack.length > 0) {
       p = stack.pop()
+
       const node = d.mazeData[p.y][p.x]
 
       node.visited = true
+      node.isPath = true
 
-      if (p.y === d.exit.y && p.x === d.exit.x) break
+      if (p.x === d.exit.x && p.y === d.exit.y) break
 
       for (let i = 0; i < 4; i++) {
         const newX = p.x + d.dir[i][1]
@@ -1567,6 +1460,8 @@ class Maze extends Common {
           })
         }
       }
+
+      node.isPath = false
     }
 
     this.findPath(p)
@@ -1578,11 +1473,13 @@ class Maze extends Common {
 
     while (queue.length > 0) {
       p = queue.shift()
+
       const node = d.mazeData[p.y][p.x]
 
       node.visited = true
+      node.isPath = true
 
-      if (p.y === d.exit.y && p.x === d.exit.x) break
+      if (p.x === d.exit.x && p.y === d.exit.y) break
 
       for (let i = 0; i < 4; i++) {
         const newX = p.x + d.dir[i][1]
@@ -1600,11 +1497,154 @@ class Maze extends Common {
           })
         }
       }
+
+      node.isPath = false
     }
 
     this.findPath(p)
   }
-  setPos() {}
+  generateInit() {
+    const d = this.d
+
+    d.row = 71
+    d.col = 71
+
+    d.mazeData = new Array(d.row).fill().map((_, idxRow) => {
+      return new Array(d.col).fill().map((_, idxCol) => {
+        return new Node(idxRow % 2 === 1 && idxCol % 2 === 1 ? d.road : d.wall)
+      })
+    })
+
+    d.enter = {
+      x: 0,
+      y: 1,
+    }
+    d.exit = {
+      x: d.mazeData[0].length - 1,
+      y: d.mazeData.length - 2,
+    }
+    d.isRenderVisited = false
+    d.canvas.width = d.col * d.itemWidth
+    d.canvas.height = d.row * d.itemWidth
+    d.mazeData[d.enter.y][d.enter.x].n = d.road
+    d.mazeData[d.exit.y][d.exit.x].n = d.road
+  }
+  generateDfs1() {
+    const d = this.d
+
+    this.generateInit()
+
+    const dfs = (p) => {
+      for (let i = 0; i < 4; i++) {
+        const newX = p.x + d.dir[i][1] * 2
+        const newY = p.y + d.dir[i][0] * 2
+
+        if (
+          this.inArea(newY, newX) &&
+          !d.mazeData[newY][newX].visited
+        ) {
+          d.mazeData[newY][newX].visited = true
+          d.mazeData[p.y + d.dir[i][0]][p.x + d.dir[i][1]].n = d.road
+          dfs({
+            x: newX,
+            y: newY,
+          })
+        }
+      }
+    }
+
+    dfs({x: 1, y: 1})
+  }
+  generateDfs2() {
+    const d = this.d
+    const stack = [{x: 1, y: 1}]
+
+    this.generateInit()
+
+    while (stack.length > 0) {
+      const p = stack.pop()
+
+      for (let i = 0; i < 4; i++) {
+        const newY = p.y + d.dir[i][0] * 2
+        const newX = p.x + d.dir[i][1] * 2
+
+        if (
+          this.inArea(newY, newX) &&
+          !d.mazeData[newY][newX].visited
+        ) {
+          stack.push({x: newX, y: newY})
+          d.mazeData[newY][newX].visited = true
+          d.mazeData[p.y + d.dir[i][0]][p.x + d.dir[i][1]].n = d.road
+        }
+      }
+    }
+  }
+  generateBfs() {
+    const d = this.d
+    const queue = [{x: 1, y: 1}]
+
+    this.generateInit()
+
+    while (queue.length > 0) {
+      const p = queue.shift()
+
+      for (let i = 0; i < 4; i++) {
+        const newY = p.y + d.dir[i][0] * 2
+        const newX = p.x + d.dir[i][1] * 2
+
+        if (
+          this.inArea(newY, newX) &&
+          !d.mazeData[newY][newX].visited
+        ) {
+          queue.push({x: newX, y: newY})
+          d.mazeData[newY][newX].visited = true
+          d.mazeData[p.y + d.dir[i][0]][p.x + d.dir[i][1]].n = d.road
+        }
+      }
+    }
+  }
+  generateRand() {
+    const d = this.d
+    const queue = [{x: 1, y: 1}]
+
+    this.generateInit()
+
+    while (queue.length > 0) {
+      const p = queue[Math.random() < .5 ? 'pop' : 'shift']()
+      // const p = queue.pop()
+
+      for (let i = 0; i < 4; i++) {
+        const newY = p.y + d.dir[i][0] * 2
+        const newX = p.x + d.dir[i][1] * 2
+
+        if (
+          this.inArea(newY, newX) &&
+          !d.mazeData[newY][newX].visited
+        ) {
+          queue[Math.random() < .5 ? 'unshift' : 'push']({x: newX, y: newY})
+          // queue.push({x: newX, y: newY})
+          d.mazeData[newY][newX].visited = true
+          d.mazeData[p.y + d.dir[i][0]][p.x + d.dir[i][1]].n = d.road
+        }
+      }
+    }
+
+    d.mazeData.forEach((row, idx) => {
+      row.forEach((node, idx) => {
+        node.visited = false
+      })
+    })
+    this.bfs()
+
+    /*console.log(d.mazeData.map((row) => {
+      return row.map((node) => {
+        return node.n
+      }).join('')
+    }).join('\n'))*/
+  }
+  setPos() {
+    const d = this.d
+  }
   render() {
     const d = this.d
     const {gd} = d
@@ -1613,7 +1653,7 @@ class Maze extends Common {
       row.forEach((node, idx) => {
         gd.beginPath()
         gd.rect(idx * d.itemWidth, stair * d.itemWidth, d.itemWidth, d.itemWidth)
-        gd.fillStyle = d.color[node.n === d.wall ? 'blue' : (node.isPath ? 'red' : (node.visited ? 'yellow' : 'white'))]
+        gd.fillStyle = d.color[node.n === '#' ? 'blue' : (node.isPath ? 'red' : (node.visited ? (d.isRenderVisited ? 'yellow' : 'white') : 'white'))]
         gd.fill()
       })
     })
@@ -1625,64 +1665,57 @@ class Algo {
     this.d = d
 
     const allAlgo = {
-      Maze,
-      FractalTree,
-      KoachSnowflake,
-      SierpinskiTriangle,
-      Sierpinski,
-      Vicsek,
-      Fib,
-      Trie,
-      RBTree,
-      AVLTree,
-      BinarySearch,
-      SegmentTree,
-      MaxHeap,
-      QuickSort3,
-      QuickSort2,
-      QuickSort,
-      MergeSort,
-      InsertionSort,
-      SelectionSort,
+      Maze, Fractal, Trie, Tree, SegmentTree, Heap, Sort
     }
 
-    d.type = d.type || {}
-    d.type.list = d.type.list || [
-      // {name: '迷宫寻路 - 广度 - 非递归', cons: 'Maze', startFn: 'bfs'},
-      // {name: '迷宫寻路 - 深度优先 - 非递归', cons: 'Maze', startFn: 'dfs2'},
-      // {name: '迷宫寻路 - 深度优先 - 递归', cons: 'Maze', startFn: 'dfs1'},
-      {name: '分形图 - FractalTree', cons: 'FractalTree', startFn: 'create', arg: {degL: -5, degR: 25, translateX: -120}},
-      {name: '分形图 - FractalTree', cons: 'FractalTree', startFn: 'create', arg: {}},
-      {name: '分形图 - KoachSnowflake', cons: 'KoachSnowflake', startFn: 'create'},
-      {name: '分形图 - SierpinskiTriangle', cons: 'SierpinskiTriangle', startFn: 'create'},
-      {name: '分形图 - Sierpinski', cons: 'Sierpinski', startFn: 'create'},
-      {name: '分形图 - Vicsek', cons: 'Vicsek', startFn: 'create'},
-      {name: '分形图 - 斐波那契数列', cons: 'Fib', startFn: 'create'},
-      {name: 'Trie', cons: 'Trie', startFn: 'create'},
-      {name: '红黑树 - 左倾&右倾', cons: 'RBTree', startFn: 'create'},
-      {name: 'AVL树', cons: 'AVLTree', startFn: 'create'},
-      {name: '二分搜索树 - 镜像反转', cons: 'BinarySearch', startFn: 'create'},
-      {name: '线段树 - R', cons: 'SegmentTree', startFn: 'createR'},
-      {name: '线段树 - L', cons: 'SegmentTree', startFn: 'createL'},
-      {name: '最大堆 - shiftUp', cons: 'MaxHeap', startFn: 'createByShiftUp'},
-      {name: '最大堆 - heapify', cons: 'MaxHeap', startFn: 'heapify'},
-      {name: '三路快排', cons: 'QuickSort3', startFn: 'startSort'},
-      {name: '双路快排', cons: 'QuickSort2', startFn: 'startSort'},
-      {name: '单路快排', cons: 'QuickSort', startFn: 'startSort'},
-      {name: '归并排序', cons: 'MergeSort', startFn: 'startSort'},
-      {name: '插入排序', cons: 'InsertionSort', startFn: 'startSort'},
-      {name: '选择排序', cons: 'SelectionSort', startFn: 'startSort'},
-    ]
+    d.cons = {
+      map: {}
+    }
+
+    d.type = {
+      list: [
+        {name: '迷宫创建 - 随机队列', cons: 'Maze', startFn: 'generateRand', arg: {}},
+        {name: '迷宫创建 - 广度优先 - 非递归', cons: 'Maze', startFn: 'generateBfs', arg: {}},
+        {name: '迷宫创建 - 深度优先 - 非递归', cons: 'Maze', startFn: 'generateDfs2', arg: {}},
+        {name: '迷宫创建 - 深度优先 - 递归', cons: 'Maze', startFn: 'generateDfs1', arg: {}},
+        {name: '迷宫寻路 - 广度优先 - 非递归', cons: 'Maze', startFn: 'bfs', arg: {}},
+        {name: '迷宫寻路 - 深度优先 - 非递归', cons: 'Maze', startFn: 'dfs2', arg: {}},
+        {name: '迷宫寻路 - 深度优先 - 递归', cons: 'Maze', startFn: 'dfs1', arg: {}},
+        {name: '分形图 - 1/2 + 1/4 ... 1/n ≈ 1', cons: 'Fractal', startFn: 'NearOne', arg: {}},
+        {name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 120, translateX: -80, degL: -5, degR: 20}},
+        {name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 120}},
+        {name: '分形图 - KoachSnowflake', cons: 'Fractal', startFn: 'KoachSnowflake', arg: {}},
+        {name: '分形图 - SierpinskiTriangle', cons: 'Fractal', startFn: 'SierpinskiTriangle', arg: {}},
+        {name: '分形图 - Sierpinski', cons: 'Fractal', startFn: 'Sierpinski', arg: {}},
+        {name: '分形图 - Vicsek', cons: 'Fractal', startFn: 'Vicsek', arg: {}},
+        {name: '分形图 - 斐波那契数列', cons: 'Fractal', startFn: 'Fib', arg: {}},
+        {name: 'Trie', cons: 'Trie', startFn: 'create', arg: {}},
+        {name: '红黑树', cons: 'Tree', startFn: 'RB', arg: {}},
+        {name: 'AVL树', cons: 'Tree', startFn: 'AVL', arg: {}},
+        {name: '二分搜索树 - 镜像反转', cons: 'Tree', startFn: 'BinaryFlip', arg: {}},
+        {name: '二分搜索树', cons: 'Tree', startFn: 'Binary', arg: {}},
+        {name: '线段树 - R', cons: 'SegmentTree', startFn: 'createR', arg: {}},
+        {name: '线段树 - L', cons: 'SegmentTree', startFn: 'createL', arg: {}},
+        {name: '最大堆 - shiftUp', cons: 'Heap', startFn: 'createByShiftUp', arg: {}},
+        {name: '最大堆 - heapify', cons: 'Heap', startFn: 'heapify', arg: {}},
+        {name: '三路快排 - QuickSort3', cons: 'Sort', startFn: 'QuickSort3', arg: {}},
+        {name: '双路快排 - QuickSort2', cons: 'Sort', startFn: 'QuickSort2', arg: {}},
+        {name: '单路快排 - QuickSort1', cons: 'Sort', startFn: 'QuickSort1', arg: {}},
+        {name: '归并排序 - MergeSort', cons: 'Sort', startFn: 'MergeSort', arg: {}},
+        {name: '插入排序 - InsertionSort', cons: 'Sort', startFn: 'InsertionSort', arg: {}},
+        {name: '选择排序 - SelectionSort', cons: 'Sort', startFn: 'SelectionSort', arg: {}},
+      ]
+    }
 
     const nodeList = document.querySelector('#box-algo > .list')
 
     nodeList.innerHTML = d.type.list.map((v) => {
       return `
         <section>
-          <div class="btn-box">
+          <div class="box-btn">
             <button class="btn btn-primary">${v.name}</button>
           </div>
-          <div class="btn-canvas">
+          <div class="box-canvas">
             <canvas data-title="${v.name}"></canvas>
           </div>
         </section>
@@ -1691,37 +1724,28 @@ class Algo {
 
     const len = 20
     let randArr = [].rnd(len, 1, len * 5)
-    // randArr = new Array(len).fill().map((_, idx) => len - idx)
-
+    // randArr = new Array(len).fill().map((_, idx) => idx)
     randArr = randArr.map(n => new Node(n))
-    const gdList = []
 
-    nodeList.querySelectorAll('canvas').forEach((canvas, idx) => {
+    document.querySelectorAll('#box-algo > .list canvas').forEach((canvas, idx) => {
       const typeItem = d.type.list[idx]
-      const gd = canvas.getContext('2d')
-      try {
-        gdList.push(typeItem.cons + ' - ' + gd)
-      } catch (e) {
-        alert('error')
-      }
-      console.time(typeItem.cons)
+      // console.time(typeItem.name)
       const o = new allAlgo[typeItem.cons]({
         canvas,
-        gd,
+        gd: canvas.getContext('2d'),
         arr: randArr.clone(),
+        conf: Algo.conf,
+        color: Algo.color,
         typeItem,
       })
 
+      d.cons.map[typeItem.startFn] = o
       o[typeItem.startFn](typeItem.arg)
       o.setPos()
       o.render()
       o.log && o.log()
-      console.timeEnd(typeItem.cons)
+      // console.timeEnd(typeItem.name)
     })
-
-    setTimeout(() => {
-      test.innerHTML = gdList.join('<br /><br />')
-    }, 2000)
   }
 }
 
@@ -1732,8 +1756,8 @@ Algo.conf = {
   paddingH: 15,
   paddingV: 15,
   paddingTop: 0,
-  lineHeight: 14 * 1.5,
-  scale: devicePixelRatio,
+  // scale: devicePixelRatio,
+  scale: 2,
   font: '14px Arial',
   fontSm: '12px Arial',
   fontLg: '16px Arial',
@@ -1757,38 +1781,21 @@ Algo.color = {
   orange: '#FF9800',
   deepOrange: '#FF5722',
   brown: '#795548',
-  grey: '#9E9E9E',
   blueGrey: '#607D8B',
+  grey: '#9E9E9E',
   black: '#000000',
   white: '#FFFFFF',
 }
-
 
 export default {
   Node,
   Common,
   Sort,
   Heap,
-  Tree,
-  Fractal,
-  SelectionSort,
-  InsertionSort,
-  MergeSort,
-  QuickSort,
-  QuickSort2,
-  QuickSort3,
-  MaxHeap,
   SegmentTree,
-  BinarySearch,
-  AVLTree,
-  RBTree,
+  Tree,
   Trie,
-  Vicsek,
-  Sierpinski,
-  SierpinskiTriangle,
-  KoachSnowflake,
-  FractalTree,
-  Fib,
+  Fractal,
   Maze,
   Algo
 }

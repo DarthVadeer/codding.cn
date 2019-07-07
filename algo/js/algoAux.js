@@ -1,32 +1,47 @@
-window.sleep = async (time) => {
+function sleep(time) {
   return new Promise(next => time ? setTimeout(next, time) : next())
 }
 
-window.clone = (o) => {
-  return JSON.parse(JSON.stringify(o))
-}
-
-window.rand = (l, r) => {
-  return Math.floor(Math.random() * (r - l + 1) + l)
-}
-
-window.randColor = (a) => {
-  const o = {
-    r: rand(0, 255),
-    g: rand(0, 255),
-    b: rand(0, 255),
-    a: a === undefined ? 1 : a,
-  }
-
-  return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
-}
-
-window.d2a = (deg) => {
+function d2a(deg) {
   return deg / 180 * Math.PI
 }
 
-window.a2d = (angle) => {
-  return angle / Math.PI * 180
+function a2d(angle) {
+  return angle / 180 * Math.PI
+}
+
+function clone(o) {
+  return JSON.parse(JSON.stringify(o))
+}
+
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+window.rgba = function(r, g, b, a) {
+  const o = {r, g, b, a}
+  o.toString = () => {
+    return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
+  }
+  return o
+}
+
+function randColor(a, min, max) {
+  min = min === undefined ? 0 : min
+  max = max === undefined ? 255 : max
+
+  const o = {
+    r: rand(min, max),
+    g: rand(min, max),
+    b: rand(min, max),
+    a: a === undefined ? 1 : a,
+  }
+
+  o.toString = () => {
+    return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
+  }
+
+  return o
 }
 
 Array.prototype.first = function() {
@@ -47,14 +62,14 @@ Array.prototype.clone = function() {
   return clone(this)
 }
 
-Array.prototype.rnd = function(len, l, r) {
-  l = l === undefined ? 0 : l
-  r = r === undefined ? len : r
-  return new Array(len).fill().map(_ => rand(l, r))
+Array.prototype.rnd = function(len, min, max) {
+  min = min === undefined ? 0 : min
+  max = max === undefined ? len : max
+  return new Array(len).fill().map(_ => rand(min, max))
 }
 
 Array.prototype.shuffle = function() {
   for (let len = this.length, i = len - 1; i > -1; i--) {
-    this.swap(i, parseInt(Math.random() * (i + 1)))
+    this.swap(i, ~~(Math.random() * (i + 1)))
   }
 }

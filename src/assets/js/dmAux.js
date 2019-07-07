@@ -14,6 +14,14 @@ window.rand = function(m, n) {
   return Math.floor(Math.random() * (n - m + 1) + m)
 }
 
+window.rgba = function(r, g, b, a) {
+  const o = {r, g, b, a}
+  o.toString = () => {
+    return 'rgba(' + o.r + ',' + o.g + ',' + o.b + ',' + o.a + ')'
+  }
+  return o
+}
+
 window.randColor = function(a) {
   const o = {
     r: rand(0, 255),
@@ -57,6 +65,19 @@ Array.prototype.first = function() {
 
 Array.prototype.last = function() {
   return this[this.length - 1]
+}
+
+Array.prototype.remove = function(el) {
+  el = new Set(el instanceof Array ? el : [el])
+
+  for (let i = 0; i < this.length; i++) {
+    if (el.has(this[i])) {
+      this.splice(i, 1)
+      i--
+    }
+  }
+  
+  return this
 }
 
 Array.prototype.clone = function() {
@@ -111,41 +132,6 @@ window.$ = function(selector, context = document) {
   return nodes
 }
 
-/*$.prototype.each = function(cb) {
-  for (let i = 0; i < this.length; i++) {
-    cb && cb(i, this[i], this)
-  }
-}
-
-$.prototype.addClass = function(sClass) {
-  this.each((idx, node) => {
-    node instanceof HTMLElement && node.classList.add(sClass)
-  })
-  return this
-}
-
-$.prototype.removeClass = function(sClass) {
-  this.each((idx, node) => {
-    node instanceof HTMLElement && node.classList.remove(sClass)
-  })
-  return this
-}
-
-$.prototype.toggleClass = function(sClass) {
-  this.each((idx, node) => {
-    node instanceof HTMLElement && node.classList.toggle(sClass)
-  })
-  return this
-}
-
-$.prototype.toggle = function(sClass) {
-  this.each((idx, node) => {
-    if (node instanceof HTMLElement) {
-      node.style.display = getComputedStyle(node)['display'] === 'none' ? '' : 'none'
-    }
-  })
-  return this
-}*/
 
 $.ajax = function(o) {
   return new Promise((next) => {
@@ -167,7 +153,7 @@ $.ajax = function(o) {
           if (!navigator.onLine) {
             vm.alert('你断网了，请保持网络畅通')
           } else if (xhr.status === 0) {
-            vm.alert('你的网络不能正常访问' + location.origin + (vm.is.chrome ? '<br /> 复制下面的地址，尝试清理dns缓存 <br /> chrome://net-internals/#dns' : ''))
+            vm.alert(vm.is.local ? '后台服务未开启' : ('你的网络不能正常访问' + location.origin + (vm.is.chrome ? '<br /> 复制下面的地址，尝试清理dns缓存 <br /> chrome://net-internals/#dns' : '')))
           } else {
             vm.alert('其他错误，错误码：' + xhr.status)
           }
