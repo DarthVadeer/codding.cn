@@ -2,60 +2,51 @@
 <html lang="zh-cn">
 <head>
   <meta charset="UTF-8">
-  <title>算法与数据结构</title>
-  <meta name="viewport" content="width=device-width">
+  <meta name="viewport" content="width=device-width, user-scalable=no">
+  <title>算法与数据结构 | By 田小号</title>
   <link rel="shortcut icon" type="image/x-icon" href="http://codding.cn/static/img/favicon.ico">
   <style>
     * {padding: 0; margin: 0; font: inherit; box-sizing: border-box;}
     body {font-size: 14px;}
 
-    #box-algo {text-align: center; user-select: none;}
+    #box-algo {text-align: center;}
     #box-algo > .list {padding: 15px;}
-    #box-algo > .list section {margin-bottom: 15px;}
+    #box-algo > .list section {margin: 20px 0;}
     #box-algo > .list section .box-btn {margin-bottom: 15px;}
-    #box-algo > .list section .box-btn button {padding: .4em 1em; cursor: pointer;}
+    #box-algo > .list section .box-btn button {padding: .5em 1em; cursor: pointer;}
     #box-algo > .list section .box-canvas {}
     #box-algo > .list section .box-canvas canvas {border: 1px solid #ccc; max-width: 100%;}
   </style>
 </head>
 <body>
 
-<pre id="msg"></pre>
-<pre id="msg2"></pre>
-
 <div id="box-algo">
   <div class="list">
-    <!-- <section>
+    <section>
       <div class="box-btn">
         <button class="btn btn-primary">${v.name}</button>
       </div>
       <div class="box-canvas">
         <canvas data-title="${v.name}"></canvas>
       </div>
-    </section> -->
+    </section>
   </div>
 </div>
 
-<script>
-window.onerror = function() {
-  msg.innerHTML = [].slice.call(arguments).join('<br /><br />')
-}
-</script>
 <script src="./js/algoAux.js"></script>
 <script src="./js/Common.js"></script>
 <script src="./js/Sort.js"></script>
 <script src="./js/Heap.js"></script>
-<script src="./js/SegmentTree.js"></script>
 <script src="./js/Tree.js"></script>
 <script src="./js/Trie.js"></script>
 <script src="./js/Fractal.js"></script>
-<script src="./js/mazeData.js"></script>
+<script src="./js/MazeData.js"></script>
 <script src="./js/Maze.js"></script>
 <script src="./js/Algo.js"></script>
 <script>
-// console.time('new Algo')
+console.time('algo')
 const algo = new Algo()
-// console.timeEnd('new Algo')
+console.timeEnd('algo')
 </script>
 
 </body>

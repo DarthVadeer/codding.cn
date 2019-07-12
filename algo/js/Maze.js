@@ -5,16 +5,22 @@ class Maze extends Common {
     const d = this.d
 
     d.isRenderVisited = true
-    d.itemWidth = 6
-    d.mazeData = typeof mazeData ===  "undefined" ? require('./mazeData').default : mazeData
-    d.mazeData = d.mazeData.split('\n').map(row => row.split('').map(c => new Node(c)))
+    d.itemWidth = 8
+    d.itemHeight = 8
+    d.road = ' '
+    d.wall = '#'
+    d.dir = [
+      [-1, 0],
+      [0, 1],
+      [1, 0],
+      [0, -1],
+    ]
+
+    d.mazeData = (typeof mazeData === "undefined" ? require('./mazeData.js').default : mazeData).split('\n').map(row => row.split('').map(s => new Node(s)))
     d.contentWidth = d.mazeData[0].length * d.itemWidth
     d.contentHeight = d.mazeData.length * d.itemWidth
     d.canvas.width = d.contentWidth
-    d.canvas.style.width = ''
     d.canvas.height = d.contentHeight
-    d.wall = '#'
-    d.road = ' '
     d.enter = {
       x: 0,
       y: 1,
@@ -23,38 +29,33 @@ class Maze extends Common {
       x: d.mazeData[0].length - 1,
       y: d.mazeData.length - 2,
     }
-    d.dir = [
-      [-1, 0],
-      [0, 1],
-      [1, 0],
-      [0, -1],
-    ]
-
     // d.mazeData[d.enter.y][d.enter.x].isPath = true
     // d.mazeData[d.exit.y][d.exit.x].isPath = true
   }
   inArea(y, x) {
-    return (
-      y >= 0 && y < this.d.mazeData.length && 
-      x >= 0 && x < this.d.mazeData[0].length
-    )
-  }
-  findPath(p) {
     const d = this.d
 
-    while (p) {
-      d.mazeData[p.y][p.x].isPath = true
-      p = p.from
-    }
+    return (
+      x >= 0 && x < d.mazeData[0].length &&
+      y >= 0 && y < d.mazeData.length
+    )
   }
-  dfs1() {
+  _inArea(y, x) {
+    const d = this.d
+
+    return (
+      x >= 1 && x < d.mazeData[0].length - 1 &&
+      y >= 1 && y < d.mazeData.length - 1
+    )
+  }
+  dfsAll() {
     const d = this.d
 
     const dfs = (p) => {
       const node = d.mazeData[p.y][p.x]
 
-      node.visited = true
       node.isPath = true
+      node.visited = true
 
       if (p.x === d.exit.x && p.y === d.exit.y) return true
 
@@ -64,7 +65,7 @@ class Maze extends Common {
 
         if (
           this.inArea(newY, newX) &&
-          !d.mazeData[newY][newX].visited &&
+          !d.mazeData[newY][newX].visited && 
           d.mazeData[newY][newX].n === d.road
         ) {
           if (dfs({x: newX, y: newY})) {
@@ -76,8 +77,45 @@ class Maze extends Common {
       node.isPath = false
       return false
     }
-
     dfs(d.enter)
+  }
+  dfs1() {
+    const d = this.d
+    const dfs = (p) => {
+      const node = d.mazeData[p.y][p.x]
+
+      node.isPath = true
+      node.visited = true
+
+      if (p.x === d.exit.x && p.y === d.exit.y) return true
+
+      for (let i = 0; i < 4; i++) {
+        const newX = p.x + d.dir[i][1]
+        const newY = p.y + d.dir[i][0]
+
+        if (
+          this.inArea(newY, newX) &&
+          !d.mazeData[newY][newX].visited && 
+          d.mazeData[newY][newX].n === d.road
+        ) {
+          if (dfs({x: newX, y: newY})) {
+            return true
+          }
+        }
+      }
+
+      node.isPath = false
+      return false
+    }
+    dfs(d.enter)
+  }
+  findPath(p) {
+    const d = this.d
+
+    while (p) {
+      d.mazeData[p.y][p.x].isPath = true
+      p = p.from
+    }
   }
   dfs2() {
     const d = this.d
@@ -86,11 +124,7 @@ class Maze extends Common {
 
     while (stack.length > 0) {
       p = stack.pop()
-
-      const node = d.mazeData[p.y][p.x]
-
-      node.visited = true
-      node.isPath = true
+      d.mazeData[p.y][p.x].visited = true
 
       if (p.x === d.exit.x && p.y === d.exit.y) break
 
@@ -100,7 +134,7 @@ class Maze extends Common {
 
         if (
           this.inArea(newY, newX) &&
-          !d.mazeData[newY][newX].visited &&
+          !d.mazeData[newY][newX].visited && 
           d.mazeData[newY][newX].n === d.road
         ) {
           stack.push({
@@ -110,8 +144,6 @@ class Maze extends Common {
           })
         }
       }
-
-      node.isPath = false
     }
 
     this.findPath(p)
@@ -123,11 +155,7 @@ class Maze extends Common {
 
     while (queue.length > 0) {
       p = queue.shift()
-
-      const node = d.mazeData[p.y][p.x]
-
-      node.visited = true
-      node.isPath = true
+      d.mazeData[p.y][p.x].visited = true
 
       if (p.x === d.exit.x && p.y === d.exit.y) break
 
@@ -137,7 +165,7 @@ class Maze extends Common {
 
         if (
           this.inArea(newY, newX) &&
-          !d.mazeData[newY][newX].visited &&
+          !d.mazeData[newY][newX].visited && 
           d.mazeData[newY][newX].n === d.road
         ) {
           queue.push({
@@ -147,24 +175,27 @@ class Maze extends Common {
           })
         }
       }
-
-      node.isPath = false
     }
 
     this.findPath(p)
   }
-  generateInit() {
+  generate() {
     const d = this.d
 
+    d.isRenderVisited = false
     d.row = 71
     d.col = 71
 
-    d.mazeData = new Array(d.row).fill().map((_, idxRow) => {
-      return new Array(d.col).fill().map((_, idxCol) => {
+    d.mazeData = Array(d.row).fill().map((_, idxRow) => {
+      return Array(d.col).fill().map((_, idxCol) => {
         return new Node(idxRow % 2 === 1 && idxCol % 2 === 1 ? d.road : d.wall)
       })
     })
 
+    d.contentWidth = d.mazeData[0].length * d.itemWidth
+    d.contentHeight = d.mazeData.length * d.itemWidth
+    d.canvas.width = d.contentWidth
+    d.canvas.height = d.contentHeight
     d.enter = {
       x: 0,
       y: 1,
@@ -173,16 +204,14 @@ class Maze extends Common {
       x: d.mazeData[0].length - 1,
       y: d.mazeData.length - 2,
     }
-    d.isRenderVisited = false
-    d.canvas.width = d.col * d.itemWidth
-    d.canvas.height = d.row * d.itemWidth
+
     d.mazeData[d.enter.y][d.enter.x].n = d.road
     d.mazeData[d.exit.y][d.exit.x].n = d.road
   }
   generateDfs1() {
-    const d = this.d
+    this.generate()
 
-    this.generateInit()
+    const d = this.d
 
     const dfs = (p) => {
       for (let i = 0; i < 4; i++) {
@@ -190,11 +219,12 @@ class Maze extends Common {
         const newY = p.y + d.dir[i][0] * 2
 
         if (
-          this.inArea(newY, newX) &&
+          this.inArea(newY, newX) && 
           !d.mazeData[newY][newX].visited
         ) {
           d.mazeData[newY][newX].visited = true
           d.mazeData[p.y + d.dir[i][0]][p.x + d.dir[i][1]].n = d.road
+
           dfs({
             x: newX,
             y: newY,
@@ -203,78 +233,98 @@ class Maze extends Common {
       }
     }
 
-    dfs({x: 1, y: 1})
+    dfs({
+      x: 1,
+      y: 1,
+    })
   }
   generateDfs2() {
+    this.generate()
+
     const d = this.d
     const stack = [{x: 1, y: 1}]
-
-    this.generateInit()
 
     while (stack.length > 0) {
       const p = stack.pop()
 
       for (let i = 0; i < 4; i++) {
-        const newY = p.y + d.dir[i][0] * 2
         const newX = p.x + d.dir[i][1] * 2
+        const newY = p.y + d.dir[i][0] * 2
 
         if (
-          this.inArea(newY, newX) &&
+          this.inArea(newY, newX) && 
           !d.mazeData[newY][newX].visited
         ) {
-          stack.push({x: newX, y: newY})
           d.mazeData[newY][newX].visited = true
           d.mazeData[p.y + d.dir[i][0]][p.x + d.dir[i][1]].n = d.road
+          stack.push({
+            x: newX,
+            y: newY,
+          })
         }
       }
     }
   }
   generateBfs() {
+    this.generate()
+
     const d = this.d
     const queue = [{x: 1, y: 1}]
-
-    this.generateInit()
 
     while (queue.length > 0) {
       const p = queue.shift()
 
       for (let i = 0; i < 4; i++) {
-        const newY = p.y + d.dir[i][0] * 2
         const newX = p.x + d.dir[i][1] * 2
+        const newY = p.y + d.dir[i][0] * 2
 
         if (
-          this.inArea(newY, newX) &&
+          this.inArea(newY, newX) && 
           !d.mazeData[newY][newX].visited
         ) {
-          queue.push({x: newX, y: newY})
           d.mazeData[newY][newX].visited = true
           d.mazeData[p.y + d.dir[i][0]][p.x + d.dir[i][1]].n = d.road
+          queue.push({
+            x: newX,
+            y: newY,
+          })
         }
       }
     }
   }
   generateRand() {
+    this.generate()
+
     const d = this.d
     const queue = [{x: 1, y: 1}]
 
-    this.generateInit()
-
     while (queue.length > 0) {
-      const p = queue[Math.random() < .5 ? 'pop' : 'shift']()
-      // const p = queue.pop()
+      const p = queue[Math.random() < .5 ? 'shift' : 'pop']()
 
       for (let i = 0; i < 4; i++) {
-        const newY = p.y + d.dir[i][0] * 2
         const newX = p.x + d.dir[i][1] * 2
+        const newY = p.y + d.dir[i][0] * 2
 
         if (
-          this.inArea(newY, newX) &&
+          this.inArea(newY, newX) && 
           !d.mazeData[newY][newX].visited
         ) {
-          queue[Math.random() < .5 ? 'unshift' : 'push']({x: newX, y: newY})
-          // queue.push({x: newX, y: newY})
           d.mazeData[newY][newX].visited = true
           d.mazeData[p.y + d.dir[i][0]][p.x + d.dir[i][1]].n = d.road
+
+          for (let j = 0; j < 4; j++) {
+            const _y = newY + d.dir[j][1]
+            const _x = newX + d.dir[j][0]
+
+            if (Math.random() < .02 && this._inArea(_y, _x)) {
+              d.mazeData[_y][_x].n = d.road
+            }
+          }
+
+          queue[Math.random() < .5 ? 'unshift' : 'push']({
+            x: newX,
+            y: newY,
+          })
         }
       }
     }
@@ -284,13 +334,9 @@ class Maze extends Common {
         node.visited = false
       })
     })
-    this.bfs()
 
-    /*console.log(d.mazeData.map((row) => {
-      return row.map((node) => {
-        return node.n
-      }).join('')
-    }).join('\n'))*/
+    d.isRenderVisited = false
+    this.dfs1()
   }
   setPos() {
     const d = this.d
@@ -303,7 +349,7 @@ class Maze extends Common {
       row.forEach((node, idx) => {
         gd.beginPath()
         gd.rect(idx * d.itemWidth, stair * d.itemWidth, d.itemWidth, d.itemWidth)
-        gd.fillStyle = d.color[node.n === '#' ? 'blue' : (node.isPath ? 'red' : (node.visited ? (d.isRenderVisited ? 'yellow' : 'white') : 'white'))]
+        gd.fillStyle = d.color[(node.n === d.wall ? 'blue' : (node.isPath ? 'red' : (node.visited && d.isRenderVisited ? 'yellow' : 'white')))]
         gd.fill()
       })
     })

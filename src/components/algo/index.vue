@@ -43,8 +43,8 @@ export default {
         {isReady: 0, name: '迷宫寻路 - 广度优先 - 非递归', cons: 'Maze', startFn: 'bfs', arg: {}},
         {isReady: 0, name: '迷宫寻路 - 深度优先 - 非递归', cons: 'Maze', startFn: 'dfs2', arg: {}},
         {isReady: 0, name: '迷宫寻路 - 深度优先 - 递归', cons: 'Maze', startFn: 'dfs1', arg: {}},
-        // {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 110, translateX: -80, degL: -5, degR: 20}},
-        {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 110}},
+        // {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {translateX: -80, degL: -5, degR: 20}},
+        {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {}},
         {isReady: 0, name: '分形图 - KoachSnowflake', cons: 'Fractal', startFn: 'KoachSnowflake', arg: {}},
         {isReady: 0, name: '分形图 - SierpinskiTriangle', cons: 'Fractal', startFn: 'SierpinskiTriangle', arg: {}},
         {isReady: 0, name: '分形图 - Sierpinski', cons: 'Fractal', startFn: 'Sierpinski', arg: {}},
@@ -56,8 +56,10 @@ export default {
         {isReady: 0, name: 'AVL树', cons: 'Tree', startFn: 'AVL', arg: {}},
         {isReady: 0, name: '二分搜索树 - 镜像反转', cons: 'Tree', startFn: 'BinaryFlip', arg: {}},
         {isReady: 0, name: '二分搜索树', cons: 'Tree', startFn: 'Binary', arg: {}},
+        {isReady: 0, name: '线段树 - R', cons: 'Heap', startFn: 'SegmentTreeR', arg: {}},
+        {isReady: 0, name: '线段树 - L', cons: 'Heap', startFn: 'SegmentTreeL', arg: {}},
         // {isReady: 0, name: '线段树 - R', cons: 'SegmentTree', startFn: 'createR', arg: {}},
-        {isReady: 0, name: '线段树', cons: 'SegmentTree', startFn: 'createL', arg: {}},
+        // {isReady: 0, name: '线段树', cons: 'SegmentTree', startFn: 'createL', arg: {}},
         {isReady: 0, name: '最大堆 - shiftUp', cons: 'Heap', startFn: 'createByShiftUp', arg: {}},
         {isReady: 0, name: '最大堆 - heapify', cons: 'Heap', startFn: 'heapify', arg: {}},
         {isReady: 0, name: '三路快排 - QuickSort3', cons: 'Sort', startFn: 'QuickSort3', arg: {}},
@@ -185,8 +187,8 @@ export default {
               break
             case 'FractalTree':
               list = [
-                {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 110, translateY: -40}},
-                {isReady: 0, name: '分形图 - FractalTree (-4, 25)', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 110, translateX: -80, translateY: -50, degL: -4, degR: 25}},
+                {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {translateY: -40}},
+                {isReady: 0, name: '分形图 - FractalTree (-4, 25)', cons: 'Fractal', startFn: 'FractalTree', arg: {translateX: -80, translateY: -50, degL: -4, degR: 25}},
                 {isReady: 0, name: '分形图 - FractalTree (-35, 0)', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 100, translateX: 40, translateY: -50, degL: -35, degR: 0}},
                 {isReady: 0, name: '分形图 - FractalTree (-45, 45)', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 90, translateX: 0, translateY: -140, degL: -45, degR: 45, depth: 14}},
               ]

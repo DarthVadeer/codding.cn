@@ -2,6 +2,14 @@
 
 # 我的世界 | By 田小号🎺
 
+技术网站资料参考
+
+https://blog.csdn.net/qq_30100043
+
+webGL 音乐可视化
+
+https://blog.csdn.net/towrabbit/article/details/82991557
+
 炫酷动画
 
 https://github.com/mojs/mojs

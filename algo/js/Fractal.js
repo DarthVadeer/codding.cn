@@ -4,41 +4,90 @@ class Fractal extends Common {
 
     const d = this.d
 
-    d.depth = 4
-    d.renderCount = 0
     d.contentWidth = 600
     d.contentHeight = 600
-    d.canvas.width = d.contentWidth * d.conf.scale
-    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
-    d.canvas.height = d.contentHeight * d.conf.scale
-  }
-  getFibList(end) {
-    const result = []
-    let a = 1
-    let b = 1
 
-    for (let i = 0; i < end; i++) {
-      result.push(a)
-      const t = b
-      b += a
-      a = t
+    d.canvas.width = d.contentWidth * d.conf.scale
+    d.canvas.height = d.contentHeight * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+  }
+  NearOne() {
+    const d = this.d
+    const {gd} = d
+    const fillStyle = {
+      r: 0,
+      g: 170,
+      b: 255,
+      a: 1,
+    }
+    fillStyle.toString = () => {
+      return 'rgba(' + fillStyle.r + ',' + fillStyle.g + ',' + fillStyle.b + ',' + fillStyle.a + ')'
     }
 
-    return result
+    d.depth = 10
+
+    const render = (x, y, side, depth) => {
+      if (depth >= d.depth) return
+
+      const even = depth % 2 === 0
+      const w = even ? side / 2 : side
+
+      gd.beginPath()
+      gd.rect(x, y, w, side)
+      fillStyle.a = (d.depth - depth) / d.depth
+      gd.fillStyle = fillStyle.toString()
+      gd.fill()
+      gd.strokeStyle = d.color.black
+      gd.stroke()
+
+      gd.textAlign = 'center'
+      gd.textBaseline = 'middle'
+      gd.fillStyle = d.color.black
+      gd.font = w / 5 + 'px Arial'
+      gd.fillText('1/' + Math.pow(2, depth + 1), x + w / 2, y + side / 2)
+
+      if (even) {
+        // 偶数
+        side /= 2
+        x += side
+        y = side
+      } else {
+        // 奇数
+        y = 0
+      }
+
+      render(x, y, side, depth + 1)
+    }
+
+    gd.save()
+    gd.scale(d.conf.scale, d.conf.scale)
+    render(0, 0, 600, 0)
+    gd.restore()
   }
-  Fib(arg = {}) {
-    this.d = Object.assign(this.d, arg)
-
+  Fib() {
     const d = this.d
-    const {canvas, gd} = d
+    const {gd} = d
 
-    d.fib = this.getFibList(15)
-    d.contentWidth = d.fib[d.fib.length - 1]
-    d.contentHeight = d.fib[d.fib.length - 2]
+    const getFib = (end) => {
+      const result = []
+      let a = 1
+      let b = 1
 
-    canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
-    canvas.style.width = canvas.width / d.conf.scale + 'px'
-    canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
+      for (let i = 0; i < end; i++) {
+        result.push(a)
+        const t = b
+        b += a
+        a = t
+      }
+
+      return result
+    }
+
+    d.fib = getFib(15)
+
+    d.canvas.width = (d.fib[d.fib.length - 1] + d.conf.paddingH * 2) * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+    d.canvas.height = (d.fib[d.fib.length - 2] + d.conf.paddingV * 2) * d.conf.scale
 
     let cx = d.fib[d.fib.length - 2]
     let cy = d.fib[d.fib.length - 2]
@@ -46,22 +95,13 @@ class Fractal extends Common {
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
-
-    for (let len = d.fib.length, i = len - 1; i > 2; i--) {
-      const _i = (len - i + 1) % 4
+    for (let len = d.fib.length, i = len - 1; i > 1; i--) {
+      const _i = (d.fib.length - i + 1) % 4
       const deg = _i * 90
       const r = d.fib[i - 1]
-
-      ++d.renderCount
       gd.beginPath()
-      if (d.isRenderAux) {
-        gd.lineTo(cx, cy)
-        gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
-        gd.lineTo(cx, cy)
-        gd.closePath()
-      } else {
-        gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
-      }
+      gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
+      gd.strokeStyle = d.color.black
       gd.stroke()
 
       switch (_i) {
@@ -79,36 +119,35 @@ class Fractal extends Common {
           break
       }
     }
-
     gd.restore()
   }
   Vicsek() {
     const d = this.d
     const {gd} = d
-
-    d.dir = [
+    const dir = [
       [0, 0],
-      [0, 2],
-      [1, 1],
       [2, 0],
+      [1, 1],
+      [0, 2],
       [2, 2],
     ]
 
+    d.depth = 5
+
     const render = (x, y, side, depth) => {
-      if (depth >= d.depth || side < 1) {
-        // 到达极限 -> 绘制
-        ++d.renderCount
+      if (depth >= d.depth || side < 2) {
         gd.beginPath()
         gd.rect(x, y, side, side)
         gd.fillStyle = d.color.blue
         gd.fill()
-      } else {
-        // 递归
-        ++depth
-        side /= 3
-        d.dir.forEach((item, idx) => {
-          render(x + side * item[1], y + side * item[0], side, depth)
-        })
+        return
+      }
+
+      side /= 3
+      depth++
+
+      for (let i = 0; i < dir.length; i++) {
+        render(x + side * dir[i][0], y + side * dir[i][1], side, depth)
       }
     }
 
@@ -121,24 +160,23 @@ class Fractal extends Common {
     const d = this.d
     const {gd} = d
 
-    const render = (x, y, side, depth) => {
-      if (depth >= d.depth || side < 2) return
+    d.depth = 5
 
-      ++depth
+    const render = (x, y, side, depth) => {
+      depth++
       side /= 3
+
+      if (depth >= d.depth) return
 
       for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
           if (i === 1 && j === 1) {
-            // 绘制
-            ++d.renderCount
             gd.beginPath()
             gd.rect(x + side, y + side, side, side)
             gd.fillStyle = d.color.purple
             gd.fill()
           } else {
-            // 递归
-            render(x + j * side, y + i * side, side, depth)
+            render(x + side * j, y + side * i, side, depth)
           }
         }
       }
@@ -163,40 +201,40 @@ class Fractal extends Common {
       const y3 = y1 + side * Math.sin(d2a(-60))
 
       if (depth >= d.depth || side < 2) {
-        // 递归到底 -> 绘制
-        ++d.renderCount
         gd.beginPath()
         gd.lineTo(x1, y1)
         gd.lineTo(x2, y2)
         gd.lineTo(x3, y3)
-        gd.closePath()
         gd.fillStyle = d.color.cyan
         gd.fill()
       } else {
-        ++depth
         side /= 2
+        depth++
+
         render(x1, y1, side, depth)
         render(x1 + side, y1, side, depth)
         render(x1 + side / 2, (y1 + y3) / 2, side, depth)
       }
     }
 
-    const space = (d.contentHeight - d.contentHeight * Math.sin(d2a(60))) / 2
+    let space = (d.contentHeight + d.contentHeight * Math.sin(d2a(-60))) / 2
 
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
-    render(0, d.contentHeight - space, d.contentWidth, 0)
+    render(0, d.contentWidth - space, d.contentWidth, 0)
     gd.restore()
   }
   KoachSnowflake() {
     const d = this.d
-    const {canvas, gd} = d
-
-    d.depth = 5
+    const {gd} = d
+    const _canvas = d.canvas.cloneNode()
+    const _gd = _canvas.getContext('2d')
+    _canvas.style.background = 'wheat'
+    // document.body.insertBefore(_canvas, document.body.children[0])
 
     const render = (x1, y1, side, deg, depth) => {
-      ++depth
       side /= 3
+      ++depth
 
       const x2 = x1 + side * Math.cos(d2a(deg))
       const y2 = y1 + side * Math.sin(d2a(deg))
@@ -210,16 +248,15 @@ class Fractal extends Common {
       const x5 = x4 + side * Math.cos(d2a(deg))
       const y5 = y4 + side * Math.sin(d2a(deg))
 
-      if (depth >= d.depth) {
-        ++d.renderCount
-        gd.beginPath()
-        gd.lineTo(x1, y1)
-        gd.lineTo(x2, y2)
-        gd.lineTo(x3, y3)
-        gd.lineTo(x4, y4)
-        gd.lineTo(x5, y5)
-        gd.strokeStyle = d.color.blue
-        gd.stroke()
+      if (depth >= d.depth || side < 2) {
+        _gd.beginPath()
+        _gd.lineTo(x1, y1)
+        _gd.lineTo(x2, y2)
+        _gd.lineTo(x3, y3)
+        _gd.lineTo(x4, y4)
+        _gd.lineTo(x5, y5)
+        _gd.strokeStyle = d.color.blue
+        _gd.stroke()
       } else {
         render(x1, y1, side, deg, depth)
         render(x2, y2, side, deg - 60, depth)
@@ -228,41 +265,41 @@ class Fractal extends Common {
       }
     }
 
-    gd.save()
-    gd.scale(d.conf.scale, d.conf.scale)
-    render(d.contentWidth * .1, d.contentHeight / 3.72, d.contentWidth * .8, 0, 0)
-    gd.restore()
+    const w = d.contentWidth
+    const h = d.contentHeight
 
-    const _canvas = canvas.cloneNode()
-    // document.body.insertBefore(_canvas, document.body.children[0])
-    _canvas.getContext('2d').drawImage(
-      canvas,
-      0, 0, canvas.width, canvas.height
-    )
+    _gd.save()
+    _gd.scale(d.conf.scale, d.conf.scale)
+    render(w * .1, d.contentHeight / 3.71, d.contentWidth * .8, 0)
+    _gd.restore()
 
-    gd.clearRect(0, 0, canvas.width, canvas.height)
-    new Array(3).fill().forEach((_, idx, arr) => {
-      const deg = 360 / arr.length * idx
+    Array(3).fill().forEach((_, idx, arr) => {
+      const deg = idx * (360 / arr.length)
 
       gd.save()
-      gd.translate(canvas.width / 2, canvas.height / 2)
+      gd.scale(d.conf.scale, d.conf.scale)
+      gd.translate(w / 2, h / 2)
       gd.rotate(d2a(deg))
       gd.drawImage(
         _canvas,
-        0, 0, canvas.width, canvas.height,
-        -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height,
+        -w / 2, -h / 2, w, h
       )
       gd.restore()
     })
   }
-  FractalTree(arg = {}) {
+  FractalTree(arg) {
     const d = this.d
-    const {canvas, gd} = d
+    const {gd} = d
+    const w = d.contentWidth
+    const h = d.contentHeight
 
-    d.depth = arg.depth || 12
+    d.depth = 12
 
     const render = (x1, y1, side, deg, depth) => {
-      if (depth >= d.depth || side < 2) return
+      side *= .8
+      ++depth
+
+      if (depth > d.depth || side < 2) return
 
       const x2 = x1 + side * Math.cos(d2a(deg))
       const y2 = y1 + side * Math.sin(d2a(deg))
@@ -273,77 +310,15 @@ class Fractal extends Common {
       gd.strokeStyle = d.color.black
       gd.stroke()
 
-      ++d.renderCount
-      ++depth
-      side *= .8
-
       render(x2, y2, side, deg + (arg.degL || -15), depth)
       render(x2, y2, side, deg + (arg.degR || 15), depth)
     }
 
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
-    render(
-      d.contentWidth / 2 + (arg.translateX || 0),
-      d.contentHeight + (arg.translateY || 0),
-      arg.side || 100,
-      -90,
-      0
-    )
+    render(w / 2 + (arg.translateX || 0), h + (arg.translateY || 0), arg.side || 140, -90, 0)
     gd.restore()
   }
-  NearOne() {
-    const d = this.d
-    const {gd} = d
-    const fillStyle = rgba(
-      0x00,
-      0xBC,
-      0xD4,
-      1
-    )
-    
-    d.depth = 8
-
-    const render = (x, y, side, depth) => {
-      if (depth >= d.depth || side < 1) return
-
-      const isH = depth % 2 === 0
-      const w = side / (isH ? 2 : 1)
-
-      gd.beginPath()
-      gd.rect(x, y, w, side)
-      fillStyle.a = (d.depth - depth) / d.depth
-      gd.fillStyle = fillStyle.toString()
-      gd.fill()
-      
-      gd.strokeStyle = d.color.black
-      gd.stroke()
-
-      gd.textAlign = 'center'
-      gd.textBaseline = 'middle'
-      gd.font = (side / 10) + 'px Arial'
-      gd.fillStyle = d.color.black
-      gd.fillText('1/' + Math.pow(2, depth + 1), x + w / 2, y + side / 2)
-
-      ++depth
-      isH ? 
-      render(x + side / 2, y + side / 2, side / 2, depth) :
-      render(x, y - side, side, depth)
-    }
-
-    gd.save()
-    gd.scale(d.conf.scale, d.conf.scale)
-    render(0, 0, d.contentWidth, 0)
-    gd.restore()
-  }
-  setPos() {
-    const d = this.d
-  }
-  render() {
-    const d = this.d
-  }
-  /*log() {
-    const d = this.d
-    console.log('%c renderCount ' + d.renderCount, 'color: red', d.typeItem.name)
-  }*/
+  setPos() {}
+  render() {}
 }

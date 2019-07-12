@@ -4,16 +4,14 @@ class Sort extends Common {
 
     const d = this.d
 
-    d.arr.forEach(v => v.strokeStyle = randColor().toString())
+    d.arr.forEach(node => node.strokeStyle = randColor().toString())
     d.steps = [d.arr.clone()]
   }
   SelectionSort() {
     const d = this.d
-
+  
     for (let i = 0, len = d.arr.length; i < len; i++) {
       let minIndex = i
-
-      d.arr[i].fromIndex = i
 
       for (let j = i + 1; j < len; j++) {
         d.arr[j].fromIndex = j
@@ -24,12 +22,12 @@ class Sort extends Common {
         }
       }
 
+      d.arr[i].fromIndex = i
       d.arr[i].fillStyle = d.color.orange
       d.arr[minIndex].fillStyle = d.color.blue
       d.arr.swap(i, minIndex)
-
       d.steps.push(
-        new Array(i).fill().concat(
+        Array(i).fill().concat(
           d.arr.slice(i, len).clone()
         )
       )
@@ -46,7 +44,7 @@ class Sort extends Common {
   InsertionSort() {
     const d = this.d
 
-    for (let i = 1, len = d.arr.length; i < len; i++) {
+    for (let i = 0, len = d.arr.length; i < len; i++) {
       let j = i
 
       d.arr[i].fromIndex = i
@@ -64,7 +62,7 @@ class Sort extends Common {
       }
 
       d.steps.push(
-        new Array(j).fill().concat(
+        Array(j).fill().concat(
           d.arr.slice(j, i + 1).clone()
         )
       )
@@ -81,14 +79,14 @@ class Sort extends Common {
   MergeSort() {
     const d = this.d
 
-    function mergeSort(l, r) {
+    const mergeSort = (l, r) => {
       if (l >= r) return
 
       const mid = l + parseInt((r - l) / 2)
       mergeSort(l, mid)
       mergeSort(mid + 1, r)
 
-      const aux = new Array(r - l + 1).fill()
+      const aux = Array(r - l + 1).fill()
 
       for (let i = l; i <= r; i++) {
         aux[i - l] = d.arr[i]
@@ -103,7 +101,7 @@ class Sort extends Common {
           d.arr[k] = aux[j++ - l]
         } else if (j > r) {
           d.arr[k] = aux[i++ - l]
-        } else if (aux[i - l].n <= aux[j - l].n) {
+        } else if (aux[i - l].n < aux[j - l].n) {
           d.arr[k] = aux[i++ - l]
         } else {
           d.arr[k] = aux[j++ - l]
@@ -113,7 +111,7 @@ class Sort extends Common {
       const fillStyle = d.color[l === 0 && r === d.arr.length - 1 ? 'blue' : 'green']
 
       d.steps.push(
-        new Array(l).fill().concat(
+        Array(l).fill().concat(
           d.arr.slice(l, r + 1).clone().map((node) => {
             node.fillStyle = fillStyle
             return node
@@ -130,16 +128,14 @@ class Sort extends Common {
     const quickSort = (l, r) => {
       if (l >= r) return
 
-      for (let i = l; i <= r; i++) {
-        d.arr[i].fromIndex = i
-      }
+      for (let i = l; i <= r; i++) d.arr[i].fromIndex = i
 
       d.arr.swap(l, rand(l + 1, r))
 
       const v = d.arr[l].n
       let j = l
 
-      for (let i = l + 1; i <= r; i++) {
+      for (let i = l; i <= r; i++) {
         if (d.arr[i].n < v) {
           d.arr[i].fillStyle = d.color.green
           d.arr.swap(i, j + 1)
@@ -151,9 +147,8 @@ class Sort extends Common {
 
       d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, j)
-
       d.steps.push(
-        new Array(l).fill().concat(
+        Array(l).fill().concat(
           d.arr.slice(l, r + 1).clone()
         )
       )
@@ -178,9 +173,7 @@ class Sort extends Common {
     const quickSort = (l, r) => {
       if (l >= r) return
 
-      for (let i = l; i <= r; i++) {
-        d.arr[i].fromIndex = i
-      }
+      for (let i = l; i <= r; i++) d.arr[i].fromIndex = i
 
       d.arr.swap(l, rand(l + 1, r))
 
@@ -207,9 +200,8 @@ class Sort extends Common {
 
       d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, j)
-
       d.steps.push(
-        new Array(l).fill().concat(
+        Array(l).fill().concat(
           d.arr.slice(l, r + 1).clone()
         )
       )
@@ -234,9 +226,7 @@ class Sort extends Common {
     const quickSort = (l, r) => {
       if (l >= r) return
 
-      for (let i = l; i <= r; i++) {
-        d.arr[i].fromIndex = i
-      }
+      for (let i = l; i <= r; i++) d.arr[i].fromIndex = i
 
       d.arr.swap(l, rand(l + 1, r))
 
@@ -263,9 +253,8 @@ class Sort extends Common {
 
       d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, lt)
-
       d.steps.push(
-        new Array(l).fill().concat(
+        Array(l).fill().concat(
           d.arr.slice(l, r + 1).clone()
         )
       )
@@ -287,16 +276,19 @@ class Sort extends Common {
   setPos() {
     const d = this.d
 
-    d.contentHeight = (d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight
-    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
-
     d.steps.forEach((row, stair) => {
       row.forEach((node, idx) => {
         if (!node) return
-        node.x = node.tx = idx * d.conf.itemWidth
-        node.y = node.ty = stair * d.conf.levelHeight
+        node.x = idx * d.conf.itemWidth
+        node.y = stair * d.conf.levelHeight
       })
     })
+
+    d.contentWidth = d.arr.length * d.conf.itemWidth
+    d.contentHeight = (d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight
+    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
   }
   render() {
     const d = this.d
@@ -306,27 +298,27 @@ class Sort extends Common {
 
     const renderLine = () => {
       d.steps.forEach((row, stair) => {
-        stair > 0 && row.forEach((node, idx) => {
-          if (!node) return
+        stair > 0 && row.forEach((from, idx) => {
+          if (!from) return
 
           let _stair = stair
-          let nodeFrom
+          let to
 
-          while (!nodeFrom) {
-            nodeFrom = d.steps[--_stair][node.fromIndex]
+          while (!to) {
+            to = d.steps[--_stair][from.fromIndex]
           }
 
           gd.beginPath()
-          gd.lineTo(nodeFrom.x + itemWidth / 2 + .5, nodeFrom.y + itemHeight / 2)
-          gd.lineTo(node.x + itemWidth / 2 + .5, node.y + itemHeight / 2)
-          gd.strokeStyle = node.strokeStyle
+          gd.lineTo(from.x + itemWidth / 2 + .5, from.y + itemHeight / 2)
+          gd.lineTo(to.x + itemWidth / 2 + .5, to.y + itemHeight / 2)
+          gd.strokeStyle = from.strokeStyle
           gd.stroke()
         })
       })
     }
 
     const renderNode = () => {
-      d.steps.forEach((row, idx) => {
+      d.steps.forEach((row, stair) => {
         row.forEach((node, idx) => {
           this.renderNode(node)
         })
@@ -335,7 +327,6 @@ class Sort extends Common {
 
     gd.fillStyle = d.color.white
     gd.fillRect(0, 0, d.canvas.width, d.canvas.height)
-
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
