@@ -226,7 +226,7 @@ export default {
     this.$root.algo = this
   },
   beforeDestroy() {
-    !vm.is.local && delete this.$root.algo
+    // !vm.is.local && delete this.$root.algo
   },
 }
 </script>

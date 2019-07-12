@@ -64,7 +64,7 @@ class Fractal extends Common {
     render(0, 0, 600, 0)
     gd.restore()
   }
-  Fib() {
+  Fib(arg = {}) {
     const d = this.d
     const {gd} = d
 
@@ -95,12 +95,18 @@ class Fractal extends Common {
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
     gd.translate(d.conf.paddingH, d.conf.paddingV)
-    for (let len = d.fib.length, i = len - 1; i > 1; i--) {
+    for (let len = d.fib.length, i = len - 1; i > 2; i--) {
       const _i = (d.fib.length - i + 1) % 4
       const deg = _i * 90
       const r = d.fib[i - 1]
       gd.beginPath()
-      gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
+      if (arg.isRenderAux) {
+        gd.lineTo(cx, cy)
+        gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
+        gd.closePath()
+      } else {
+        gd.arc(cx, cy, r, d2a(deg), d2a(deg + 90))
+      }
       gd.strokeStyle = d.color.black
       gd.stroke()
 
