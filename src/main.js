@@ -107,3 +107,32 @@ window.vm = new Vue({
   nodeStyleRespond.innerHTML = sCss
   document.body.appendChild(nodeStyleRespond)
 }
+
+{
+  const div = document.createElement('div')
+
+  div.innerHTML = `
+  <style id="list-respond">
+    .list-respond {padding: 8px;}
+    .list-respond > section {width: 100%; display: inline-block; padding: 8px; transition: .3s opacity;}
+    .list-respond > section > .inner {background: #eee; border-radius: 4px; overflow: hidden; border: 1px solid #ccc;}
+    .list-respond > section > .inner .img-box {padding-top: 100%; background: #fff no-repeat center / contain; cursor: pointer;}
+    .list-respond > section > .inner .text-box {line-height: 3em; padding: 0 1em; border-top: 1px solid #ccc;}
+    ${
+      Array(10).fill().map((_, idx, arr) => {
+        const size = (idx + 1) * 260
+        const n = Math.ceil(size / 260)
+        let per = 1 / n * 100
+        per > 50 && (per = 50)
+        
+        return `
+          @media (min-width: ${size}px) {
+            .list-respond > section {width: ${per}%;}
+          }
+        `
+      }).join('')
+    }
+  </style>`
+
+  document.body.appendChild(div.children[0])
+}

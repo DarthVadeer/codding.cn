@@ -15,8 +15,7 @@ const fs = require('fs')
 const pathArr = fs.readFileSync('./index.html', 'utf-8').match(/\.\/js\/\w+\.js/g) || []
 
 pathArr.remove([
-  './js/algoAux.js',
-  './js/mazeData.js',
+  './js/algoAux.js'
 ])
 
 let sJs = pathArr.map((path) => fs.readFileSync(path, 'utf-8')).join('\n\n')

@@ -91,6 +91,12 @@ Array.prototype.shuffle = function() {
   return this
 }
 
+Array.prototype.forEachSync = async function (fn) {
+  for (let i = 0, len = this.length; i < len; i++) {
+    await fn(this[i], i, this)
+  }
+}
+
 Array.prototype.rnd = function(len, l, r) {
   l = l === undefined ? 0 : l
   r = r === undefined ? len : r

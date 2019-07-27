@@ -1,28 +1,34 @@
 <template>
-  <div id="box-algo" class="panel-stack">
-    <div class="card-list respond-list">
-      <section
-        v-for="(typeItem, idx) in algoList"
-        :class="['card-item', 'respond-item', 'fade', typeItem.isReady ? 'fadeIn' : 'fadeOut']"
-        @click="showAlgoInfo(typeItem, idx)"
-      >
-        <div class="inner">
-          <div class="img-box"></div>
-          <div class="text ellipsis">{{typeItem.name}}</div>
-        </div>
-      </section>
-    </div>
-    <transition name="fade">
-      <div class="algo-forward space c" v-if="r.algoInfo">
-        <!-- <pre style="text-align: left;">{{algoInfo}}</pre> -->
-        <section v-for="(item, idx) in algoInfo.list">
-          <div class="box-btn">
-            <button class="btn btn-primary">{{item.name}}</button>
-          </div>
-          <div class="box-canvas">
-            <canvas ref="canvas"></canvas>
+  <div class="panel-fb">
+    <div class="back">
+      <div class="list-respond">
+        <section
+          v-for="(item, idx) in type.list"
+          :style="{opacity: item.visible ? 1 : 0}"
+        >
+          <div class="inner">
+            <div class="img-box" ref="imgBox"
+              @click="showAlgo(item)"
+            ></div>
+            <div class="text-box ellipsis">{{item.name}}</div>
           </div>
         </section>
+      </div>
+    </div>
+    <transition name="fade">
+      <div class="forward" v-if="r.algo">
+        <div id="box-algo">
+          <div class="list">
+            <section v-for="(item, idx) in rAlgoList">
+              <div class="box-btn">
+                <button ref="btnList" class="btn btn-primary">{{item.name}}</button>
+              </div>
+              <div class="box-canvas">
+                <canvas ref="canvasList" :data-title="item.name"></canvas>
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
     </transition>
   </div>
@@ -35,219 +41,248 @@ export default {
   name: 'algo',
   data() {
     return {
-      algoList: [
-        {isReady: 0, name: '迷宫创建 - 随机队列', cons: 'Maze', startFn: 'generateRand', arg: {}},
-        {isReady: 0, name: '迷宫创建 - 广度优先 - 非递归', cons: 'Maze', startFn: 'generateBfs', arg: {}},
-        {isReady: 0, name: '迷宫创建 - 深度优先 - 非递归', cons: 'Maze', startFn: 'generateDfs2', arg: {}},
-        {isReady: 0, name: '迷宫创建 - 深度优先 - 递归', cons: 'Maze', startFn: 'generateDfs1', arg: {}},
-        {isReady: 0, name: '迷宫寻路 - 广度优先 - 非递归', cons: 'Maze', startFn: 'bfs', arg: {}},
-        {isReady: 0, name: '迷宫寻路 - 深度优先 - 非递归', cons: 'Maze', startFn: 'dfs2', arg: {}},
-        {isReady: 0, name: '迷宫寻路 - 深度优先 - 递归', cons: 'Maze', startFn: 'dfs1', arg: {}},
-        // {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {translateX: -80, degL: -5, degR: 20}},
-        {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {}},
-        {isReady: 0, name: '分形图 - KoachSnowflake', cons: 'Fractal', startFn: 'KoachSnowflake', arg: {}},
-        {isReady: 0, name: '分形图 - SierpinskiTriangle', cons: 'Fractal', startFn: 'SierpinskiTriangle', arg: {}},
-        {isReady: 0, name: '分形图 - Sierpinski', cons: 'Fractal', startFn: 'Sierpinski', arg: {}},
-        {isReady: 0, name: '分形图 - Vicsek', cons: 'Fractal', startFn: 'Vicsek', arg: {}},
-        {isReady: 0, name: '分形图 - 斐波那契数列', cons: 'Fractal', startFn: 'Fib', arg: {}},
-        {isReady: 0, name: '分形图 - 1/2 + 1/4 ... 1/n ≈ 1', cons: 'Fractal', startFn: 'NearOne', arg: {}},
-        {isReady: 0, name: 'Trie', cons: 'Trie', startFn: 'create', arg: {}},
-        {isReady: 0, name: '红黑树 - 左倾&右倾', cons: 'Tree', startFn: 'RB', arg: {}},
-        {isReady: 0, name: 'AVL树', cons: 'Tree', startFn: 'AVL', arg: {}},
-        {isReady: 0, name: '二分搜索树 - 镜像反转', cons: 'Tree', startFn: 'BinaryFlip', arg: {}},
-        {isReady: 0, name: '二分搜索树', cons: 'Tree', startFn: 'Binary', arg: {}},
-        {isReady: 0, name: '线段树 - R', cons: 'Heap', startFn: 'SegmentTreeR', arg: {}},
-        {isReady: 0, name: '线段树 - L', cons: 'Heap', startFn: 'SegmentTreeL', arg: {}},
-        // {isReady: 0, name: '线段树 - R', cons: 'SegmentTree', startFn: 'createR', arg: {}},
-        // {isReady: 0, name: '线段树', cons: 'SegmentTree', startFn: 'createL', arg: {}},
-        {isReady: 0, name: '最大堆 - shiftUp', cons: 'Heap', startFn: 'createByShiftUp', arg: {}},
-        {isReady: 0, name: '最大堆 - heapify', cons: 'Heap', startFn: 'heapify', arg: {}},
-        {isReady: 0, name: '三路快排 - QuickSort3', cons: 'Sort', startFn: 'QuickSort3', arg: {}},
-        {isReady: 0, name: '双路快排 - QuickSort2', cons: 'Sort', startFn: 'QuickSort2', arg: {}},
-        {isReady: 0, name: '单路快排 - QuickSort1', cons: 'Sort', startFn: 'QuickSort1', arg: {}},
-        {isReady: 0, name: '归并排序 - MergeSort', cons: 'Sort', startFn: 'MergeSort', arg: {}},
-        {isReady: 0, name: '插入排序 - InsertionSort', cons: 'Sort', startFn: 'InsertionSort', arg: {}},
-        {isReady: 0, name: '选择排序 - SelectionSort', cons: 'Sort', startFn: 'SelectionSort', arg: {}},
-      ]
-    }
-  },
-  methods: {
-    showAlgoInfo(elItem, idx) {
-      const vm = this.$root
-
-      vm.updateRouter({
-        algoInfo: {
-          ...elItem,
-          isReady: undefined,
-        },
-      }, 'push')
-    },
-    renderAlgo() {
-      const vm = this.$root
-      const r = vm.router
-
-      if (r.algoInfo) {
-        const canvasList = this.$refs.canvas
-        console.clear()
-        this.algoInfo.list.forEach((typeItem, idx) => {
-          const canvas = canvasList[idx]
-          const o = new allAlgo[this.algoInfo.cons]({
-            canvas,
-            gd: canvas.getContext('2d'),
-            arr: typeItem.randArr,
-            conf: allAlgo.Algo.conf,
-            color: allAlgo.Algo.color,
-            typeItem,
-          })
-
-          vm.algo.map[typeItem.cons + '-' + typeItem.startFn] = o
-          o[this.algoInfo.startFn](typeItem.arg)
-          o.setPos()
-          o.render()
-        })
-        return
+      type: {
+        list: [
+          {name: '扫雷', cons: 'MineSweeper', startFn: 'create', arg: {}},
+          {name: '迷宫创建 - 随机队列2', cons: 'Maze', startFn: 'generateRand2', arg: {}},
+          {name: '迷宫创建 - 随机队列', cons: 'Maze', startFn: 'generateRand', arg: {}},
+          {name: '迷宫创建 - 广度优先 - 非递归', cons: 'Maze', startFn: 'generateBfs', arg: {}},
+          {name: '迷宫创建 - 深度优先 - 非递归', cons: 'Maze', startFn: 'generateDfs2', arg: {}},
+          // {name: '迷宫创建 - 深度优先 - 递归', cons: 'Maze', startFn: 'generateDfs1', arg: {}},
+          {name: '迷宫寻路 - 广度优先 - 非递归', cons: 'Maze', startFn: 'bfs', arg: {}},
+          {name: '迷宫寻路 - 深度优先 - 非递归', cons: 'Maze', startFn: 'dfs2', arg: {}},
+          {name: '迷宫寻路 - 深度优先 - 递归', cons: 'Maze', startFn: 'dfs1', arg: {}},
+          {name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {}},
+          {name: '分形图 - KoachSnowflake', cons: 'Fractal', startFn: 'KoachSnowflake', arg: {}},
+          {name: '分形图 - SierpinskiTriangle', cons: 'Fractal', startFn: 'SierpinskiTriangle', arg: {}},
+          {name: '分形图 - Sierpinski', cons: 'Fractal', startFn: 'Sierpinski', arg: {}},
+          {name: '分形图 - Vicsek', cons: 'Fractal', startFn: 'Vicsek', arg: {}},
+          {name: '分形图 - 斐波那契数列', cons: 'Fractal', startFn: 'Fib', arg: {renderAux: 0}},
+          {name: '分形图 - 1/2 + 1/4 ... 1/n ≈ 1', cons: 'Fractal', startFn: 'NearOne', arg: {}},
+          {name: 'Trie', cons: 'Trie', startFn: 'create', arg: {}},
+          {name: '2-3 树', cons: 'Tree23', startFn: 'create', arg: {}},
+          {name: '红黑树 - (左倾&右倾)', cons: 'RBTree', startFn: 'create', arg: {}},
+          {name: 'AVL树', cons: 'AVLTree', startFn: 'create', arg: {}},
+          {name: '二分搜索树 - 镜像反转', cons: 'BinarySearch', startFn: 'flip', arg: {}},
+          {name: '二分搜索树', cons: 'BinarySearch', startFn: 'create', arg: {}},
+          // {name: '线段树 - R', cons: 'SegmentTree', startFn: 'create', arg: {isL: false}},
+          {name: '线段树', cons: 'SegmentTree', startFn: 'create', arg: {isL: true}},
+          {name: '最大堆 - shiftUp', cons: 'Heap', startFn: 'createByShiftUp', arg: {}},
+          {name: '最大堆 - heapify', cons: 'Heap', startFn: 'heapify', arg: {}},
+          {name: '三路快排', cons: 'Sort', startFn: 'QuickSort3', arg: {}},
+          {name: '双路快排', cons: 'Sort', startFn: 'QuickSort2', arg: {}},
+          {name: '单路快排', cons: 'Sort', startFn: 'QuickSort1', arg: {}},
+          {name: '归并排序', cons: 'Sort', startFn: 'MergeSort', arg: {}},
+          {name: '冒泡排序-优化', cons: 'Sort', startFn: 'BubbleSort2', arg: {}},
+          {name: '冒泡排序', cons: 'Sort', startFn: 'BubbleSort', arg: {}},
+          {name: '插入排序', cons: 'Sort', startFn: 'InsertionSort', arg: {}},
+          {name: '选择排序', cons: 'Sort', startFn: 'SelectionSort', arg: {}},
+        ]
       }
-
-      if (this.algoRendered) return
-      this.algoRendered = true
-
-      const imgBoxList = document.querySelectorAll('#box-algo .card-list .img-box')
-      const len = 20
-      let randArr = [].rnd(len, 1, len * 5).map(n => new allAlgo.Node(n))
-
-      this.algoList.forEach((typeItem, idx) => {
-        setTimeout(() => {
-          const imgBox = imgBoxList[idx]
-          const canvas = document.createElement('canvas')
-          const img = new Image()
-          img.onload = () => {
-            imgBox.style.backgroundImage = 'url(' + img.src + ')'
-            typeItem.isReady = true
-          }
-
-          const o = new allAlgo[typeItem.cons]({
-            canvas,
-            gd: canvas.getContext('2d'),
-            arr: randArr.clone(),
-            conf: allAlgo.Algo.conf,
-            color: allAlgo.Algo.color,
-            typeItem,
-          })
-
-          vm.algo.map[typeItem.cons + '-' + typeItem.startFn] = o
-          o[typeItem.startFn](typeItem.arg)
-          o.setPos()
-          o.render()
-
-          canvas.toBlob((blob) => {
-            img.src = URL.createObjectURL(blob)
-          })
-        }, (idx + 1) * vm.algoTimeDelay + 300)
-      })
-    },
+    }
   },
   computed: {
     r() {
       return this.$root.router
     },
-    algoInfo() {
+    rAlgoList() {
       const vm = this.$root
       const r = vm.router
-      const algoInfo = this.r.algoInfo
       const len = 20
+      const arr1 = Array(len).fill().map((_, idx) => new allAlgo.Node(idx, {strokeStyle: randColor().toString()})).shuffle()
+      const arr2 = Array(len).fill().map((_, idx) => new allAlgo.Node(idx, {strokeStyle: randColor().toString()}))
+      const arr3 = Array(len).fill().map((_, idx) => new allAlgo.Node(len - idx, {strokeStyle: randColor().toString()}))
+      const arr4 = Array(len).fill().map((_, idx) => new allAlgo.Node(rand(0, 4), {strokeStyle: randColor().toString()}))
       let list = []
 
-      switch (algoInfo.cons) {
-        case 'Sort':
-        case 'Tree':
-        case 'Heap':
-          list = [
-            {name: '完全随机 - ' + algoInfo.name, randArr: [].rnd(len, 1, len * 5)},
-            {name: '完全正序 - ' + algoInfo.name, randArr: new Array(len).fill().map((_, idx) => idx + 1)},
-            {name: '完全逆序 - ' + algoInfo.name, randArr: new Array(len).fill().map((_, idx) => len - idx)},
-          ]
+      if (!r.algo) return
 
-          if (algoInfo.cons === 'Sort') {
-            list.push({name: '大量重复 - ' + algoInfo.name, randArr: [].rnd(len, 1, 5)})
-          }
+      switch (r.algo.cons) {
+        case 'Heap':
+        case 'Sort':
+          list = [
+            {...clone(r.algo), name: r.algo.name + ' - 完全随机', arr: arr1},
+            {...clone(r.algo), name: r.algo.name + ' - 完全正序', arr: arr2},
+            {...clone(r.algo), name: r.algo.name + ' - 完全逆序', arr: arr3},
+            {...clone(r.algo), name: r.algo.name + ' - 大量重复', arr: arr4},
+          ]
+          break
+        case 'Tree23':
+        case 'RBTree':
+        case 'AVLTree':
+        case 'BinarySearch':
+          list = [
+            {...clone(r.algo), name: r.algo.name + ' - 完全随机', arr: arr1},
+            {...clone(r.algo), name: r.algo.name + ' - 完全正序', arr: arr2},
+            {...clone(r.algo), name: r.algo.name + ' - 完全逆序', arr: arr3},
+          ]
           break
         case 'SegmentTree':
           list = [
-            {isReady: 0, name: '线段树 - L', cons: 'SegmentTree', startFn: 'createL', arg: {}},
-            {isReady: 0, name: '线段树 - R', cons: 'SegmentTree', startFn: 'createR', arg: {}},
+            {...clone(r.algo), name: '线段树 - R', arg: {isL: false}, arr: []},
+            {...clone(r.algo), name: '线段树 - L', arg: {isL: true}, arr: []},
           ]
           break
         case 'Fractal':
-          switch (r.algoInfo.startFn) {
-            case 'Fib':
-              list = [
-                {name: '分形图 - 斐波那契数列', cons: 'Fractal', startFn: 'Fib', arg: {}},
-                {name: '分形图 - 斐波那契数列 - 辅助线', cons: 'Fractal', startFn: 'Fib', arg: {isRenderAux: true}},
-              ]
-              break
-            case 'FractalTree':
-              list = [
-                {isReady: 0, name: '分形图 - FractalTree', cons: 'Fractal', startFn: 'FractalTree', arg: {translateY: -40}},
-                {isReady: 0, name: '分形图 - FractalTree (-4, 25)', cons: 'Fractal', startFn: 'FractalTree', arg: {translateX: -80, translateY: -50, degL: -4, degR: 25}},
-                {isReady: 0, name: '分形图 - FractalTree (-35, 0)', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 100, translateX: 40, translateY: -50, degL: -35, degR: 0}},
-                {isReady: 0, name: '分形图 - FractalTree (-45, 45)', cons: 'Fractal', startFn: 'FractalTree', arg: {side: 90, translateX: 0, translateY: -140, degL: -45, degR: 45, depth: 14}},
-              ]
-              break
-            default:
-              list = [clone(algoInfo)]
-              break
+          if (r.algo.startFn === 'Fib') {
+            list = [
+              {...clone(r.algo), arg: {renderAux: false}, arr: []},
+              {...clone(r.algo), arg: {renderAux: true}, arr: []},
+            ]
+          } else {
+            list = [{...clone(r.algo), arr: []}]
           }
           break
         default:
-          list = [clone(algoInfo)]
+          list = [{...clone(r.algo), arr: []}]
           break
       }
 
-      list.forEach(item => item.randArr = (item.randArr || []).map(n => new allAlgo.Node(n)))
-      algoInfo.list = list
+      return list
+    },
+  },
+  methods: {
+    showAlgo(elItem) {
+      const vm = this.$root
 
-      return algoInfo
+      vm.updateRouter({
+        algo: elItem
+      }, 'push')
+    },
+    async renderAlgo() {
+      const vm = this.$root
+      const r = vm.router
+      const sign = vm.sign = Math.random()
+
+      if (r.algo) {
+        const btnList = this.$refs.btnList
+        const canvasList = this.$refs.canvasList
+
+        await this.rAlgoList.forEachSync(async (typeItem, idx) => {
+          const canvas = canvasList[idx]
+          const o = new allAlgo[typeItem.cons]({
+            btn: btnList[idx],
+            canvas,
+            gd: canvas.getContext('2d'),
+            arr: typeItem.arr.clone(),
+            raw: typeItem.arr.clone(),
+            contentWidth: 0,
+            contentHeight: 0,
+            typeItem,
+            conf: allAlgo.Algo.conf,
+            color: allAlgo.Algo.color,
+          })
+
+          await o[typeItem.startFn](typeItem.arg)
+          if (typeItem.name === '扫雷') {
+            o.d.hideNotice = true
+            o.d.arr[0][0].isMine = true
+            o.open(0, 0)
+          }
+          o.setPos()
+          o.render()
+        })
+
+        return
+      }
+
+      if (this.algoRendered) {
+        console.log('this.algoRendered true')
+        return
+      }
+      this.algoRendered = true
+
+      const len = 20
+      const randArr = [].rnd(len, 1, len * 5).map(n => new allAlgo.Node(n, {strokeStyle: randColor().toString()}))
+
+      await this.type.list.forEachSync(async (typeItem, idx) => {
+        await new Promise(async (next) => {
+          let _randArr = randArr
+
+          if (['AVLTree', 'RBTree', 'Tree23'].indexOf(typeItem.cons) > -1) {
+            _randArr = randArr.clone().map((v, idx) => {
+              v.n = len - idx
+              return v
+            })
+          }
+
+          const canvas = document.createElement('canvas')
+          const o = new allAlgo[typeItem.cons]({
+            btn: canvas,
+            canvas,
+            gd: canvas.getContext('2d'),
+            arr: _randArr.clone(),
+            raw: _randArr.clone(),
+            contentWidth: 0,
+            contentHeight: 0,
+            typeItem,
+            conf: allAlgo.Algo.conf,
+            color: allAlgo.Algo.color,
+          })
+
+          await o[typeItem.startFn](typeItem.arg)
+          if (typeItem.name === '扫雷') {
+            o.d.hideNotice = true
+            o.d.arr[0][0].isMine = true
+            o.open(0, 0)
+          }
+          o.setPos()
+          o.render()
+
+          canvas.toBlob((blob) => {
+            const img = new Image()
+            img.onload = () => {
+              if (!this.$refs.imgBox[idx]) {
+                console.log('algo mounted 时过境迁')
+                return
+              }
+              this.$set(typeItem, 'visible', true)
+              this.$refs.imgBox[idx].style.backgroundImage = 'url(' + img.src + ')'
+              next()
+            }
+            img.src = URL.createObjectURL(blob)
+          })
+        })
+      })
     },
   },
   watch: {
-    'r.algoInfo'() {
+    'r.algo'() {
       this.$nextTick(() => {
         this.renderAlgo()
       })
     },
   },
-  mounted() {
-    const vm = this.$root
+  async mounted() {
+    const vm = this
 
-    vm.algo.map = {}
-    this.renderAlgo()
-  },
-  beforeCreate() {
-    this.$root.algo = this
-  },
-  beforeDestroy() {
-    // !vm.is.local && delete this.$root.algo
-  },
+    await sleep(800)
+    await this.renderAlgo()
+  }
 }
 </script>
 
-<style lang="scss">
-#box-algo {
-  .card-list {
-    .card-item {
-      .img-box {
-        background: #fff no-repeat center / contain;
-      }
-    }
+<style lang="scss" scoped>
+#box-algo {}
+#box-algo > .list {text-align: center; padding: 15px;}
+#box-algo > .list section {margin: 20px 0;}
+#box-algo > .list section .box-btn {margin-bottom: 15px;}
+#box-algo > .list section .box-btn .btn {padding: .5em 1em; cursor: pointer;}
+#box-algo > .list section .box-canvas {}
+#box-algo > .list section .box-canvas canvas {border: 1px solid #ccc; max-width: 100%; box-sizing: content-box; outline: none; user-select: none;}
+
+.panel-fb {
+  & > .back {
+    background: #f3f6f9;
   }
-  .algo-forward {
-    padding-top: 20px;
-    section {
-       margin-bottom: 20px;
-      .box-btn {margin-bottom: 20px;}
-      .box-btn button {}
-      .box-canvas {}
-      .box-canvas canvas {border: 1px solid #ccc; vertical-align: top; max-width: 100%;}
+}
+
+@media (max-width: 500px) {
+  .panel-fb {
+    .list-respond {
+      section {
+        width: 100%;
+      }
     }
   }
 }

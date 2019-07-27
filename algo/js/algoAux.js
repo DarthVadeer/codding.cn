@@ -1,5 +1,5 @@
 function sleep(time) {
-  return new Promise(succ => time ? setTimeout(succ, time) : succ())
+  return new Promise(next => time ? setTimeout(next, time) : next())
 }
 
 function clone(o) {
@@ -43,26 +43,9 @@ Array.prototype.last = function() {
 
 Array.prototype.swap = function(a, b) {
   const t = this[a]
+
   this[a] = this[b]
   this[b] = t
-
-  return this
-}
-
-Array.prototype.rnd = function(len, min, max) {
-  min = min === undefined ? 0 : min
-  max = max === undefined ? len : max
-  return Array(len).fill().map(_ => rand(min, max))
-}
-
-Array.prototype.clone = function() {
-  return clone(this)
-}
-
-Array.prototype.shuffle = function() {
-  for (let i = 0, len = this.length; i < len; i++) {
-    this.swap(i, parseInt(Math.random() * (i + 1)))
-  }
 
   return this
 }
@@ -75,31 +58,25 @@ Array.prototype.max = function() {
   return Math.max.apply(null, this)
 }
 
-/*{
-  // shuffle 算法测试
-  const len = 10
-  const arr = Array(len).fill(0)
-  const result = Array(len).fill(0)
-  const shuffleTime = 100000
+Array.prototype.rnd = function(len, min, max) {
+  min = min === undefined ? 0 : min
+  max = max === undefined ? len : max
+  
+  return Array(len).fill().map(_ => rand(min, max))
+}
 
-  function resteArr() {
-    for (let i = 0; i < len; i++) {
-      arr[i] = i < len / 2 ? 1 : 0
-    }
+Array.prototype.shuffle = function() {
+  for (let i = this.length - 1; i > 0; i--) {
+    this.swap(i, parseInt(Math.random() * (i + 1)))
   }
+}
 
-  for (let i = 0; i < shuffleTime; i++) {
-    resteArr()
-    arr.shuffle()
+Array.prototype.clone = function() {
+  return clone(this)
+}
 
-    for (let j = 0; j < len; j++) {
-      result[j] += arr[j]
-    }
+Array.prototype.forEachSync = async function (fn) {
+  for (let i = 0, len = this.length; i < len; i++) {
+    await fn(this[i], i, this)
   }
-
-  result.forEach((n, idx) => {
-    console.log(n / shuffleTime)
-  })
-
-  console.warn((result.max() - result.min()) / shuffleTime)
-}*/
+}

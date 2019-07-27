@@ -4,16 +4,29 @@ class Sort extends Common {
 
     const d = this.d
 
-    d.arr.forEach(node => node.strokeStyle = randColor().toString())
-    d.steps = [d.arr.clone()]
+    d.btn.onclick = async (e) => {
+      d.signAni = Math.random()
+      d.usingAni = d.usingAni || !!e
+      d.arr = d.raw.clone()
+      d.steps = [d.arr.clone()]
+
+      if (e) {
+        this[d.typeItem.startFn](d.typeItem.arg)
+      }
+    }
+
+    d.delay = 200
+    d.btn.onclick()
   }
-  SelectionSort() {
+  async SelectionSort() {
     const d = this.d
-  
-    for (let i = 0, len = d.arr.length; i < len; i++) {
+
+    await this.animate()
+
+    for (let i = 0; i < d.arr.length; i++) {
       let minIndex = i
 
-      for (let j = i + 1; j < len; j++) {
+      for (let j = i + 1; j < d.arr.length; j++) {
         d.arr[j].fromIndex = j
         d.arr[j].fillStyle = d.color.green
 
@@ -24,16 +37,18 @@ class Sort extends Common {
 
       d.arr[i].fromIndex = i
       d.arr[i].fillStyle = d.color.orange
+      d.arr[minIndex].fromIndex = minIndex
       d.arr[minIndex].fillStyle = d.color.blue
-      d.arr.swap(i, minIndex)
-      d.steps.push(
+      d.arr.swap(minIndex, i)
+
+      await this.pushStep(
         Array(i).fill().concat(
-          d.arr.slice(i, len).clone()
+          d.arr.slice(i, d.arr.length).clone()
         )
       )
     }
 
-    d.steps.push(
+    await this.pushStep(
       d.arr.clone().map((node, idx) => {
         node.fromIndex = idx
         node.fillStyle = d.color.blue
@@ -41,10 +56,12 @@ class Sort extends Common {
       })
     )
   }
-  InsertionSort() {
+  async InsertionSort() {
     const d = this.d
 
-    for (let i = 0, len = d.arr.length; i < len; i++) {
+    await this.animate()
+
+    for (let i = 1; i < d.arr.length; i++) {
       let j = i
 
       d.arr[i].fromIndex = i
@@ -61,14 +78,14 @@ class Sort extends Common {
         }
       }
 
-      d.steps.push(
+      await this.pushStep(
         Array(j).fill().concat(
           d.arr.slice(j, i + 1).clone()
         )
       )
     }
 
-    d.steps.push(
+    await this.pushStep(
       d.arr.clone().map((node, idx) => {
         node.fromIndex = idx
         node.fillStyle = d.color.blue
@@ -76,17 +93,103 @@ class Sort extends Common {
       })
     )
   }
-  MergeSort() {
+  async BubbleSort() {
     const d = this.d
 
-    const mergeSort = (l, r) => {
+    await this.animate()
+
+    let swapped = false
+    let n = d.arr.length - 1
+
+    do {
+      swapped = false
+
+      for (let i = 0; i <= n; i++) {
+        d.arr[i].fromIndex = i
+      }
+
+      for (let i = 1; i <= n; i++) {
+        d.arr[i - 1].fillStyle = d.color.green
+
+        if (d.arr[i].n < d.arr[i - 1].n) {
+          d.arr[i].fillStyle = d.color.orange
+          d.arr.swap(i, i - 1)
+          swapped = true
+        }
+      }
+
+      d.arr[n].fillStyle = d.color.blue
+
+      await this.pushStep(
+        d.arr.slice(0, n + 1).clone()
+      )
+
+      n--
+    } while (swapped)
+
+    await this.pushStep(
+      d.arr.clone().map((node, idx) => {
+        node.fromIndex = idx
+        node.fillStyle = d.color.blue
+        return node
+      })
+    )
+  }
+  async BubbleSort2() {
+    const d = this.d
+
+    await this.animate()
+
+    let n = d.arr.length
+    let newN = 0
+
+    do {
+      newN = 0
+
+      for (let i = 0; i < n; i++) {
+        d.arr[i].fromIndex = i
+      }
+
+      for (let i = 1; i < n; i++) {
+        d.arr[i - 1].fillStyle = d.color.green
+
+        if (d.arr[i].n < d.arr[i - 1].n) {
+          d.arr[i].fillStyle = d.color.orange
+          d.arr.swap(i, i - 1)
+          newN = i
+        }
+      }
+
+      d.arr[n - 1].fillStyle = d.color.blue
+
+      await this.pushStep(
+        d.arr.slice(0, n).clone()
+      )
+
+      n = newN
+    } while (newN > 0)
+
+    await this.pushStep(
+      d.arr.clone().map((node, idx) => {
+        node.fromIndex = idx
+        node.fillStyle = d.color.blue
+        return node
+      })
+    )
+  }
+  async MergeSort() {
+    const d = this.d
+
+    await this.animate()
+
+    const mergeSort = async (l, r) => {
       if (l >= r) return
 
       const mid = l + parseInt((r - l) / 2)
-      mergeSort(l, mid)
-      mergeSort(mid + 1, r)
+      await mergeSort(l, mid)
+      await mergeSort(mid + 1, r)
 
-      const aux = Array(r - l + 1).fill()
+      let aux = Array(r - l + 1).fill()
 
       for (let i = l; i <= r; i++) {
         aux[i - l] = d.arr[i]
@@ -101,7 +204,7 @@ class Sort extends Common {
           d.arr[k] = aux[j++ - l]
         } else if (j > r) {
           d.arr[k] = aux[i++ - l]
-        } else if (aux[i - l].n < aux[j - l].n) {
+        } else if (aux[i - l].n <= aux[j - l].n) {
           d.arr[k] = aux[i++ - l]
         } else {
           d.arr[k] = aux[j++ - l]
@@ -110,7 +213,7 @@ class Sort extends Common {
 
       const fillStyle = d.color[l === 0 && r === d.arr.length - 1 ? 'blue' : 'green']
 
-      d.steps.push(
+      await this.pushStep(
         Array(l).fill().concat(
           d.arr.slice(l, r + 1).clone().map((node) => {
             node.fillStyle = fillStyle
@@ -120,15 +223,19 @@ class Sort extends Common {
       )
     }
 
-    mergeSort(0, d.arr.length - 1)
+    await mergeSort(0, d.arr.length - 1)
   }
-  QuickSort1() {
+  async QuickSort1() {
     const d = this.d
 
-    const quickSort = (l, r) => {
+    await this.animate()
+
+    const quickSort = async (l, r) => {
       if (l >= r) return
 
-      for (let i = l; i <= r; i++) d.arr[i].fromIndex = i
+      for (let i = l; i <= r; i++) {
+        d.arr[i].fromIndex = i
+      }
 
       d.arr.swap(l, rand(l + 1, r))
 
@@ -147,19 +254,18 @@ class Sort extends Common {
 
       d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, j)
-      d.steps.push(
+      await this.pushStep(
         Array(l).fill().concat(
           d.arr.slice(l, r + 1).clone()
         )
       )
-
-      quickSort(l, j - 1)
-      quickSort(j + 1, r)
+      await quickSort(l, j - 1)
+      await quickSort(j + 1, r)
     }
 
-    quickSort(0, d.arr.length - 1)
+    await quickSort(0, d.arr.length - 1)
 
-    d.steps.push(
+    await this.pushStep(
       d.arr.clone().map((node, idx) => {
         node.fromIndex = idx
         node.fillStyle = d.color.blue
@@ -167,13 +273,17 @@ class Sort extends Common {
       })
     )
   }
-  QuickSort2() {
+  async QuickSort2() {
     const d = this.d
 
-    const quickSort = (l, r) => {
+    await this.animate()
+
+    const quickSort = async (l, r) => {
       if (l >= r) return
 
-      for (let i = l; i <= r; i++) d.arr[i].fromIndex = i
+      for (let i = l; i <= r; i++) {
+        d.arr[i].fromIndex = i
+      }
 
       d.arr.swap(l, rand(l + 1, r))
 
@@ -200,19 +310,18 @@ class Sort extends Common {
 
       d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, j)
-      d.steps.push(
+      await this.pushStep(
         Array(l).fill().concat(
           d.arr.slice(l, r + 1).clone()
         )
       )
-
-      quickSort(l, j - 1)
-      quickSort(j + 1, r)
+      await quickSort(l, j - 1)
+      await quickSort(j + 1, r)
     }
 
-    quickSort(0, d.arr.length - 1)
+    await quickSort(0, d.arr.length - 1)
 
-    d.steps.push(
+    await this.pushStep(
       d.arr.clone().map((node, idx) => {
         node.fromIndex = idx
         node.fillStyle = d.color.blue
@@ -220,13 +329,17 @@ class Sort extends Common {
       })
     )
   }
-  QuickSort3() {
+  async QuickSort3() {
     const d = this.d
 
-    const quickSort = (l, r) => {
+    await this.animate()
+
+    const quickSort = async (l, r) => {
       if (l >= r) return
 
-      for (let i = l; i <= r; i++) d.arr[i].fromIndex = i
+      for (let i = l; i <= r; i++) {
+        d.arr[i].fromIndex = i
+      }
 
       d.arr.swap(l, rand(l + 1, r))
 
@@ -253,19 +366,18 @@ class Sort extends Common {
 
       d.arr[l].fillStyle = d.color.blue
       d.arr.swap(l, lt)
-      d.steps.push(
+      await this.pushStep(
         Array(l).fill().concat(
           d.arr.slice(l, r + 1).clone()
         )
       )
-
-      quickSort(l, lt - 1)
-      quickSort(gt, r)
+      await quickSort(l, lt - 1)
+      await quickSort(gt, r)
     }
 
-    quickSort(0, d.arr.length - 1)
+    await quickSort(0, d.arr.length - 1)
 
-    d.steps.push(
+    await this.pushStep(
       d.arr.clone().map((node, idx) => {
         node.fromIndex = idx
         node.fillStyle = d.color.blue
@@ -273,60 +385,95 @@ class Sort extends Common {
       })
     )
   }
-  setPos() {
+  async pushStep(arr) {
     const d = this.d
 
-    d.steps.forEach((row, stair) => {
+    d.steps.push(arr)
+    await this.animate()
+  }
+  nextFrame(isStop) {
+    const d = this.d
+
+    d.steps.forEach((row, idx) => {
       row.forEach((node, idx) => {
-        if (!node) return
-        node.x = idx * d.conf.itemWidth
-        node.y = stair * d.conf.levelHeight
+        this.updatePos(node, isStop)
       })
     })
+  }
+  setPos() {
+    const d = this.d
+    const stair = d.steps.length - 1
 
     d.contentWidth = d.arr.length * d.conf.itemWidth
     d.contentHeight = (d.steps.length - 1) * d.conf.levelHeight + d.conf.itemHeight
-    d.canvas.width = (d.contentWidth + d.conf.paddingH * 2) * d.conf.scale
-    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
-    d.canvas.height = (d.contentHeight + d.conf.paddingV * 2) * d.conf.scale
+    this.setSize()
+
+    if (d.usingAni) {
+      d.steps.last().forEach((node, idx) => {
+        if (!node) return
+
+        let nodeFrom
+        let _stair = stair
+
+        while (!nodeFrom && --_stair > -1) {
+          nodeFrom = d.steps[_stair][node.fromIndex]
+        }
+
+        stair === 0 && (nodeFrom = nodeFrom || node)
+
+        node.x = node.from.x = nodeFrom.to.x
+        node.y = node.from.y = nodeFrom.to.y
+
+        node.to.x = idx * d.conf.itemWidth
+        node.to.y = stair * d.conf.levelHeight
+      })
+    } else {
+      d.steps.forEach((row, stair) => {
+        row.forEach((node, idx) => {
+          if (!node) return
+          node.x = idx * d.conf.itemWidth
+          node.y = stair * d.conf.levelHeight
+        })
+      })
+    }
   }
   render() {
     const d = this.d
     const {gd} = d
-    const itemWidth = d.conf.itemWidth
-    const itemHeight = d.conf.itemHeight
 
     const renderLine = () => {
+      // return
       d.steps.forEach((row, stair) => {
-        stair > 0 && row.forEach((from, idx) => {
-          if (!from) return
+        stair > 0 && row.forEach((nodeFrom, idx) => {
+          if (!nodeFrom) return
 
+          let nodeTo
           let _stair = stair
-          let to
 
-          while (!to) {
-            to = d.steps[--_stair][from.fromIndex]
+          while (!nodeTo && --_stair > -1) {
+            nodeTo = d.steps[_stair][nodeFrom.fromIndex]
           }
 
           gd.beginPath()
-          gd.lineTo(from.x + itemWidth / 2 + .5, from.y + itemHeight / 2)
-          gd.lineTo(to.x + itemWidth / 2 + .5, to.y + itemHeight / 2)
-          gd.strokeStyle = from.strokeStyle
+          gd.lineTo(nodeFrom.x + d.conf.itemWidth / 2 + .5, nodeFrom.y + d.conf.itemHeight / 2)
+          gd.lineTo(nodeTo.x + d.conf.itemWidth / 2 + .5, nodeTo.y + d.conf.itemHeight / 2)
+          gd.strokeStyle = nodeFrom.strokeStyle
           gd.stroke()
         })
       })
     }
 
     const renderNode = () => {
-      d.steps.forEach((row, stair) => {
-        row.forEach((node, idx) => {
-          this.renderNode(node)
+      d.steps.forEach((row, idx) => {
+        row.forEach((ndoe, idx) => {
+          this.renderNode(ndoe)
         })
       })
     }
 
     gd.fillStyle = d.color.white
     gd.fillRect(0, 0, d.canvas.width, d.canvas.height)
+
     gd.save()
     gd.scale(d.conf.scale, d.conf.scale)
     gd.translate(d.conf.paddingH, d.conf.paddingV)

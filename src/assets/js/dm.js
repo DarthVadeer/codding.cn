@@ -21,7 +21,7 @@ export default {
       lenAni: 30,
       dw: window.innerWidth,
       dh: window.innerHeight,
-      baseUrl: isLocal ? 'http://10.0.1.2/final-app/' : '/',
+      baseUrl: isLocal ? 'http://10.0.1.9/final-app/' : '/',
       algoTimeDelay: 50,
       mapPlayTime,
       search: {},

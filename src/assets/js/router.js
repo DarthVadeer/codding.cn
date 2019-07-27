@@ -55,6 +55,7 @@ export default {
       algoInfo: undefined,
       searchText: undefined,
       goalUrl: undefined,
+      algo: undefined,
       ...o,
     })
 
