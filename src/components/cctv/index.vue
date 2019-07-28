@@ -3,9 +3,9 @@
     <div class="panel-nav">
       <ul>
         <li tabindex="1"
-          :class="['gray-title', {on: idx === r.idxChannel}]"
+          :class="['gray-title', {on: idx === idxChannel}]"
           v-for="(item, idx) in listChannel"
-          @click="clickNav({idxChannel: idx, idxAlbum: 0})"
+          @click="clickNav($event, {idxChannel: idx, idxAlbum: 0})"
         >{{item.name}}</li>
       </ul>
     </div>
@@ -13,8 +13,8 @@
       <ul>
         <li tabindex="1"
           :class="['gray-title', {on: idx === idxAlbum}]"
-          v-for="(item, idx) in (listChannel[r.idxChannel || 0] || {}).children || []"
-          @click="clickNav({idxChannel: r.idxChannel || 0, idxAlbum: idx})"
+          v-for="(item, idx) in (listChannel[idxChannel || 0] || {}).children || []"
+          @click="clickNav($event, {idxChannel: idxChannel || 0, idxAlbum: idx})"
         >{{item.name}}</li>
       </ul>
     </div>
@@ -22,7 +22,7 @@
       <div class="gray-title flex">
         <div class="ellipsis auto-flex">
           <span class="hidden-xs" v-if="videoInfo.m3u8">正在播放：</span>
-          {{videoInfo.m3u8 ? videoInfo.title : (idxAlbum === undefined ? '今日视频' : curAlbum.name)}}
+          {{videoInfo.m3u8 ? videoInfo.title : (r.idxAlbum === undefined ? '今日视频' : curAlbum.name)}}
         </div>
         <div class="btn-box">
           <template v-if="videoInfo.m3u8">
@@ -36,17 +36,15 @@
             >
               <span class="glyphicon glyphicon-arrow-right"></span>
             </button>
-            <a class="btn btn-success btn-xs"
-              :href="r.videoInfo.site"
-            >央视播放</a>
+            <a class="btn btn-success btn-xs" target="_blank" :href="r.videoInfo.site">央视播放</a>
             <button class="btn btn-warning btn-xs"
               @click="$root.updateRouter({videoInfo: undefined}, 'push')"
             >关闭视频</button>
           </template>
           <template v-else>
             <button class="btn btn-primary btn-xs"
-              v-if="searchText || idxAlbum !== undefined"
-              @click="$root.updateRouter({idxChannel: undefined, idxAlbum: undefined, searchText: undefined}, 'push')"
+              v-if="searchText || r.idxAlbum !== undefined"
+              @click="$root.pushCom('cctv')"
             >
               <i class="glyphicon glyphicon-info-sign"></i>
               <span>今日内容</span>
@@ -100,8 +98,8 @@
               </select>
               <select class="select"
                 :value="page.cur"
-                @change="$root.updateRouter({videoInfo: undefined}); r.page.cur = parseInt($event.target.value);"
-                v-if="searchText || (idxAlbum !== undefined && r.page.total > r.page.size)"
+                @change="$root.updateRouter({videoInfo: undefined}); page.cur = parseInt($event.target.value);"
+                v-if="searchText || (idxAlbum !== undefined && page.total > page.size)"
               >
                 <option
                   :value="n - 1"
@@ -202,9 +200,11 @@ export default {
     }
   },
   methods: {
-    clickNav(o) {
+    clickNav(e, o) {
       const vm = this.$root
       const r = vm.router
+
+      if ($(e.target).hasClass('on')) return
 
       vm.updateRouter({
         ...o,
@@ -260,7 +260,7 @@ export default {
         const searchText = sugg.text.trim()
         if (!searchText) return
 
-        $.loadScript('https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText), () => {
+        $.getScript('https://search.cctv.com/webtvsuggest.php?q=' + encodeURIComponent(searchText), () => {
           if (signFetchSugg !== this.signFetchSugg) {
             console.warn('signFetchSugg 时过境迁')
             return
@@ -329,7 +329,7 @@ export default {
       }
 
       const loadScript = () => {
-        $.loadScript(
+        $.getScript(
           'http://vdn.apps.cntv.cn/api/getIpadVideoInfo.do?' +
           'pid='  + elItem.id  + '&' +
           'tai=ipad&' +
@@ -337,8 +337,7 @@ export default {
           'tsp=1553074558&' +
           'vn=2049&' +
           'vc=8AB31F7208274D1C0FD8874764B5EBE3&' +
-          'uid=2C5D032B73247D87E67C414F62BA2E7B&wlan=',
-          null, handleError
+          'uid=2C5D032B73247D87E67C414F62BA2E7B&wlan='
         )
       }
 
@@ -351,9 +350,9 @@ export default {
       if (elItem.id) {
         loadScript()
       } else {
-        $.get('./api/get.php', {
+        $.get(vm.getUrl('/api/get.php'), {
           a: 'get',
-          url: elItem.site
+          url: elItem.site,
         }, (sHtml) => {
           elItemOrigin.id = elItem.id = 
           (sHtml.match(/"videoCenterId","([^"]*)"/m) || [])[1] || 
@@ -362,38 +361,52 @@ export default {
         })
       }
     },
-    fetchAllChannel() {
-      // https://api.cntv.cn/lanmu/columnSearch?&fl=&fc=&cid=&p=17&n=20&serviceId=tvcctv&t=jsonp&cb=Callback
+    async fetchAllChannel() {
       const vm = this.$root
-      const r = vm.router
+      let isBreak = false
+      let page = 0
+      let result = []
 
-      $.jsonp('https://api.cntv.cn/lanmu/columnSearch', {
-        fl: '',
-        fc: '',
-        cid: '',
-        p: '17',
-        n: '100',
-        serviceId: 'tvcctv',
-        t: 'jsonp',
-        '?': 'cb',
-      }, ({response}) => {
-        console.log(response)
+      console.clear()
+      while (!isBreak) {
+        await new Promise((next) => {
+          $.getJSON('https://api.cntv.cn/lanmu/columnSearch?&fl=&fc=&cid=&p=' + (++page) + '&n=100&serviceId=tvcctv&t=jsonp&cb=?', (data) => {
+            data = data.response.docs
+            result = result.concat(data.map((v) => {
+              return {
+                id: v.column_id,
+                cName: v.channel_name,
+                name: v.column_name,
+              }
+            }))
+            isBreak = data.length < 100
+            next()
+          })
+        })
+      }
+
+      const mapChannel = {}
+      result.forEach((v, idx) => {
+        mapChannel[v.cName] = mapChannel[v.cName] || []
+        mapChannel[v.cName].push(v)
       })
+
+      const arr = Object.keys(mapChannel).map((key) => {
+        return {
+          name: key,
+          children: mapChannel[key],
+        }
+      })
+      console.log(JSON.stringify(arr))
     },
     fetchChannel(cb) {
       const vm = this.$root
       const r = vm.router
 
-      clearTimeout(vm.timerFetchChannel)
-      vm.timerFetchChannel = setTimeout(() => {
-        $.get('static/data/cctv.json', {
-          a: 'get',
-          url: 'static/data/cctv.json'
-        }, (list) => {
-          this.channel.list = list
-          cb.call(this)
-        })
-      }, 50)
+      $.getJSON('static/data/cctv.json', (list) => {
+        this.channel.list = list
+        cb.call(this)
+      })
     },
     chooseFetchFn(cb) {
       this[this.searchText ? 'justFetchAlbum' : 'fetchVideoList'](cb)
@@ -409,7 +422,7 @@ export default {
       this.timerJustFetchAlbum = setTimeout(() => {
         const searchText = this.searchText
 
-        $.get('./api/get.php', {
+        $.get(vm.getUrl('./api/get.php'), {
           a: 'get',
           url: 'https://search.cctv.com/search.php?qtext=' + encodeURIComponent(searchText) + '&type=video'
         }, async (sHtml) => {
@@ -422,7 +435,7 @@ export default {
               const src = urls[i]
               window.playlistArray = {}
 
-              $.loadScript(src, () => {
+              $.getScript(src, () => {
                 if (signJustFetchAlbum !== this.signJustFetchAlbum) {
                   console.warn('justFetchAlbum 时过境迁')
                   return
@@ -481,9 +494,7 @@ export default {
       }, 100)
 
       const fetchByMostNew = () => {
-        $.get('api/get.php', {
-          a: 'getCCTVIndex',
-        }, (str) => {
+        $.get(vm.getUrl('/api/get.php?a=getCCTVIndex'), (str) => {
           if (signFetchVideoList !== this.signFetchVideoList) {
             console.warn('fetchByMostNew warn 时过境迁')
             return
@@ -517,7 +528,7 @@ export default {
             title: '今日内容共' + list.length + '条',
             list,
           }
-          r.page.total = list.length
+          this.page.total = list.length
           vm.lazyLoad()
           cb && cb()
         })
@@ -530,12 +541,12 @@ export default {
         }
 
         for (let i = 0; i < 5; i++) {
-          const curPage = r.page.cur * 5 + i + 1
+          const curPage = this.page.cur * 5 + i + 1
 
-          if (i > 0 && curPage > Math.ceil(r.page.total / 20)) break
+          if (i > 0 && curPage > Math.ceil(this.page.total / 20)) break
 
           await new Promise((next) => {
-            $.get('./api/get.php', {
+            $.get(vm.getUrl('/api/get.php'), {
               a: 'get',
               url: 'https://search.cctv.com/ifsearch.php?'+
               'page=' + curPage + '&qtext=' + searchText + '&'+
@@ -552,6 +563,8 @@ export default {
                 console.warn('fetchBySearch 时过境迁', searchText)
                 return
               }
+
+              data = JSON.parse(data)
 
               const list = data.list.map((item) => {
                 if (/\/\w{32}-\d+\.\w+$/.test(item.imglink)) {
@@ -579,8 +592,8 @@ export default {
                 return v.site.indexOf('art.cctv.com') > -1
               })*/
 
-              r.page.total = data.total
-              groupItem.title = '全部视频结果共' + r.page.total + '条'
+              this.page.total = data.total
+              groupItem.title = '全部视频结果共' + this.page.total + '条'
               groupItem.list = groupItem.list.concat(list)
 
               vm.is.loading = false
@@ -593,15 +606,7 @@ export default {
       }
 
       const fetchByDef = () => {
-        $.jsonp('http://api.cntv.cn/lanmu/videolistByColumnId', {
-          'id': elItem.id,
-          'n': '100',
-          'of': 'fdate',
-          'p': r.page.cur + 1,
-          'type': '0',
-          'serviceId': 'tvcctv',
-          '?': 'cb',
-        }, (dataOrigin) => {
+        $.getJSON('http://api.cntv.cn/lanmu/videolistByColumnId?id=' + elItem.id + '&n=100&of=fdate&p=' + (this.page.cur + 1) + '&type=0&serviceId=tvcctv&cb=?', (dataOrigin) => {
           if (signFetchVideoList !== this.signFetchVideoList) {
             console.warn('fetchByDef warn 时过境迁')
             return
@@ -623,7 +628,7 @@ export default {
               }
             })
           }
-          r.page.total = response.numFound
+          this.page.total = response.numFound
           vm.lazyLoad()
           document.querySelector('#app .cctv .video-main-wrapper .video-group').scrollTop = 0
           cb && cb()
@@ -647,7 +652,7 @@ export default {
     'r.idxAlbum'() {
       this.fetchVideoList()
     },
-    'r.page.cur'() {
+    'page.cur'() {
       this.fetchVideoList()
     },
     'r.searchText'(newVal) {
@@ -663,7 +668,7 @@ export default {
       return this.r.idxChannel || 0
     },
     idxAlbum() {
-      return this.r.idxAlbum/* || 0*/
+      return this.r.idxAlbum || 0
     },
     videoInfo() {
       return this.r.videoInfo || {}
@@ -703,15 +708,12 @@ export default {
       }
     },
   },
-  mounted() {
+  async mounted() {
     const vm = this.$root
     const r = vm.router
 
     // this.fetchAllChannel()
-
-    if (vm.is.local && this.videoInfo.m3u8) {
-      vm.playM3u8()
-    }
+    // return
 
     this.sugg.text = r.searchText || ''
     this.$nextTick(() => {
@@ -719,6 +721,8 @@ export default {
         this.chooseFetchFn()
       })
     })
+
+    vm.is.local && this.videoInfo.m3u8 && vm.playM3u8()
   },
   beforeCreate() {
     this.$root.cctv = this

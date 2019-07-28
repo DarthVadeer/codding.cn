@@ -1,22 +1,19 @@
 <template>
   <div class="topbar flex">
-    <div class="logo hidden-xs">
-      <strong>
-        <a tabindex="1" href="javascript:">{{$root.appName}} - Official</a>
-      </strong>
+    <div class="box-logo">
+      <a href="javascript:">田小号🎺 <span class="hidden-xs">- Official</span></a>
     </div>
-    <div class="nav auto-flex">
-      <a tabindex="1" href="javascript:"
-        :class="{on: item.com === $root.com}"
-        :data-a="item.com + '-' + $root.com "
+    <div class="auto-flex nav">
+      <a href="javascript:"
         v-for="(item, idx) in nav.list"
+        :class="{on: item.com === $root.com}"
         @click="$root.pushCom(item.com)"
       >{{item.name}}</a>
     </div>
-    <!-- <div class="nav">
-      <a tabindex="1" href="javascript:">登录</a>
-      <a tabindex="1" href="javascript:">注册</a>
-    </div> -->
+    <!--  <div>
+      <a href="javascript:">登录</a>
+      <a href="javascript:">注册</a>
+    </div -->
   </div>
 </template>
 
@@ -29,13 +26,7 @@ export default {
         list: [
           {name: 'CCTV', com: 'cctv'},
           {name: '算法与数据结构', com: 'algo'},
-          {name: '创意空间', com: 'goal'},
-          // {name: '迷宫', com: 'algo'},
-          // {name: '首页', com: 'index'},
-          // {name: 'WebFtp', com: 'webFtp'},
-          // {name: 'DBAdmin', com: 'dbAdmin'},
-          // {name: 'Talker', com: 'talker'},
-          // {name: 'boboFans', com: 'boboFans'},
+          {name: '创意空间', com: 'creative'},
         ]
       }
     }
@@ -45,10 +36,10 @@ export default {
 
 <style lang="scss" scoped>
 .topbar {
-  padding: 0 8px; background: #33373e; color: #c3c6c9; font-size: 14px;
-  user-select: none; z-index: 2;
-  a {display: inline-block; padding: 12px 8px;}
+  background: #33373e; color: #c3c6c9; overflow: auto;
+  line-height: 3.2em; white-space: nowrap; padding: 0 8px; z-index: 10;
+  a {display: inline-block; padding: 0 8px;}
   a.on {color: #fff;}
-  .logo {margin-right: 0;}
+  .box-logo {font-weight: bold;}
 }
 </style>

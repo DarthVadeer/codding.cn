@@ -1,8 +1,8 @@
 import Hls from 'hls.js'
 
 export default {
-  rootData() {
-    const isLocal = location.origin.search(/:412|:300/) > -1
+  data() {
+    const isLocal = location.origin.search(/:412|:300|:808/) > -1
     const ua = navigator.userAgent
     const isIos = ua.indexOf('iPhone; CPU iPhone OS') > -1
     const isIpad = ua.indexOf('iPad; CPU OS') > -1
@@ -21,11 +21,11 @@ export default {
       lenAni: 30,
       dw: window.innerWidth,
       dh: window.innerHeight,
-      baseUrl: isLocal ? 'http://10.0.1.9/final-app/' : '/',
       algoTimeDelay: 50,
       mapPlayTime,
       search: {},
       router: {},
+      baseUrl: 'http://10.0.1.9/codding.cn',
       is: {
         local: isLocal,
         ios: isIos,
@@ -64,9 +64,19 @@ export default {
       },
     }
   },
-  rootMethods: {
+  methods: {
     log() {
       window['console'].log(arguments)
+    },
+    json2url(o) {
+      return Object.keys(o).map((key) => {
+        const val = o[key]
+        return key + '=' + encodeURIComponent((typeof val === 'object' ? JSON.stringify(val) : val))
+      }).join('&')
+    },
+    getUrl(url) {
+      const vm = this
+      return !/^http/.test(url) && url.search(/\.php/) > -1 ? vm.baseUrl + url : url
     },
     getFileName(path) {
       return (path.split(/\\|\//) || []).last() || ''

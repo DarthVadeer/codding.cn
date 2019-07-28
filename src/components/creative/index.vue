@@ -51,7 +51,7 @@ Object.keys(mapChooseGoal).forEach((item, idx) => {
 console.log(JSON.stringify(_mapChooseGoal))*/
 
 export default {
-  name: 'goal',
+  name: 'creative',
   data() {
     const vm = this.$root
 
@@ -69,7 +69,7 @@ export default {
           v.is17  = /^http/.test(v.img)
           const fileName = (v.img.match(/\/([^/]+)\?/) || [])[1] || ''
           // v._img = vm.baseUrl + 'api/get.php?a=getImg&url=' + encodeURIComponent(v.img)
-          v._img = (vm.is.local ? vm.baseUrl : '/') + (!v.is17 ? ((vm.is.local ? 'public/' : '') + v.img) : 'api/img-cache-goal/' + fileName)
+          v._img = (vm.is.local ? vm.baseUrl + '/' : '/') + (!v.is17 ? ((vm.is.local ? 'public/' : '') + v.img) : 'api/img-cache-goal/' + fileName)
           return v
         })
       }
@@ -95,7 +95,7 @@ export default {
       }
 
       if (elItem.is17) {
-        $.get('./api/get.php', {
+        $.get(vm.getUrl('./api/get.php'), {
           a: 'get',
           url: elItem.href,
         }, (str) => {

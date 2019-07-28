@@ -1,7 +1,7 @@
 export default [{
   "href": "https://threejs.org/examples/webgl_animation_cloth.html",
   "text": "吹拂的迷宫",
-  "img": "static/goal/img/maze.png"
+  "img": "static/creative/img/maze.png"
 }, {
   "href": "http://www.17sucai.com/pins/demo-show?id=33961",
   "text": "酷炫的logo标志光影动画",

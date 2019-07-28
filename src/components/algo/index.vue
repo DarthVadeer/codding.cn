@@ -119,22 +119,33 @@ export default {
           break
         case 'SegmentTree':
           list = [
-            {...clone(r.algo), name: '线段树 - R', arg: {isL: false}, arr: []},
-            {...clone(r.algo), name: '线段树 - L', arg: {isL: true}, arr: []},
+            {...clone(r.algo), name: '线段树 - R', arg: {isL: false}},
+            {...clone(r.algo), name: '线段树 - L', arg: {isL: true}},
           ]
           break
         case 'Fractal':
-          if (r.algo.startFn === 'Fib') {
-            list = [
-              {...clone(r.algo), arg: {renderAux: false}, arr: []},
-              {...clone(r.algo), arg: {renderAux: true}, arr: []},
-            ]
-          } else {
-            list = [{...clone(r.algo), arr: []}]
+          switch (r.algo.startFn) {
+            case 'Fib':
+              list = [
+                {...clone(r.algo), arg: {renderAux: false}},
+                {...clone(r.algo), arg: {renderAux: true}},
+              ]
+              break
+            case 'FractalTree':
+              list = [
+                {...clone(r.algo)},
+                {...clone(r.algo), arg: {side: 100, degL: -5, degR: 20, translateX: -60}},
+                {...clone(r.algo), arg: {side: 100, degL: -30, degR: 10, translateX: 50}},
+                {...clone(r.algo), arg: {side: 90, degL: -45, degR: 45, translateY: -120}},
+              ]
+              break
+            default:
+              list = [{...clone(r.algo)}]
+              break
           }
           break
         default:
-          list = [{...clone(r.algo), arr: []}]
+          list = [{...clone(r.algo)}]
           break
       }
 
@@ -164,8 +175,8 @@ export default {
             btn: btnList[idx],
             canvas,
             gd: canvas.getContext('2d'),
-            arr: typeItem.arr.clone(),
-            raw: typeItem.arr.clone(),
+            arr: (typeItem.arr || []).clone(),
+            raw: (typeItem.arr || []).clone(),
             contentWidth: 0,
             contentHeight: 0,
             typeItem,
@@ -174,11 +185,6 @@ export default {
           })
 
           await o[typeItem.startFn](typeItem.arg)
-          if (typeItem.name === '扫雷') {
-            o.d.hideNotice = true
-            o.d.arr[0][0].isMine = true
-            o.open(0, 0)
-          }
           o.setPos()
           o.render()
         })

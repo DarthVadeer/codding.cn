@@ -28,16 +28,17 @@ const coms = [
   'components/com/confirm',
   'components/com/toggle',
 
-  'components/index',
+  // 'components/index',
   'components/topbar',
   'components/cctv',
   'components/algo',
-  'components/webFtp',
-  'components/dbAdmin',
-  'components/talker',
-  'components/boboFans',
-  'components/goal',
-  'components/x-frame',
+  'components/creative',
+  // 'components/webFtp',
+  // 'components/dbAdmin',
+  // 'components/talker',
+  // 'components/boboFans',
+  // 'components/goal',
+  // 'components/x-frame',
 ].map((path) => {
   return require('@/' + path).default
 })

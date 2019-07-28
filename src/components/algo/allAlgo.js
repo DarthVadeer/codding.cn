@@ -2697,9 +2697,7 @@ class MineSweeper extends Common {
 
           if (isStop && d.isWin === undefined) {
             d.isWin = true
-            // d.alertInfo.style.display = 'block'
-            // d.alertInfo.children[0].innerHTML = '你赢了'
-            !d.hideNotice && alert('你赢了')
+            !d.hideNotice && setTimeout(_ => alert('你赢了'), 10)
           }
           break
         case 'contextmenu':
@@ -2814,7 +2812,7 @@ class MineSweeper extends Common {
       // console.log('def')
       // d.alertInfo.style.display = 'block'
       // d.alertInfo.children[0].innerHTML = '你输了'
-      !d.hideNotice && alert('你输了')
+      !d.hideNotice && setTimeout(_ => alert('你输了'), 10)
       return
     }
 

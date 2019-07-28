@@ -2,14 +2,12 @@ export default {
   router: {
     deep: true,
     handler(newVal) {
-      const vm = this.$root
-
+      const vm = this
       let hashData = JSON.stringify(newVal)
-      !vm.is.local && (hashData = encodeURIComponent(hashData))
-      const targetUrl = location.origin + location.pathname + location.search + '#' + hashData
-
-      history[vm.is.routerPush ? 'pushState' : 'replaceState']({}, '', targetUrl)
-      vm.is.routerPush = false
+      !vm.is.local && (hashData = encodeURIComponent(newVal))
+      const targetUrl = location.origin + location.pathname + '#' + hashData
+      history[vm.isRouterPush ? 'pushState' : 'replaceState']({}, '', targetUrl)
+      delete vm.isRouterPush
     }
   },
   mapPlayTime: {

@@ -93,7 +93,7 @@ class MineSweeper extends Common {
       if (d.opening || d.isWin !== undefined) return
       d.opening = true
 
-      const scale = canvas.offsetWidth / canvas.width
+      const scale = canvas.offsetWidth / canvas.width * d.conf.scale
       const x = parseInt(e.offsetX / scale / d.side)
       const y = parseInt(e.offsetY / scale / d.side)
       const node = d.arr[y][x]
@@ -115,9 +115,7 @@ class MineSweeper extends Common {
 
           if (isStop && d.isWin === undefined) {
             d.isWin = true
-            // d.alertInfo.style.display = 'block'
-            // d.alertInfo.children[0].innerHTML = '你赢了'
-            !d.hideNotice && alert('你赢了')
+            !d.hideNotice && setTimeout(_ => alert('你赢了'), 10)
           }
           break
         case 'contextmenu':
@@ -232,7 +230,7 @@ class MineSweeper extends Common {
       // console.log('def')
       // d.alertInfo.style.display = 'block'
       // d.alertInfo.children[0].innerHTML = '你输了'
-      !d.hideNotice && alert('你输了')
+      !d.hideNotice && setTimeout(_ => alert('你输了'), 10)
       return
     }
 
@@ -295,8 +293,9 @@ class MineSweeper extends Common {
   setSize() {
     const d = this.d
 
-    d.canvas.width = d.contentWidth
-    d.canvas.height = d.contentHeight
+    d.canvas.width = d.contentWidth * d.conf.scale
+    d.canvas.style.width = d.canvas.width / d.conf.scale + 'px'
+    d.canvas.height = d.contentHeight * d.conf.scale
   }
   setPos() {}
   render() {
@@ -306,6 +305,8 @@ class MineSweeper extends Common {
     gd.fillStyle = '#b3b6b9'
     gd.fillRect(0, 0, d.canvas.width, d.canvas.height)
 
+    gd.save()
+    gd.scale(d.conf.scale, d.conf.scale)
     d.arr.forEach((row, idxRow) => {
       row.forEach((node, idxCol) => {
         const x = d.side * idxCol
@@ -348,5 +349,6 @@ class MineSweeper extends Common {
         }
       })
     })
+    gd.restore()
   }
 }
