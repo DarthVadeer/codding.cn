@@ -26,6 +26,7 @@ class Node {
 class Common {
   constructor(d = {}) {
     this.d = d
+    d.gd.font = d.conf.font
   }
   updatePos(node, isStop) {
     if (!node) return

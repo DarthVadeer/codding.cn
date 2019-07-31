@@ -4,7 +4,7 @@ export default {
     handler(newVal) {
       const vm = this
       let hashData = JSON.stringify(newVal)
-      !vm.is.local && (hashData = encodeURIComponent(newVal))
+      !vm.is.local && (hashData = encodeURIComponent(hashData))
       const targetUrl = location.origin + location.pathname + '#' + hashData
       history[vm.isRouterPush ? 'pushState' : 'replaceState']({}, '', targetUrl)
       delete vm.isRouterPush

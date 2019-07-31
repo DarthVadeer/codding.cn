@@ -24,7 +24,10 @@
                 <button ref="btnList" class="btn btn-primary">{{item.name}}</button>
               </div>
               <div class="box-canvas">
-                <canvas ref="canvasList" :data-title="item.name"></canvas>
+                <canvas tabindex="1" 
+                  ref="canvasList"
+                  :data-title="item.name"
+                ></canvas>
               </div>
             </section>
           </div>
@@ -43,6 +46,7 @@ export default {
     return {
       type: {
         list: [
+          {name: '脑图排版 - (ctrl+alt+f 排版)', cons: 'BrainMap', startFn: 'create', arg: {}},
           {name: '扫雷', cons: 'MineSweeper', startFn: 'create', arg: {}},
           {name: '迷宫创建 - 随机队列2', cons: 'Maze', startFn: 'generateRand2', arg: {}},
           {name: '迷宫创建 - 随机队列', cons: 'Maze', startFn: 'generateRand', arg: {}},
@@ -275,7 +279,7 @@ export default {
 #box-algo > .list section .box-btn {margin-bottom: 15px;}
 #box-algo > .list section .box-btn .btn {padding: .5em 1em; cursor: pointer;}
 #box-algo > .list section .box-canvas {}
-#box-algo > .list section .box-canvas canvas {border: 1px solid #ccc; max-width: 100%; box-sizing: content-box; outline: none; user-select: none;}
+#box-algo > .list section .box-canvas canvas {border: 1px solid #ccc; max-width: 100%; box-sizing: content-box; user-select: none;}
 
 .panel-fb {
   & > .back {

@@ -14,10 +14,12 @@ class Algo {
       SegmentTree,
       Heap,
       Sort,
+      BrainMap,
     }
 
     d.type = {
       list: [
+        {name: '脑图排版 - (ctrl+alt+f 排版)', cons: 'BrainMap', startFn: 'create', arg: {}},
         {name: '扫雷', cons: 'MineSweeper', startFn: 'create', arg: {}},
         {name: '迷宫创建 - 随机队列2', cons: 'Maze', startFn: 'generateRand2', arg: {}},
         {name: '迷宫创建 - 随机队列', cons: 'Maze', startFn: 'generateRand', arg: {}},

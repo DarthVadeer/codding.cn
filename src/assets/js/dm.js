@@ -76,7 +76,7 @@ export default {
     },
     getUrl(url) {
       const vm = this
-      return !/^http/.test(url) && url.search(/\.php/) > -1 ? vm.baseUrl + url : url
+      return vm.is.local && !/^http/.test(url) && url.search(/\.php/) > -1 ? vm.baseUrl + url : url
     },
     getFileName(path) {
       return (path.split(/\\|\//) || []).last() || ''
