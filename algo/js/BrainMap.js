@@ -57,6 +57,9 @@ class BrainMap extends Common {
 
     this.initEvents()
     await this.animate()
+    setTimeout(() => {
+      d.usingAni = true
+    }, 20)
   }
   initEvents() {
     const d = this.d
@@ -144,7 +147,7 @@ class BrainMap extends Common {
         }, 0) - 20
         setPos(children, depth + 1)
 
-        node.to.y = depth * d.levelHeight + 30
+        node.to.y = depth * d.levelHeight + 60
 
         if (node === sibling.first()) {
           let nodeP = node
@@ -186,8 +189,8 @@ class BrainMap extends Common {
 
     if (!d.usingAni) {
       d.dataList.forEach((node, idx) => {
-        node.x = node.to.x
-        node.y = node.to.y
+        node.x = node.from.x = node.to.x
+        node.y = node.from.y = node.to.y
       })
     }
   }
